@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Santaan Web Application
+
+This is the main web application for Santaan, built with Next.js 14, Drizzle ORM, and NextAuth.js.
+
+## Features
+
+- **Authentication**: Custom Email/Password login with role-based access control (Admin/User).
+- **Database**: 
+  - **Local**: SQLite (`santaan.db`) using `better-sqlite3`.
+  - **Production**: Turso (LibSQL) for edge-compatible persistence.
+- **Admin CRM**: Protected dashboard for managing contacts and seminar registrations.
+- **Analytics**: Dynamic script injection for Google Analytics and Facebook Pixel.
+- **SEO**: Optimized metadata and semantic HTML structure.
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/satishskid/santaan_web.git
+    cd santaan-web
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    pnpm install
+    ```
+
+3.  **Environment Variables (`.env.local`):**
+    Copy `.env.example` to `.env.local` and fill in the values:
+    ```env
+    NEXTAUTH_URL=http://localhost:3000
+    NEXTAUTH_SECRET=your_generated_secret
+    TURSO_DATABASE_URL=your_turso_url
+    TURSO_AUTH_TOKEN=your_turso_token
+    NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_key
+    NEXT_PUBLIC_GROQ_API_KEY=your_key
+    ```
+
+4.  **Database Setup (Local):**
+    ```bash
+    # Push schema to local SQLite
+    npx drizzle-kit push
+
+    # Seed initial admin user
+    npx tsx src/scripts/seed-users.ts
+    ```
+    *Default Admin:* `raghab.panda@santaan.in` / `password123`
+
+5.  **Run Development Server:**
+    ```bash
+    npm run dev
+    ```
+
+## Deployment (Netlify)
+
+This project is configured for deployment on Netlify.
+
+1.  **Connect to GitHub**: Link your repository to a new Netlify site.
+2.  **Build Settings**:
+    -   **Build Command**: `npm run build`
+    -   **Publish Directory**: `.next`
+3.  **Environment Variables**:
+    Set the following in Netlify Site Settings:
+    -   `AUTH_SECRET` (Use a strong random string)
+    -   `TURSO_DATABASE_URL`
+    -   `TURSO_AUTH_TOKEN`
+    -   `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
+    -   `NEXT_PUBLIC_GROQ_API_KEY`
+
+## Database Migration (Production)
+
+To update the remote Turso database:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx tsx src/scripts/migrate-prod.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To seed the production database with initial users:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx tsx src/scripts/seed-prod.ts
+```

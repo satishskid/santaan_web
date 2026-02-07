@@ -1,10 +1,8 @@
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
-import Database from 'better-sqlite3';
-import { drizzle as drizzleBetterSqlite3 } from 'drizzle-orm/better-sqlite3';
+
 import * as schema from '@/db/schema';
 
-// Check if we have Turso credentials
 const url = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
@@ -14,7 +12,9 @@ if (url && authToken) {
     const client = createClient({ url, authToken });
     db = drizzle(client, { schema });
 } else {
-    // Fallback to local SQLite for development
+    // Fallback to local SQLite for development - Dynamically imported to avoid build errors in Edge/Serverless
+    const Database = require('better-sqlite3');
+    const { drizzle: drizzleBetterSqlite3 } = require('drizzle-orm/better-sqlite3');
     const sqlite = new Database('santaan.db');
     db = drizzleBetterSqlite3(sqlite, { schema });
 }
