@@ -8,7 +8,7 @@ export default async function AnalyticsScripts() {
 
     try {
         const allSettings = await db.select().from(settings);
-        analyticsSettings = allSettings.reduce((acc: Record<string, string>, curr) => {
+        analyticsSettings = allSettings.reduce((acc: Record<string, string>, curr: { key: string; value: string }) => {
             acc[curr.key] = curr.value;
             return acc;
         }, {} as Record<string, string>);

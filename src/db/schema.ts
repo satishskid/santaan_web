@@ -28,3 +28,12 @@ export const settings = sqliteTable('settings', {
     value: text('value').notNull(),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const users = sqliteTable('users', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    name: text('name'),
+    email: text('email').notNull().unique(),
+    password: text('password').notNull(),
+    role: text('role').default('user'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});

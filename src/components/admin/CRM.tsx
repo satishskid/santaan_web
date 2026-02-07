@@ -188,6 +188,7 @@ export function CRM() {
                         activeTab={activeTab}
                         isLoading={isLoading}
                         filteredContacts={filteredContacts}
+                        contacts={contacts}
                     />
                 )}
             </div>
@@ -402,99 +403,100 @@ function SettingsTab() {
     )
 }
 
-function ContactsTable({ activeTab, isLoading, filteredContacts }: any) {
+function ContactsTable({ activeTab, isLoading, filteredContacts, contacts }: any) {
     return (
-        <Table>
-            <TableHeader className="bg-gray-50 sticky top-0 z-10">
-                <TableRow>
-                    <TableHead className="w-[50px]"><input type="checkbox" className="rounded border-gray-300" /></TableHead>
-                    <TableHead>Contact / Patient</TableHead>
-                    <TableHead>Status</TableHead>
-                    {activeTab === 'seminar' ? (
-                        <>
-                            <TableHead>Signal Score</TableHead>
-                            <TableHead>Question</TableHead>
-                        </>
-                    ) : (
-                        <TableHead>Role</TableHead>
-                    )}
-                    <TableHead>Last Activity</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {isLoading ? (
+        <div className="space-y-4">
+            <Table>
+                <TableHeader className="bg-gray-50 sticky top-0 z-10">
                     <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">Loading contacts...</TableCell>
+                        <TableHead className="w-[50px]"><input type="checkbox" className="rounded border-gray-300" /></TableHead>
+                        <TableHead>Contact / Patient</TableHead>
+                        <TableHead>Status</TableHead>
+                        {activeTab === 'seminar' ? (
+                            <>
+                                <TableHead>Signal Score</TableHead>
+                                <TableHead>Question</TableHead>
+                            </>
+                        ) : (
+                            <TableHead>Role</TableHead>
+                        )}
+                        <TableHead>Last Activity</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                ) : filteredContacts.length > 0 ? (
-                    filteredContacts.map((contact: any) => (
-                        <TableRow key={contact.id} className="group hover:bg-gray-50 transition-colors">
-                            <TableCell><input type="checkbox" className="rounded border-gray-300" /></TableCell>
-                            <TableCell>
-                                <div className="flex flex-col">
-                                    <span className="font-medium text-gray-900">{contact.name}</span>
-                                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                                        <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {contact.email}</span>
-                                        {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {contact.phone}</span>}
-                                    </div>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${contact.status === 'Active' ? 'bg-green-100 text-green-700' :
-                                    contact.status === 'New' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-gray-100 text-gray-700'
-                                    }`}>
-                                    {contact.status}
-                                </span>
-                            </TableCell>
-                            {activeTab === 'seminar' ? (
-                                <>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <span className={`font-bold ${contact.seminarSignal === 'Red' ? 'text-red-500' :
-                                                contact.seminarSignal === 'Yellow' ? 'text-amber-500' : 'text-green-500'
-                                                }`}>{contact.seminarScore}</span>
-                                            <span className="text-xs text-gray-400 capitalize">({contact.seminarSignal})</span>
+                </TableHeader>
+                <TableBody>
+                    {isLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">Loading contacts...</TableCell>
+                        </TableRow>
+                    ) : filteredContacts.length > 0 ? (
+                        filteredContacts.map((contact: any) => (
+                            <TableRow key={contact.id} className="group hover:bg-gray-50 transition-colors">
+                                <TableCell><input type="checkbox" className="rounded border-gray-300" /></TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-900">{contact.name}</span>
+                                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {contact.email}</span>
+                                            {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {contact.phone}</span>}
                                         </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-sm text-gray-600 truncate max-w-[200px] block" title={contact.seminarQuestion}>
-                                            {contact.seminarQuestion || '-'}
-                                        </span>
-                                    </TableCell>
-                                </>
-                            ) : (
-                                <TableCell><span className="text-sm text-gray-600">{contact.role}</span></TableCell>
-                            )}
-                            <TableCell>
-                                <span className="text-sm text-gray-500">{new Date(contact.createdAt || '').toLocaleDateString()}</span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                </Button>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${contact.status === 'Active' ? 'bg-green-100 text-green-700' :
+                                        contact.status === 'New' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-gray-100 text-gray-700'
+                                        }`}>
+                                        {contact.status}
+                                    </span>
+                                </TableCell>
+                                {activeTab === 'seminar' ? (
+                                    <>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-bold ${contact.seminarSignal === 'Red' ? 'text-red-500' :
+                                                    contact.seminarSignal === 'Yellow' ? 'text-amber-500' : 'text-green-500'
+                                                    }`}>{contact.seminarScore}</span>
+                                                <span className="text-xs text-gray-400 capitalize">({contact.seminarSignal})</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm text-gray-600 truncate max-w-[200px] block" title={contact.seminarQuestion}>
+                                                {contact.seminarQuestion || '-'}
+                                            </span>
+                                        </TableCell>
+                                    </>
+                                ) : (
+                                    <TableCell><span className="text-sm text-gray-600">{contact.role}</span></TableCell>
+                                )}
+                                <TableCell>
+                                    <span className="text-sm text-gray-500">{new Date(contact.createdAt || '').toLocaleDateString()}</span>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900">
+                                        <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                No contacts found.
                             </TableCell>
                         </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                            No contacts found.
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    )
-    {
-        activeTab !== 'team' && activeTab !== 'analytics' && activeTab !== 'settings' && (
-            <div className="p-4 border-t border-gray-100 text-xs text-gray-400 flex justify-between">
-                <span>Showing {filteredContacts.length} of {contacts.length} contacts</span>
-                <span>Last synced: Just now</span>
-            </div>
-        )
-    }
+                    )}
+                </TableBody>
+            </Table>
+
+            {
+                activeTab !== 'team' && activeTab !== 'analytics' && activeTab !== 'settings' && (
+                    <div className="p-4 border-t border-gray-100 text-xs text-gray-400 flex justify-between">
+                        <span>Showing {filteredContacts.length} of {contacts.length} contacts</span>
+                        <span>Last synced: Just now</span>
+                    </div>
+                )
+            }
         </div >
     );
 }

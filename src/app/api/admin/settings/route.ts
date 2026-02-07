@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { settings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -9,14 +10,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const isAuth = await isAuthorizedAdmin();
+        const session = await auth();
+        const isAuth = await isAuthorizedAdmin(session?.user?.email);
         if (!isAuth) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const allSettings = await db.select().from(settings);
         // Convert array to object for easier frontend consumption
-        const settingsMap = allSettings.reduce((acc: Record<string, string>, curr) => {
+        const settingsMap = allSettings.reduce((acc: Record<string, string>, curr: { key: string; value: string }) => {
             acc[curr.key] = curr.value;
             return acc;
         }, {} as Record<string, string>);
@@ -30,7 +32,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const isAuth = await isAuthorizedAdmin();
+        const session = await auth();
+        const isAuth = await isAuthorizedAdmin(session?.user?.email);
         if (!isAuth) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
