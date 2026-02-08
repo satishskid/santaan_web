@@ -7,24 +7,45 @@ import { Quote } from 'lucide-react';
 const stories = [
     {
         image: "/assets/hero-egg-freezing.png",
-        name: "Priya, 29",
-        type: "Egg Freezing",
-        quote: "Santaan gave me the power to prioritize my career without compromising my dream of being a mother someday. The process was empowering.",
+        name: "Priya, 32",
+        type: "Career Woman - Egg Freezing",
+        quote: "As a software engineer at Google, I wanted to focus on my career. Santaan gave me the freedom to preserve my future without compromise.",
         location: "Bhubaneswar"
     },
     {
         image: "/assets/hero-couple.png",
-        name: "Rahul & Anjali",
-        type: "Male Infertility",
-        quote: "We thought it was impossible. But the Doctor at Santaan and the team showed us that male factor issues have solutions. We are now expecting twins!",
+        name: "Rahul & Anjali, 35",
+        type: "IT Couple - Male Factor",
+        quote: "We thought it was my fault. Turns out, it was male factor. The team helped us understand this affects 50% of cases. Now expecting twins!",
+        location: "Bangalore"
+    },
+    {
+        image: "/assets/hero-family.png",
+        name: "Meera, 38",
+        type: "PCOS Success",
+        quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
+        location: "Cuttack"
+    },
+    {
+        image: "/assets/hero-twins.png",
+        name: "Sanjay & Divya, 36",
+        type: "Late Start - IVF",
+        quote: "We focused on building our business first. At 36, we thought we'd missed our chance. Science said otherwise. Our twins arrived last month.",
         location: "Berhampur"
     },
     {
-        image: "/assets/hero-older-couple.png",
-        name: "Sunita & Rajesh",
-        type: "IVF at 42",
-        quote: "Other clinics said we were 'too old'. Santaan said 'let's look at the science'. holding our baby today proves science—and hope—won.",
-        location: "Bangalore"
+        image: "/assets/hero-baby.png",
+        name: "Kavita, 34",
+        type: "Single Mother by Choice",
+        quote: "I didn't have a partner, but I had a dream. Santaan supported my journey to solo motherhood with donor IUI. My son is my world.",
+        location: "Bhubaneswar"
+    },
+    {
+        image: "/assets/hero-couple.png",
+        name: "Arjun & Shreya, 40",
+        type: "Second Chance - After Miscarriage",
+        quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
+        location: "Puri"
     }
 ];
 
@@ -42,7 +63,7 @@ export function SuccessStories() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {stories.map((story, i) => (
                         <motion.div
                             key={i}

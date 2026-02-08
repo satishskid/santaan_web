@@ -20,18 +20,31 @@ export default function Home() {
     <main id="main-content" className="min-h-screen bg-santaan-cream">
       <Header />
       <Hero />
-      <Awards />
-      <CareGap />
-      <SantaanLab />
+      
+      {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
-      <Doctors />
-      <Locations />
-      <WonderOfLife />
+      <Awards />
+      
+      {/* 2. Address Confusion - Problem Awareness */}
       <MythBusting />
-      <Insights />
+      
+      {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <SantaanSignal />
       <AssessmentCallback />
+      
+      {/* 4. Educate - Knowledge Building */}
+      <Insights />
+      <WonderOfLife />
+      
+      {/* 5. Establish Credibility - Expertise & Infrastructure */}
+      <CareGap />
+      <SantaanLab />
+      <Doctors />
+      <Locations />
+      
+      {/* 6. Answer Concerns - Final Objection Handling */}
       <FAQ />
+      
       <Footer />
     </main>
   );

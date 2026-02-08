@@ -6,44 +6,56 @@ import { motion } from "framer-motion";
 
 export function AssessmentCallback() {
     return (
-        <section id="assessment" className="py-24 bg-santaan-cream relative overflow-hidden">
-            {/* Background decorative blob */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-santaan-sage/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+        <section id="assessment" className="py-20 md:py-24 bg-white relative overflow-hidden">
+            {/* Background decorative elements */}
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-santaan-sage/5 to-santaan-amber/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-santaan-teal/5 to-transparent rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
 
-            <div className="container mx-auto px-4 md:px-6">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center max-w-6xl mx-auto">
 
-                    <div className="relative z-10">
+                    <div>
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5 }}
+                            transition={{ duration: 0.6 }}
                         >
-                            <span className="text-santaan-teal font-medium uppercase tracking-wider text-sm mb-2 block">Personalized Insights</span>
-                            <h2 className="text-4xl md:text-5xl font-playfair font-bold text-santaan-teal mb-6">
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-santaan-teal/10 text-santaan-teal font-semibold uppercase tracking-wider text-xs mb-4">Personalized Insights</span>
+                            <h2 className="text-3xl md:text-5xl font-playfair font-bold text-santaan-teal mb-6">
                                 Know Your Fertility Path
                             </h2>
-                            <p className="text-xl text-gray-600 mb-8 max-w-xl">
-                                Every journey is different. Answer a few simple questions to understand where you are, and let us guide you to the next step with confidence.
+                            <p className="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed">
+                                Every journey is unique. Get science-backed insights about your fertility health and understand your next steps.
                             </p>
 
                             <ul className="space-y-4 mb-10">
                                 {[
-                                    "Receive a personalized fertility score",
-                                    "Understand potential factors affecting you",
-                                    "Get tailored advice for your timeline"
+                                    { text: "Receive your personalized Santaan Signal score", color: "santaan-sage" },
+                                    { text: "Understand factors affecting your fertility", color: "santaan-teal" },
+                                    { text: "Get tailored recommendations for your timeline", color: "santaan-amber" }
                                 ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-gray-700">
-                                        <CheckCircle2 className="w-5 h-5 text-santaan-sage" />
-                                        {item}
-                                    </li>
+                                    <motion.li 
+                                        key={i} 
+                                        className="flex items-center gap-3 text-gray-700"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: i * 0.1 + 0.3 }}
+                                    >
+                                        <div className={`w-6 h-6 rounded-full bg-${item.color}/20 flex items-center justify-center shrink-0`}>
+                                            <CheckCircle2 className={`w-4 h-4 text-${item.color}`} />
+                                        </div>
+                                        <span className="font-medium">{item.text}</span>
+                                    </motion.li>
                                 ))}
                             </ul>
 
-                            <Button size="lg" className="bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20">
-                                Start Assessment
-                            </Button>
+                            <a href="#santaan-signal">
+                                <Button size="lg" className="bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20 text-white font-semibold">
+                                    Start Your Assessment
+                                </Button>
+                            </a>
                         </motion.div>
                     </div>
 

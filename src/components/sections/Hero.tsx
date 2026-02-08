@@ -11,7 +11,7 @@ export function Hero() {
         {
             id: 1,
             image: "/assets/hero-egg-freezing.png",
-            alt: "Confident woman looking towards future",
+            alt: "Confident young woman in her 30s planning her future",
             badge: "Preserve Your Future",
             title: "Your Timeline, <span class=\"text-santaan-amber\">Your Choice</span>",
             description: "Empowering you to control your biological clock with advanced egg freezing. Freedom to plan your family when you are ready."
@@ -19,23 +19,23 @@ export function Hero() {
         {
             id: 2,
             image: "/assets/hero-couple.png",
-            alt: "Supportive couple",
+            alt: "Professional couple in their 30s planning their future",
             badge: "Shared Fertility Journey",
             title: "It Takes Two to <span class=\"text-santaan-amber\">Create Life</span>",
             description: "Male health matters just as much. Comprehensive care for both partners to ensure the best start for your growing family."
         },
         {
             id: 3,
-            image: "/assets/hero-older-couple.png",
-            alt: "Couple with baby after 40",
-            badge: "Success at Any Age",
-            title: "Hope Has No <span class=\"text-santaan-amber\">Age Limit</span>",
-            description: "Advanced IVF protocols designed for 30s, 40s and beyond. We understand complex journeys and turn them into joy."
+            image: "/assets/hero-family.png",
+            alt: "Happy young family with their baby",
+            badge: "Dreams Come True",
+            title: "Building <span class=\"text-santaan-amber\">Happy Families</span>",
+            description: "Join thousands of couples in their 30s and 40s who achieved their dream of parenthood through advanced fertility care."
         },
         {
             id: 4,
             image: "/assets/hero-baby.png",
-            alt: "Miracle baby",
+            alt: "Precious newborn baby",
             badge: "The Miracle of Life",
             title: "Where Science Meets <span class=\"text-santaan-amber\">Hope</span>",
             description: "Understanding the miracle of life, one cell at a time. We demystify fertility through deeper scientific insights."
@@ -71,6 +71,7 @@ export function Hero() {
                             src={currentSlide.image}
                             alt={currentSlide.alt}
                             fill
+                            sizes="100vw"
                             className="object-cover"
                             priority
                         />
@@ -96,20 +97,31 @@ export function Hero() {
                             dangerouslySetInnerHTML={{ __html: currentSlide.title }}
                         />
 
-                        <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium">
+                        <p className="text-lg md:text-xl text-white/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium">
                             {currentSlide.description}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Button size="lg" className="group min-w-[200px] bg-santaan-amber hover:bg-[#E08E45] border-none shadow-lg hover:shadow-xl transition-all">
-                                Begin Your Journey
-                                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </Button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-16">
+                            <a href="#santaan-signal">
+                                <Button 
+                                    size="lg" 
+                                    className="group w-full sm:w-auto bg-santaan-amber hover:bg-[#E08E45] border-none shadow-lg hover:shadow-xl transition-all"
+                                >
+                                    Begin Your Journey
+                                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </a>
 
-                            <Button size="lg" variant="outline" className="min-w-[200px] border-white/40 text-white hover:bg-white/10 backdrop-blur-sm">
-                                <BookOpen className="w-5 h-5 mr-2" />
-                                Read Today's Insight
-                            </Button>
+                            <a href="#insights">
+                                <Button 
+                                    size="lg" 
+                                    variant="outline" 
+                                    className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 backdrop-blur-sm"
+                                >
+                                    <BookOpen className="w-5 h-5 mr-2" />
+                                    Read Today&apos;s Insight
+                                </Button>
+                            </a>
                         </div>
                     </motion.div>
                 </AnimatePresence>

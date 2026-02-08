@@ -176,7 +176,7 @@ const journeySteps = [
             text: "Like a lunar lander touching down on the surface. A gentle, controlled descent to the perfect landing site.",
             icon: "🛬"
         },
-        image: "/assets/metaphor_transfer_homecoming.png",
+        image: "/assets/metaphor_moon_mani_1770387172927.png",
         color: "bg-rose-50/10",
         borderColor: "border-rose-200/20"
     },
@@ -227,9 +227,11 @@ export function WonderOfLife() {
                     <div className="min-w-[85vw] md:min-w-[500px] h-[80vh] flex flex-col justify-center items-center text-center px-8 shrink-0 bg-santaan-amber text-white rounded-3xl">
                         <h3 className="text-4xl font-playfair font-bold mb-6">Your Harvest Awaits</h3>
                         <p className="text-xl mb-8 opacity-90">Every journey is unique. Let us guide yours.</p>
-                        <button className="bg-white text-santaan-amber px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-colors">
-                            Start Assessment
-                        </button>
+                        <a href="#santaan-signal">
+                            <button className="bg-white text-santaan-amber px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-colors">
+                                Start Assessment
+                            </button>
+                        </a>
                     </div>
 
                 </motion.div>

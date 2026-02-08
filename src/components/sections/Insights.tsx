@@ -116,36 +116,33 @@ export function Insights() {
                                 href={post.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100"
+                                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100"
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
                             >
-                                {/* Thumbnail Image */}
-                                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-                                    {/* Use the thumbnail from the RSS feed, or fallback */}
-                                    {/* Note: RSS2JSON often extracts the first image as 'thumbnail' */}
-                                    <img
-                                        src={post.thumbnail || '/assets/wonder-of-life-texture.png'}
-                                        alt={post.title}
-                                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-santaan-teal uppercase tracking-wide shadow-sm">
-                                        Medium
-                                    </div>
-                                </div>
-
                                 {/* Content */}
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                                <div className="p-5 flex flex-col flex-grow">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                         <Calendar className="w-3 h-3" />
                                         {formatDate(post.pubDate)}
                                     </div>
 
-                                    <h3 className="text-xl font-playfair font-bold text-gray-900 mb-3 group-hover:text-santaan-amber transition-colors line-clamp-2">
+                                    <h3 className="text-lg md:text-xl font-playfair font-bold text-gray-900 mb-3 group-hover:text-santaan-amber transition-colors line-clamp-2">
                                         {post.title}
                                     </h3>
+                                    
+                                    {/* Thumbnail Image */}
+                                    <div className="relative h-40 w-full overflow-hidden rounded-lg bg-gradient-to-br from-santaan-sage/20 to-santaan-teal/20 mb-3">
+                                        {post.thumbnail && (
+                                            <img
+                                                src={post.thumbnail}
+                                                alt={post.title}
+                                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        )}
+                                    </div>
 
                                     {/* Using a snippet generator or parser for description often returns HTML from RSS. 
                                         We'll assume 'description' might have HTML, so we strip it carefully or just use line-clamp 

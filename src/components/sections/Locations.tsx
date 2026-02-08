@@ -1,26 +1,32 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, Mail, Phone } from 'lucide-react';
 
 const locations = [
     {
         city: "Bhubaneswar",
         title: "The Temple City",
         address: "District Center, Chandrasekharpur & IRC Village",
-        description: "Our flagship center of excellence featuring advanced IVF labs and the Santaan Academy."
+        description: "Our flagship center of excellence featuring advanced IVF labs and the Santaan Academy.",
+        email: "bbsr@santaan.in",
+        phones: ["+91 9337326896", "+91 7328839934", "+91 7008990586"]
     },
     {
         city: "Berhampur",
         title: "The Silk City",
         address: "Comprehensive Fertility Care Center",
-        description: "Bringing world-class fertility solutions to Southern Odisha."
+        description: "Bringing world-class fertility solutions to Southern Odisha.",
+        email: "bbsr@santaan.in",
+        phones: ["+91 7008990582", "+91 9777989739"]
     },
     {
-        city: "Bangalore",
+        city: "Bengaluru",
         title: "Silicon Valley of India",
         address: "New Center of Innovation",
-        description: "Expanding our footprint with tech-integrated fertility care."
+        description: "Expanding our footprint with tech-integrated fertility care.",
+        email: "bng@santaan.in",
+        phones: ["+91 8105108416"]
     }
 ];
 
@@ -33,14 +39,14 @@ export function Locations() {
             <div className="container px-4 md:px-6 mx-auto relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div className="max-w-xl">
-                        <span className="text-santaan-amber font-medium tracking-wide uppercase text-sm">Our Presence</span>
+                        <span className="text-santaan-amber font-medium tracking-wide uppercase text-sm">Contact Us</span>
                         <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2">
                             Closer to You, Wherever You Are
                         </h2>
+                        <p className="text-white/80 text-sm mt-3">
+                            Walk into one of our fertility clinics to get a detailed analysis of your fertility status
+                        </p>
                     </div>
-                    <button className="text-white border border-white/30 px-6 py-2 rounded-full hover:bg-white/10 transition-colors">
-                        View All Centers
-                    </button>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8">
@@ -63,9 +69,29 @@ export function Locations() {
                             <p className="text-white/80 text-sm mb-4 leading-relaxed">
                                 {loc.address}
                             </p>
-                            <p className="text-white/60 text-xs">
+                            <p className="text-white/60 text-xs mb-6">
                                 {loc.description}
                             </p>
+                            
+                            {/* Contact Info */}
+                            <div className="space-y-3 pt-4 border-t border-white/10">
+                                <div className="flex items-start gap-2">
+                                    <Mail className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
+                                    <a href={`mailto:${loc.email}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors">
+                                        {loc.email}
+                                    </a>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Phone className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
+                                    <div className="flex flex-col gap-1">
+                                        {loc.phones.map((phone, idx) => (
+                                            <a key={idx} href={`tel:${phone}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors">
+                                                {phone}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
