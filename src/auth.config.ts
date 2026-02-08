@@ -1,12 +1,14 @@
 import type { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
-import LinkedIn from "next-auth/providers/linkedin"
+
+const providers = [] as any[];
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(Google);
+}
 
 export const authConfig = {
-    providers: [
-        Google,
-        LinkedIn,
-    ],
+    providers,
     pages: {
         signIn: "/login",
     },
