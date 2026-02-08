@@ -31,7 +31,7 @@ export function Insights() {
                 const data = await response.json();
 
                 if (data.status === 'ok') {
-                    setPosts(data.items.slice(0, 3)); // Get latest 3 posts
+                    setPosts(data.items.slice(0, 6)); // Get latest 6 posts
                 } else {
                     setError(true);
                 }
@@ -134,15 +134,15 @@ export function Insights() {
                                     </h3>
                                     
                                     {/* Thumbnail Image */}
-                                    <div className="relative h-40 w-full overflow-hidden rounded-lg bg-gradient-to-br from-santaan-sage/20 to-santaan-teal/20 mb-3">
-                                        {post.thumbnail && (
+                                    {post.thumbnail && (
+                                        <div className="relative h-40 w-full overflow-hidden rounded-lg mb-3">
                                             <img
                                                 src={post.thumbnail}
                                                 alt={post.title}
                                                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                                             />
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
 
                                     {/* Using a snippet generator or parser for description often returns HTML from RSS. 
                                         We'll assume 'description' might have HTML, so we strip it carefully or just use line-clamp 
