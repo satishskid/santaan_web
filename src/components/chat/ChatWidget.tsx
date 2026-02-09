@@ -126,67 +126,53 @@ const ChatWidget: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Messages Area OR Login Prompt */}
-                        {status === 'authenticated' ? (
-                            <>
-                                <div className="flex-grow p-4 overflow-y-auto bg-gray-50/50 space-y-4">
-                                    {messages.length === 0 && !isLoading && (
-                                        <div className="text-center text-gray-400 text-sm mt-8">
-                                            <p>Start a conversation...</p>
-                                        </div>
-                                    )}
+                        {/* Messages Area */}
+                        <>
+                            <div className="flex-grow p-4 overflow-y-auto bg-gray-50/50 space-y-4">
+                                {messages.length === 0 && !isLoading && (
+                                    <div className="text-center text-gray-400 text-sm mt-8">
+                                        <p>Ask anything about fertility, IVF, or timelines...</p>
+                                    </div>
+                                )}
 
-                                    {/* Conversation Starters if standard greeting is the only message */}
-                                    {messages.length === 1 && messages[0].sender === MessageSender.BOT && (
-                                        <ConversationStarters onStarterClick={handleSendMessage} />
-                                    )}
+                                {/* Conversation Starters if standard greeting is the only message */}
+                                {messages.length === 1 && messages[0].sender === MessageSender.BOT && (
+                                    <ConversationStarters onStarterClick={handleSendMessage} />
+                                )}
 
-                                    {messages.map((msg) => (
-                                        <ChatMessageComponent key={msg.id} {...msg} />
-                                    ))}
+                                {messages.map((msg) => (
+                                    <ChatMessageComponent key={msg.id} {...msg} />
+                                ))}
 
-                                    {isLoading && (
-                                        <div className="flex justify-start">
-                                            <LoadingIndicator />
-                                        </div>
-                                    )}
+                                {isLoading && (
+                                    <div className="flex justify-start">
+                                        <LoadingIndicator />
+                                    </div>
+                                )}
 
-                                    {error && (
-                                        <div className="bg-red-50 text-red-600 text-xs p-2 rounded-lg text-center mx-4">
-                                            {error}
-                                        </div>
-                                    )}
-                                    <div ref={messagesEndRef} />
-                                </div>
-                                {/* Input Area */}
-                                <UserInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-                            </>
-                        ) : (
-                            <div className="flex-grow flex flex-col items-center justify-center p-8 text-center bg-gray-50/50">
-                                <div className="w-16 h-16 bg-santaan-teal/10 rounded-full flex items-center justify-center mb-4">
-                                    <Lock className="w-8 h-8 text-santaan-teal" />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-800 mb-2">Sign in to Chat</h3>
-                                <p className="text-gray-500 mb-6 text-sm">
-                                    To provide you with personalized guidance and save your conversation history, please sign in.
-                                </p>
-                                <Button
-                                    onClick={() => signIn('google')}
-                                    className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
-                                >
-                                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-                                    Sign in with Google
-                                </Button>
-                                <p className="text-[10px] text-gray-400 mt-4">
-                                    Your privacy is our priority. We adhere to strict data protection standards.
-                                </p>
+                                {error && (
+                                    <div className="bg-red-50 text-red-600 text-xs p-2 rounded-lg text-center mx-4">
+                                        {error}
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
                             </div>
-                        )}
+                            {/* Input Area */}
+                            <UserInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+                        </>
 
-                        <div className="bg-gray-50 px-4 py-1 text-center">
+                        <div className="bg-gray-50 px-4 py-1 text-center flex items-center justify-center gap-2">
                             <p className="text-[10px] text-gray-400">
                                 AI can make mistakes. Please consult a doctor for medical advice.
                             </p>
+                            {status !== 'authenticated' && (
+                                <button
+                                    onClick={() => signIn('google')}
+                                    className="text-[10px] text-santaan-teal hover:text-santaan-amber transition-colors"
+                                >
+                                    Sign in to save chat
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}
@@ -202,7 +188,7 @@ const ChatWidget: React.FC = () => {
                 {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
                 {!isOpen && (
                     <span className="font-semibold pr-2 hidden group-hover:block whitespace-nowrap overflow-hidden transition-all duration-300">
-                        Chat with Santaan
+                        Ask Santaan AI
                     </span>
                 )}
             </motion.button>
