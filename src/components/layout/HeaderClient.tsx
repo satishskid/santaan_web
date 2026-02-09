@@ -17,6 +17,21 @@ const navigation = [
     { name: 'About Us', href: '#footer' },
 ];
 
+const centers = [
+    {
+        name: 'Bhubaneswar',
+        phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
+    },
+    {
+        name: 'Berhampur',
+        phones: ['+91 7008990582', '+91 9777989739'],
+    },
+    {
+        name: 'Bengaluru',
+        phones: ['+91 8105108416'],
+    },
+];
+
 interface HeaderClientProps {
     session: Session | null;
 }
@@ -72,10 +87,37 @@ export function HeaderClient({ session }: HeaderClientProps) {
 
                     {/* Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="tel:+919337326896" className="text-gray-500 hover:text-santaan-teal transition-colors">
-                            <Phone className="w-5 h-5" />
-                            <span className="sr-only">Call us</span>
-                        </Link>
+                        <div className="relative group">
+                            <button
+                                type="button"
+                                className="text-gray-500 hover:text-santaan-teal transition-colors inline-flex items-center"
+                            >
+                                <Phone className="w-5 h-5" />
+                                <span className="sr-only">Call a center</span>
+                            </button>
+                            <div className="absolute right-0 mt-3 w-64 rounded-xl border border-gray-100 bg-white shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all">
+                                <div className="p-3 space-y-3">
+                                    {centers.map((center) => (
+                                        <div key={center.name}>
+                                            <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider mb-1">
+                                                {center.name}
+                                            </div>
+                                            <div className="space-y-1">
+                                                {center.phones.map((phone) => (
+                                                    <a
+                                                        key={phone}
+                                                        href={`tel:${phone}`}
+                                                        className="block text-sm text-gray-700 hover:text-santaan-amber"
+                                                    >
+                                                        {phone}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
                         {session?.user ? (
                             <Link href="/profile">
@@ -108,12 +150,34 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             </Link>
                         ) : (
                             <div className="flex gap-2">
-                                <Link href="tel:+919337326896" className="hidden lg:flex">
+                                <div className="relative group hidden lg:flex">
                                     <Button size="sm">
                                         <Calendar className="w-4 h-4 mr-2" />
                                         Book Consultation
                                     </Button>
-                                </Link>
+                                    <div className="absolute right-0 mt-3 w-64 rounded-xl border border-gray-100 bg-white shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all">
+                                        <div className="p-3 space-y-3">
+                                            {centers.map((center) => (
+                                                <div key={center.name}>
+                                                    <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider mb-1">
+                                                        {center.name}
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        {center.phones.map((phone) => (
+                                                            <a
+                                                                key={phone}
+                                                                href={`tel:${phone}`}
+                                                                className="block text-sm text-gray-700 hover:text-santaan-amber"
+                                                            >
+                                                                {phone}
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -175,14 +239,23 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             ))}
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                                 {!session?.user ? (
-                                    <>
-                                        <Link href="tel:+919337326896" className="block">
-                                            <Button variant="outline" className="w-full justify-center">Call Now</Button>
-                                        </Link>
-                                        <Link href="tel:+919337326896" className="block">
-                                            <Button className="w-full justify-center">Book Consultation</Button>
-                                        </Link>
-                                    </>
+                                    <div className="space-y-4">
+                                        {centers.map((center) => (
+                                            <div key={center.name} className="space-y-2">
+                                                <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider">
+                                                    {center.name}
+                                                </div>
+                                                {center.phones.map((phone) => (
+                                                    <Link key={phone} href={`tel:${phone}`} className="block">
+                                                        <Button variant="outline" className="w-full justify-center">
+                                                            Call {phone}
+                                                        </Button>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        ))}
+                                        <div className="text-xs text-gray-500">Choose your nearest center to book.</div>
+                                    </div>
                                 ) : (
                                     <Link href="/profile" className="block">
                                         <Button className="w-full justify-center">View Profile</Button>
