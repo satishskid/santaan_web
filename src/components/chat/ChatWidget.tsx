@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Minimize2, Maximize2, Lock } from 'lucide-react';
+import { MessageCircle, X, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatMessage, MessageSender } from '@/types/chat';
 import ChatMessageComponent from './ChatMessage';
@@ -12,7 +12,6 @@ import ConversationStarters from './ConversationStarters';
 import { sendMessageWithFallback } from '@/services/chat/chatService';
 import { useChatRateLimit } from '@/hooks/useChatRateLimit';
 import { useSession, signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/Button';
 
 const ChatWidget: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +105,7 @@ const ChatWidget: React.FC = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="mb-4 w-[90vw] sm:w-[380px] h-[600px] max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100"
+                        className="mb-4 w-[90vw] sm:w-95 h-150 max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100"
                     >
                         {/* Header */}
                         <div className="bg-santaan-teal text-white p-4 flex justify-between items-center shadow-md">
@@ -128,7 +127,7 @@ const ChatWidget: React.FC = () => {
 
                         {/* Messages Area */}
                         <>
-                            <div className="flex-grow p-4 overflow-y-auto bg-gray-50/50 space-y-4">
+                            <div className="grow p-4 overflow-y-auto bg-gray-50/50 space-y-4">
                                 {messages.length === 0 && !isLoading && (
                                     <div className="text-center text-gray-400 text-sm mt-8">
                                         <p>Ask anything about fertility, IVF, or timelines...</p>
@@ -178,18 +177,35 @@ const ChatWidget: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Toggle Button */}
+            {/* USP Callout + Toggle Button */}
+            {!isOpen && (
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-3 max-w-65 bg-white/95 backdrop-blur border border-santaan-teal/10 rounded-2xl shadow-lg p-3"
+                >
+                    <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-full bg-santaan-teal/10 flex items-center justify-center">
+                            <MessageCircle className="w-5 h-5 text-santaan-teal" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-sm font-semibold text-santaan-teal">Santaan AI Companion</p>
+                            <p className="text-[11px] text-gray-500">Ask any fertility question, 24×7</p>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
             <motion.button
                 onClick={toggleChat}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-santaan-teal to-emerald-700 text-white p-4 rounded-full shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center gap-2 group"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="bg-linear-to-r from-santaan-teal to-emerald-700 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center gap-3"
             >
-                {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+                {isOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
+                <span className="font-semibold whitespace-nowrap hidden sm:inline">Ask Santaan AI</span>
                 {!isOpen && (
-                    <span className="font-semibold pr-2 hidden group-hover:block whitespace-nowrap overflow-hidden transition-all duration-300">
-                        Ask Santaan AI
-                    </span>
+                    <span className="text-[10px] uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">USP</span>
                 )}
             </motion.button>
         </div>
