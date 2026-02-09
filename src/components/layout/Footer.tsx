@@ -66,10 +66,10 @@ export function Footer() {
                     </div>
 
                     {/* Newsletter */}
-                    <div>
+                    <div id="newsletter">
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Stay via Science</h4>
                         <p className="text-gray-300 mb-4 text-sm">
-                            Get daily fertility insights and myth-busting articles delivered to your inbox.
+                            A short daily note with one myth, one insight, and one gentle next step.
                         </p>
                         <form className="space-y-2">
                             <input

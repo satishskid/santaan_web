@@ -82,23 +82,34 @@ export function Insights() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div>
-                        <span className="text-santaan-amber font-medium uppercase tracking-wider text-sm mb-2 block flex items-center gap-2">
+                        <span className="text-santaan-amber font-medium uppercase tracking-wider text-sm mb-2 flex items-center gap-2">
                             <BookOpen className="w-4 h-4" />
                             Knowledge Base
                         </span>
                         <h2 className="text-3xl md:text-5xl font-playfair font-bold text-santaan-teal">
                             Insights & Stories
                         </h2>
+                        <p className="text-gray-600 mt-3 max-w-xl text-sm md:text-base">
+                            A gentle narrative of fertility—myths clarified, science simplified, and small steps you can take today.
+                        </p>
                     </div>
-                    <a
-                        href="https://medium.com/@santaanIVF"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-center gap-2 text-santaan-teal font-medium hover:text-santaan-amber transition-colors"
-                    >
-                        View all articles
-                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </a>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="#newsletter"
+                            className="text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
+                        >
+                            Get daily updates
+                        </a>
+                        <a
+                            href="https://medium.com/@santaanIVF"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-center gap-2 text-santaan-teal font-medium hover:text-santaan-amber transition-colors"
+                        >
+                            View all articles
+                            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        </a>
+                    </div>
                 </div>
 
                 {/* Grid */}
@@ -123,7 +134,7 @@ export function Insights() {
                                 transition={{ delay: index * 0.1 }}
                             >
                                 {/* Content */}
-                                <div className="p-5 flex flex-col flex-grow">
+                                <div className="p-5 flex flex-col grow">
                                     <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                         <Calendar className="w-3 h-3" />
                                         {formatDate(post.pubDate)}
@@ -149,7 +160,7 @@ export function Insights() {
                                         on a simple render if it's plain text. 
                                         RSS2JSON 'description' is usually the content snippet.
                                     */}
-                                    <div className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow">
+                                    <div className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4 grow">
                                         {/* We use a safe render approach or just CSS line clamping on the raw text if possible. 
                                              Since we can't easily sanitize HTML here without a library, we'll try to rely on the browser's 
                                              handling or just not render dangerous HTML if not needed. 

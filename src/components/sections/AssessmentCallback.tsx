@@ -8,8 +8,8 @@ export function AssessmentCallback() {
     return (
         <section id="assessment" className="py-20 md:py-24 bg-white relative overflow-hidden">
             {/* Background decorative elements */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-santaan-sage/5 to-santaan-amber/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-santaan-teal/5 to-transparent rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
+            <div className="absolute top-0 right-0 w-150 h-150 bg-linear-to-br from-santaan-sage/5 to-santaan-amber/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+            <div className="absolute bottom-0 left-0 w-125 h-125 bg-linear-to-tr from-santaan-teal/5 to-transparent rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center max-w-6xl mx-auto">
@@ -29,7 +29,7 @@ export function AssessmentCallback() {
                                 Every journey is unique. Get science-backed insights about your fertility health and understand your next steps.
                             </p>
 
-                            <ul className="space-y-4 mb-10">
+                            <ul className="space-y-4 mb-8">
                                 {[
                                     { text: "Receive your personalized Santaan Signal score", color: "santaan-sage" },
                                     { text: "Understand factors affecting your fertility", color: "santaan-teal" },
@@ -50,6 +50,11 @@ export function AssessmentCallback() {
                                     </motion.li>
                                 ))}
                             </ul>
+
+                            <p className="text-sm text-gray-600 mb-6">
+                                Prefer a quick answer? Tap <span className="font-semibold text-santaan-teal">Ask Santaan AI</span> at the bottom-right.
+                                For daily guidance, <a href="#newsletter" className="text-santaan-amber font-semibold hover:text-[#E08E45]">subscribe here</a>.
+                            </p>
 
                             <a href="#santaan-signal">
                                 <Button size="lg" className="bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20 text-white font-semibold">
