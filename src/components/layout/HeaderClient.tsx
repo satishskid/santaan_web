@@ -41,7 +41,7 @@ export function HeaderClient({ session }: HeaderClientProps) {
                 isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-gray-100 py-2' : 'bg-transparent py-4'
             )}
         >
-            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-santaan-teal text-white rounded-md">
+            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-100 px-4 py-2 bg-santaan-teal text-white rounded-md">
                 Skip to content
             </a>
             <div className="container mx-auto px-4 md:px-6">
@@ -72,7 +72,7 @@ export function HeaderClient({ session }: HeaderClientProps) {
 
                     {/* Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="tel:+910000000000" className="text-gray-500 hover:text-santaan-teal transition-colors">
+                        <Link href="tel:+919337326896" className="text-gray-500 hover:text-santaan-teal transition-colors">
                             <Phone className="w-5 h-5" />
                             <span className="sr-only">Call us</span>
                         </Link>
@@ -108,15 +108,12 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             </Link>
                         ) : (
                             <div className="flex gap-2">
-                                <Link href="/api/auth/signin">
-                                    <Button variant="outline" size="sm" className="hidden lg:flex">
-                                        Login
+                                <Link href="tel:+919337326896" className="hidden lg:flex">
+                                    <Button size="sm">
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Book Consultation
                                     </Button>
                                 </Link>
-                                <Button size="sm" className="hidden lg:flex">
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    Book Consultation
-                                </Button>
                             </div>
                         )}
 
@@ -179,10 +176,12 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                                 {!session?.user ? (
                                     <>
-                                        <Link href="/api/auth/signin" className="block">
-                                            <Button variant="outline" className="w-full justify-center">Login</Button>
+                                        <Link href="tel:+919337326896" className="block">
+                                            <Button variant="outline" className="w-full justify-center">Call Now</Button>
                                         </Link>
-                                        <Button className="w-full justify-center">Book Consultation</Button>
+                                        <Link href="tel:+919337326896" className="block">
+                                            <Button className="w-full justify-center">Book Consultation</Button>
+                                        </Link>
                                     </>
                                 ) : (
                                     <Link href="/profile" className="block">

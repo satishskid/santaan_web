@@ -78,9 +78,9 @@ export function SuccessStories() {
                                     src={story.image}
                                     alt={story.name}
                                     fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                    className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
                                 <div className="absolute bottom-4 left-4 text-white">
                                     <p className="font-bold text-lg">{story.name}</p>
                                     <p className="text-sm opacity-90">{story.type} | {story.location}</p>

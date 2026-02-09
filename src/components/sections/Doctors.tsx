@@ -66,8 +66,8 @@ export function Doctors() {
                             className="bg-white p-6 rounded-2xl text-center shadow-sm hover:shadow-md transition-all border border-transparent hover:border-santaan-teal/20"
                         >
                             {doc.image ? (
-                                <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-santaan-sage/20 ring-2 ring-white shadow-sm">
-                                    <img src={doc.image} alt={doc.name} className="w-full h-full object-cover object-[50%_20%]" />
+                                <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-santaan-sage/20">
+                                    <img src={doc.image} alt={doc.name} className="w-full h-full object-cover object-top" />
                                 </div>
                             ) : (
                                 <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-santaan-sage/20 flex items-center justify-center text-santaan-teal">
@@ -99,8 +99,8 @@ export function Doctors() {
                                 className="bg-linear-to-br from-santaan-teal/5 to-santaan-amber/5 p-6 rounded-2xl text-center shadow-sm hover:shadow-md transition-all border-2 border-santaan-teal/20"
                             >
                                 {member.image ? (
-                                    <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-md ring-2 ring-white">
-                                        <img src={member.image} alt={member.name} className="w-full h-full object-cover object-[50%_20%]" />
+                                    <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-md">
+                                        <img src={member.image} alt={member.name} className="w-full h-full object-cover object-top" />
                                     </div>
                                 ) : (
                                     <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white flex items-center justify-center text-santaan-teal shadow-md">
