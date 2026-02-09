@@ -1,41 +1,9 @@
 
 import Script from "next/script";
-import { db } from "@/lib/db";
-import { settings } from "@/db/schema";
 
-export default async function AnalyticsScripts() {
-    let analyticsSettings: Record<string, string> = {};
-
-    const envGaId = process.env.GOOGLE_ANALYTICS_ID;
-    const envFbPixelId = process.env.FACEBOOK_PIXEL_ID;
-
-    try {
-        const allSettings = await db.select().from(settings);
-        analyticsSettings = allSettings.reduce((acc: Record<string, string>, curr: { key: string; value: string }) => {
-            acc[curr.key] = curr.value;
-            return acc;
-        }, {} as Record<string, string>);
-
-        if (envGaId && !analyticsSettings['google_analytics_id']) {
-            await db.insert(settings)
-                .values({ key: 'google_analytics_id', value: envGaId })
-                .onConflictDoUpdate({ target: settings.key, set: { value: envGaId } });
-            analyticsSettings['google_analytics_id'] = envGaId;
-        }
-
-        if (envFbPixelId && !analyticsSettings['facebook_pixel_id']) {
-            await db.insert(settings)
-                .values({ key: 'facebook_pixel_id', value: envFbPixelId })
-                .onConflictDoUpdate({ target: settings.key, set: { value: envFbPixelId } });
-            analyticsSettings['facebook_pixel_id'] = envFbPixelId;
-        }
-    } catch (error) {
-        // Fallback or ignore if DB not ready
-        console.warn("Failed to load analytics settings", error);
-    }
-
-    const gaId = analyticsSettings['google_analytics_id'] || envGaId;
-    const fbPixelId = analyticsSettings['facebook_pixel_id'] || envFbPixelId;
+export default function AnalyticsScripts() {
+    const gaId = process.env.GOOGLE_ANALYTICS_ID;
+    const fbPixelId = process.env.FACEBOOK_PIXEL_ID;
 
     return (
         <>
