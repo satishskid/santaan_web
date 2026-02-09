@@ -1,5 +1,4 @@
 import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
 
 import * as schema from '@/db/schema';
 
@@ -8,8 +7,15 @@ const authToken = process.env.TURSO_AUTH_TOKEN;
 
 let db: any;
 
+const getClientFactory = () => {
+    const isServerless = !!process.env.NETLIFY || !!process.env.VERCEL || process.env.NODE_ENV === 'production';
+    // Use web client in serverless to avoid native module issues
+    return isServerless ? require('@libsql/client/web') : require('@libsql/client');
+};
+
 // Always use Turso in production/build environments
 if (url && authToken) {
+    const { createClient } = getClientFactory();
     const client = createClient({ url, authToken });
     db = drizzle(client, { schema });
 } else if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
@@ -22,6 +28,7 @@ if (url && authToken) {
     } catch (error) {
         console.error('SQLite initialization failed, using Turso fallback');
         // Fallback to Turso even in development if SQLite fails
+        const { createClient } = getClientFactory();
         const client = createClient({ 
             url: url || 'libsql://santaan-hope-satishskid.aws-ap-south-1.turso.io',
             authToken: authToken || '' 
@@ -30,6 +37,7 @@ if (url && authToken) {
     }
 } else {
     // For production builds without env vars, create a dummy client
+    const { createClient } = getClientFactory();
     const client = createClient({ 
         url: url || 'libsql://santaan-hope-satishskid.aws-ap-south-1.turso.io',
         authToken: authToken || '' 
