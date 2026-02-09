@@ -14,10 +14,62 @@ import { SuccessStories } from "@/components/sections/SuccessStories";
 import { Doctors } from "@/components/sections/Doctors";
 import { Locations } from "@/components/sections/Locations";
 import { FAQ } from "@/components/sections/FAQ";
+import Script from "next/script";
+import { faqs } from "@/data/faqs";
 
 export default function Home() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
+  const clinicSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    name: "Santaan Fertility",
+    url: "https://www.santaan.in",
+    telephone: "+91 9337326896",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "IN",
+      addressRegion: "Odisha",
+      addressLocality: "Bhubaneswar",
+    },
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Santaan Fertility",
+    url: "https://www.santaan.in",
+  };
+
   return (
     <main id="main-content" className="min-h-screen bg-santaan-cream">
+      <Script
+        id="santaan-faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="santaan-clinic-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(clinicSchema) }}
+      />
+      <Script
+        id="santaan-website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+
       <Header />
       <Hero />
       

@@ -17,6 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.santaan.in"),
   title: "Santaan - Where Science Meets Hope",
   description: "Experience the wonder of life with Santaan Fertility. Daily insights, myth-busting science, and compassionate care.",
   openGraph: {

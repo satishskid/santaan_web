@@ -1,8 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function Footer() {
+    const [email, setEmail] = useState("");
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [message, setMessage] = useState("");
+
+    const handleSubscribe = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!email.trim()) return;
+
+        setStatus("loading");
+        setMessage("");
+
+        try {
+            const response = await fetch("/api/newsletter/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data?.error || "Failed to subscribe");
+            }
+
+            setStatus("success");
+            setMessage(data?.message || "Subscribed successfully");
+            setEmail("");
+        } catch (error: any) {
+            setStatus("error");
+            setMessage(error?.message || "Failed to subscribe");
+        }
+    };
+
     return (
         <footer id="footer" className="bg-santaan-teal text-white pt-20 pb-10">
             <div className="container mx-auto px-4 md:px-6">
@@ -71,13 +106,28 @@ export function Footer() {
                         <p className="text-gray-300 mb-4 text-sm">
                             A short daily note with one myth, one insight, and one gentle next step.
                         </p>
-                        <form className="space-y-2">
+                        <form className="space-y-2" onSubmit={handleSubscribe}>
                             <input
                                 type="email"
                                 placeholder="Enter your email"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-santaan-amber"
                             />
-                            <Button fullWidth className="bg-santaan-amber hover:bg-[#E08E45]">Subscribe</Button>
+                            <Button
+                                fullWidth
+                                className="bg-santaan-amber hover:bg-[#E08E45]"
+                                disabled={status === "loading"}
+                            >
+                                {status === "loading" ? "Subscribing..." : "Subscribe"}
+                            </Button>
+                            {message && (
+                                <p
+                                    className={`text-xs ${status === "success" ? "text-emerald-200" : "text-rose-200"}`}
+                                >
+                                    {message}
+                                </p>
+                            )}
                         </form>
                     </div>
                 </div>
