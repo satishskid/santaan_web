@@ -5,7 +5,7 @@ import { contacts } from '@/db/schema';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, email, phone, question, score, signal } = body;
+        const { name, email, phone, question, score, signal, utm } = body;
 
         // Simple validation
         if (!name || !email) {
@@ -21,7 +21,13 @@ export async function POST(request: Request) {
             seminarSignal: signal,
             seminarQuestion: question,
             status: 'New',
-            role: 'Lead' // Assuming leads for now
+            role: 'Lead',
+            utmSource: utm?.utm_source,
+            utmMedium: utm?.utm_medium,
+            utmCampaign: utm?.utm_campaign,
+            utmTerm: utm?.utm_term,
+            utmContent: utm?.utm_content,
+            landingPath: utm?.landing_path,
         }).returning();
 
         return NextResponse.json({

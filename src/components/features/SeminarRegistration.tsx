@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowRight, Calendar, CheckCircle2, CheckCircle, X } from 'lucide-react';
+import { readUtmParams } from '@/lib/utm';
 
 interface SeminarRegistrationProps {
     isOpen: boolean;
@@ -54,7 +55,8 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                     phone: formData.phone,
                     question: formData.question,
                     score,
-                    signal
+                    signal,
+                    utm: readUtmParams()
                 }),
             });
 
@@ -72,7 +74,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-125">
                 {step === 'form' ? (
                     <>
                         <DialogHeader>

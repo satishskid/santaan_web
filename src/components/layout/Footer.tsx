@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { readUtmParams } from "@/lib/utm";
 
 export function Footer() {
     const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ export function Footer() {
             const response = await fetch("/api/newsletter/subscribe", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, utm: readUtmParams() }),
             });
 
             const data = await response.json();

@@ -13,6 +13,12 @@ export const contacts = sqliteTable('contacts', {
     seminarScore: integer('seminar_score'),
     seminarSignal: text('seminar_signal'),
     seminarQuestion: text('seminar_question'),
+    utmSource: text('utm_source'),
+    utmMedium: text('utm_medium'),
+    utmCampaign: text('utm_campaign'),
+    utmTerm: text('utm_term'),
+    utmContent: text('utm_content'),
+    landingPath: text('landing_path'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 

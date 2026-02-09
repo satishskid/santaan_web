@@ -7,6 +7,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         const email = String(body?.email || "").trim().toLowerCase();
+        const utm = body?.utm || {};
 
         if (!email) {
             return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
             role: "Newsletter",
             status: "New",
             seminarRegistered: false,
+            utmSource: utm.utm_source,
+            utmMedium: utm.utm_medium,
+            utmCampaign: utm.utm_campaign,
+            utmTerm: utm.utm_term,
+            utmContent: utm.utm_content,
+            landingPath: utm.landing_path,
         });
 
         return NextResponse.json({ success: true, message: "Subscribed successfully" });

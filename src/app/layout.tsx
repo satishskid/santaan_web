@@ -5,6 +5,7 @@ import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import { JourneyProvider } from "@/context/JourneyContext";
 import ChatWidget from "@/components/chat/ChatWidget";
 import AuthProvider from "@/components/providers/AuthProvider";
+import UtmTracker from "@/components/analytics/UtmTracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -56,6 +57,7 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} antialiased`}
       >
         <AnalyticsScripts />
+        <UtmTracker />
 
         <AuthProvider>
           <SmoothScrollProvider>
