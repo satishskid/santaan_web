@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 
 export function SantaanLab() {
     return (
-        <section className="py-24 bg-white relative overflow-hidden">
+        <section id="santaan-lab" className="py-24 bg-white relative overflow-hidden">
             <div className="container px-4 md:px-6 mx-auto">
                 
                 {/* Main Header */}

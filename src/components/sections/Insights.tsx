@@ -67,7 +67,7 @@ export function Insights() {
     if (error) return null; // Hide section if feed fails
 
     return (
-        <section className="py-20 bg-santaan-cream relative overflow-hidden">
+        <section id="insights" className="py-20 bg-santaan-cream relative overflow-hidden">
             {/* Background Texture */}
             <div className="absolute inset-0 opacity-5 pointer-events-none">
                 <Image

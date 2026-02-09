@@ -32,7 +32,7 @@ const awards = [
 
 export function Awards() {
     return (
-        <section className="py-24 bg-santaan-cream/50 relative overflow-hidden">
+        <section id="awards" className="py-24 bg-santaan-cream/50 relative overflow-hidden">
             {/* Background Decorative Elements */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-santaan-sage/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 

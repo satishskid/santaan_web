@@ -51,7 +51,7 @@ const stories = [
 
 export function SuccessStories() {
     return (
-        <section className="py-24 bg-white">
+        <section id="success-stories" className="py-24 bg-white">
             <div className="container px-4 md:px-6 mx-auto">
                 <div className="text-center mb-16">
                     <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Real Stories, Real Joy</span>

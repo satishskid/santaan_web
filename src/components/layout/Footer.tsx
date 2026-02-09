@@ -72,13 +72,36 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Quick Links</h4>
                         <ul className="space-y-4">
-                            {["Our Story", "Doctors", "Success Rates", "Treatments", "Blog"].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                        {item}
-                                    </Link>
-                                </li>
-                            ))}
+                            <li>
+                                <Link href="#success-stories" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    Our Story
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="#doctors" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    Doctors
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="#awards" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    Success Rates
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="#santaan-lab" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    Treatments
+                                </Link>
+                            </li>
+                            <li>
+                                <a
+                                    href="https://medium.com/@santaanIVF"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-300 hover:text-santaan-amber transition-colors"
+                                >
+                                    Blog
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
@@ -137,8 +160,8 @@ export function Footer() {
                         © 2026 Santaan Fertility. All rights reserved.
                     </div>
                     <div className="flex gap-6">
-                        <Link href="#" className="hover:text-white">Privacy Policy</Link>
-                        <Link href="#" className="hover:text-white">Terms of Service</Link>
+                        <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
+                        <Link href="/terms" className="hover:text-white">Terms of Service</Link>
                     </div>
                 </div>
             </div>
