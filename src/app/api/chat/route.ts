@@ -34,16 +34,32 @@ const buildGroqMessages = (message: string, history: ChatMessage[]): ChatComplet
     return mapped;
 };
 
+const GROQ_MODELS = (
+    process.env.GROQ_MODEL?.split(",").map((m) => m.trim()).filter(Boolean) ?? []
+).length
+    ? process.env.GROQ_MODEL!.split(",").map((m) => m.trim()).filter(Boolean)
+    : ["llama-3.1-8b-instant", "llama-3.2-3b-preview"];
+
 const sendToGroq = async (message: string, history: ChatMessage[]) => {
     const groq = getGroqClient();
-    const completion = await groq.chat.completions.create({
-        messages: buildGroqMessages(message, history),
-        model: "llama-3.1-70b-versatile",
-        temperature: 0.7,
-        max_tokens: 1024,
-    });
+    const errors: unknown[] = [];
 
-    return completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+    for (const model of GROQ_MODELS) {
+        try {
+            const completion = await groq.chat.completions.create({
+                messages: buildGroqMessages(message, history),
+                model,
+                temperature: 0.7,
+                max_tokens: 1024,
+            });
+
+            return completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+        } catch (error) {
+            errors.push({ model, error });
+        }
+    }
+
+    throw new Error(`Groq models failed: ${GROQ_MODELS.join(", ")}`);
 };
 
 const sendToGemini = async (message: string, history: ChatMessage[]) => {
@@ -73,7 +89,7 @@ const sendToGemini = async (message: string, history: ChatMessage[]) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents,
-                systemInstruction: {
+                system_instruction: {
                     parts: [{ text: SYSTEM_INSTRUCTION }],
                 },
                 generationConfig: {
@@ -86,6 +102,44 @@ const sendToGemini = async (message: string, history: ChatMessage[]) => {
 
     if (!response.ok) {
         const errorText = await response.text();
+
+        // Fallback: inline system instruction if system_instruction is unsupported
+        if (errorText.includes("system_instruction") || errorText.includes("systemInstruction")) {
+            const fallbackResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                role: "user",
+                                parts: [{ text: `${SYSTEM_INSTRUCTION}\n\n${message}` }],
+                            },
+                        ],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1000,
+                        },
+                    }),
+                }
+            );
+
+            if (!fallbackResponse.ok) {
+                const fallbackError = await fallbackResponse.text();
+                throw new Error(`Gemini API error: ${fallbackResponse.status} ${fallbackError}`);
+            }
+
+            const fallbackData = await fallbackResponse.json();
+            const fallbackText = fallbackData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!fallbackText) {
+                throw new Error("Gemini response invalid");
+            }
+
+            return fallbackText;
+        }
+
         throw new Error(`Gemini API error: ${response.status} ${errorText}`);
     }
 
