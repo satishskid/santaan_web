@@ -9,16 +9,40 @@ export const contacts = sqliteTable('contacts', {
     role: text('role').default('Patient'),
     status: text('status').default('New'),
     lastContact: text('last_contact').default(sql`CURRENT_TIMESTAMP`),
+    
+    // Engagement tracking
     seminarRegistered: integer('seminar_registered', { mode: 'boolean' }).default(false),
     seminarScore: integer('seminar_score'),
     seminarSignal: text('seminar_signal'),
     seminarQuestion: text('seminar_question'),
+    newsletterSubscribed: integer('newsletter_subscribed', { mode: 'boolean' }).default(false),
+    
+    // Communication channels
+    whatsappNumber: text('whatsapp_number'),
+    whatsappOptIn: integer('whatsapp_opt_in', { mode: 'boolean' }).default(false),
+    telegramId: text('telegram_id'),
+    telegramUsername: text('telegram_username'),
+    telegramOptIn: integer('telegram_opt_in', { mode: 'boolean' }).default(false),
+    preferredChannel: text('preferred_channel').default('email'), // email, whatsapp, telegram
+    
+    // Lead tracking
+    tags: text('tags'), // comma-separated: newsletter,at_home_test,hot_lead
+    leadSource: text('lead_source'), // website, whatsapp, telegram, referral
+    leadScore: integer('lead_score').default(0), // 0-100
+    message: text('message'), // Initial message/inquiry
+    
+    // UTM Attribution
     utmSource: text('utm_source'),
     utmMedium: text('utm_medium'),
     utmCampaign: text('utm_campaign'),
     utmTerm: text('utm_term'),
     utmContent: text('utm_content'),
     landingPath: text('landing_path'),
+    
+    // Activity tracking
+    lastMessageAt: text('last_message_at'),
+    conversationCount: integer('conversation_count').default(0),
+    submittedAt: integer('submitted_at'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 

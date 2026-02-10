@@ -25,20 +25,37 @@ interface Contact {
     seminarScore?: number;
     seminarSignal?: string;
     seminarQuestion?: string;
+    newsletterSubscribed?: boolean;
+    whatsappNumber?: string;
+    whatsappOptIn?: boolean;
+    telegramId?: string;
+    telegramUsername?: string;
+    telegramOptIn?: boolean;
+    preferredChannel?: string;
+    tags?: string;
+    leadSource?: string;
+    leadScore?: number;
+    message?: string;
     utmSource?: string;
     utmMedium?: string;
     utmCampaign?: string;
     utmTerm?: string;
     utmContent?: string;
     landingPath?: string;
+    lastMessageAt?: string;
+    conversationCount?: number;
     createdAt?: string;
 }
+
+type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'settings';
 
 export function CRM() {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState<'all' | 'seminar' | 'team' | 'analytics' | 'settings'>('all');
+    const [activeTab, setActiveTab] = useState<FilterTab>('all');
+    const [channelFilter, setChannelFilter] = useState<string>('all');
+    const [tagFilter, setTagFilter] = useState<string>('all');
 
     const [newAdminEmail, setNewAdminEmail] = useState("");
     const [team, setTeam] = useState<{ id: number, email: string, role: string, createdAt: string }[]>([]);
@@ -112,10 +129,86 @@ export function CRM() {
 
     const filteredContacts = contacts.filter(contact => {
         const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            contact.email.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesTab = activeTab === 'all' ? true : contact.seminarRegistered;
-        return matchesSearch && matchesTab;
+            contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (contact.phone && contact.phone.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (contact.tags && contact.tags.toLowerCase().includes(searchQuery.toLowerCase()));
+        
+        let matchesTab = true;
+        switch (activeTab) {
+            case 'seminar':
+                matchesTab = contact.seminarRegistered === true;
+                break;
+            case 'newsletter':
+                matchesTab = contact.newsletterSubscribed === true;
+                break;
+            case 'whatsapp':
+                matchesTab = contact.whatsappOptIn === true;
+                break;
+            case 'telegram':
+                matchesTab = contact.telegramOptIn === true;
+                break;
+            case 'at_home_test':
+                matchesTab = contact.tags?.includes('at_home_test') === true;
+                break;
+            case 'hot_leads':
+                matchesTab = (contact.leadScore || 0) >= 50;
+                break;
+            case 'all':
+            default:
+                matchesTab = true;
+        }
+
+        const matchesChannel = channelFilter === 'all' || contact.preferredChannel === channelFilter;
+        const matchesTag = tagFilter === 'all' || contact.tags?.includes(tagFilter) === true;
+
+        return matchesSearch && matchesTab && matchesChannel && matchesTag;
     });
+
+    // Get unique tags for filter dropdown
+    const allTags = Array.from(new Set(
+        contacts.flatMap(c => c.tags?.split(',').map(t => t.trim()) || [])
+    )).filter(Boolean).sort();
+
+    const exportToCSV = (data: Contact[]) => {
+        const headers = [
+            'Name', 'Email', 'Phone', 'WhatsApp', 'Telegram', 'Lead Score', 
+            'Tags', 'Preferred Channel', 'Lead Source', 'Status', 'Message',
+            'Newsletter', 'Seminar', 'Last Contact', 'Created At',
+            'UTM Source', 'UTM Medium', 'UTM Campaign'
+        ];
+
+        const rows = data.map(contact => [
+            contact.name,
+            contact.email,
+            contact.phone || '',
+            contact.whatsappNumber || '',
+            contact.telegramUsername || '',
+            contact.leadScore || 0,
+            contact.tags || '',
+            contact.preferredChannel || 'email',
+            contact.leadSource || '',
+            contact.status,
+            contact.message || '',
+            contact.newsletterSubscribed ? 'Yes' : 'No',
+            contact.seminarRegistered ? 'Yes' : 'No',
+            contact.lastContact,
+            contact.createdAt || '',
+            contact.utmSource || '',
+            contact.utmMedium || '',
+            contact.utmCampaign || '',
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `santaan-contacts-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    };
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-120px)]">
@@ -133,6 +226,14 @@ export function CRM() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        className="gap-2 text-gray-600 border-gray-200" 
+                        onClick={() => exportToCSV(filteredContacts)}
+                    >
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                    </Button>
                     <Button variant="outline" className="gap-2 text-gray-600 border-gray-200" onClick={activeTab === 'team' ? fetchTeam : fetchContacts}>
                         <Clock className="w-4 h-4" />
                         Refresh
@@ -141,34 +242,64 @@ export function CRM() {
             </div>
 
             {/* Tabs */}
-            <div className="px-4 border-b border-gray-100 bg-gray-50/50 flex gap-6">
+            <div className="px-4 border-b border-gray-100 bg-gray-50/50 flex gap-6 overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('all')}
-                    className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'all' ? 'border-santaan-teal text-santaan-teal' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'all' ? 'border-santaan-teal text-santaan-teal' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
-                    All Contacts ({contacts.length})
+                    All ({contacts.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('hot_leads')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'hot_leads' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    🔥 Hot Leads ({contacts.filter(c => (c.leadScore || 0) >= 50).length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('at_home_test')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'at_home_test' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    🏠 At-Home Test ({contacts.filter(c => c.tags?.includes('at_home_test')).length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('newsletter')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'newsletter' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    📰 Newsletter ({contacts.filter(c => c.newsletterSubscribed).length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('whatsapp')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'whatsapp' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    💬 WhatsApp ({contacts.filter(c => c.whatsappOptIn).length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('telegram')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'telegram' ? 'border-sky-500 text-sky-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    ✈️ Telegram ({contacts.filter(c => c.telegramOptIn).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('seminar')}
-                    className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'seminar' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'seminar' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
-                    Seminar Registrants ({contacts.filter(c => c.seminarRegistered).length})
+                    📅 Seminar ({contacts.filter(c => c.seminarRegistered).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('team')}
-                    className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'team' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'team' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
-                    Team & Admins
+                    Team
                 </button>
                 <button
                     onClick={() => setActiveTab('analytics')}
-                    className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'analytics' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'analytics' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
                     Analytics
                 </button>
                 <button
                     onClick={() => setActiveTab('settings')}
-                    className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'settings' ? 'border-gray-800 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'border-gray-800 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
                     Settings
                 </button>
