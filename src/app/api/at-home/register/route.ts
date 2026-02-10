@@ -66,17 +66,22 @@ export async function POST(request: Request) {
             });
         }
 
-        // Send WhatsApp Notification to Admin (if configured)
-        // We use a hypothetical template 'LEAD_ALERT' or similar if known.
-        // For now, we just log it as we don't have the template name.
-        console.log(`[New Lead] At Home Test: ${name} (${phone})`);
+        // Send WhatsApp Notification to Admin
+        // We assume a template 'SANTAAN_LEAD_ALERT' exists with 3 params: Name, Service, Phone
+        // If not, this might fail or send just the template name.
+        // User needs to provide the actual Admin Template Name.
+        const adminPhone = process.env.next_public_admin_wa_phone || '9668904011';
         
-        // TODO: Send WhatsApp confirmation to user if we have a WELCOME template
-        // await sendWhatsAppMessage({ 
-        //    phone: cleanPhone, 
-        //    template: 'WELCOME_AT_HOME', 
-        //    params: [name] 
-        // });
+        try {
+            await sendWhatsAppMessage({ 
+                phone: adminPhone, 
+                template: 'SANTAAN_LEAD_ALERT', 
+                params: [name, 'At-Home-Test', phone] 
+            });
+            console.log(`[WhatsApp] Admin alert sent to ${adminPhone}`);
+        } catch (waError) {
+            console.error('[WhatsApp] Failed to send admin alert:', waError);
+        }
 
         return NextResponse.json({ success: true, message: "Request registered successfully" });
 
