@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Users, Heart, Weight, Cigarette, Brain, Moon, Activity, AlertTriangle, CheckCircle, Info, RefreshCcw, ArrowRight } from 'lucide-react';
+import { User, Users, Heart, Weight, Cigarette, Brain, Moon, Activity, CheckCircle, Info, RefreshCcw, ArrowRight, Droplet, Zap, Shield, Pill, Stethoscope, Beaker } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface Factor {
@@ -33,10 +33,11 @@ const factors: Factor[] = [
             { value: '30-34', label: '30-34' },
             { value: '35-37', label: '35-37' },
             { value: '38-40', label: '38-40' },
-            { value: '41+', label: '41 or older' }
+            { value: '41-42', label: '41-42' },
+            { value: '43+', label: '43 or older' }
         ],
         riskWeight: 1,
-        info: 'Female age is the strongest predictor of fertility. Egg quality and quantity decline naturally with age.'
+        info: 'Female age is the strongest predictor of fertility. Egg quality and quantity decline naturally with age, especially after 35.'
     },
     {
         id: 'male-age',
@@ -48,10 +49,11 @@ const factors: Factor[] = [
             { value: '<40', label: 'Under 40' },
             { value: '40-45', label: '40-45' },
             { value: '45-50', label: '45-50' },
-            { value: '50+', label: '50 or older' }
+            { value: '50-55', label: '50-55' },
+            { value: '55+', label: '55 or older' }
         ],
         riskWeight: 1,
-        info: 'Male age affects sperm quality, DNA fragmentation, and can impact pregnancy outcomes.'
+        info: 'Male age affects sperm quality, DNA fragmentation, and can impact pregnancy outcomes. Quality declines gradually after 40.'
     },
     {
         id: 'trying-duration',
@@ -65,7 +67,7 @@ const factors: Factor[] = [
             { value: '24m+', label: 'Over 2 years' }
         ],
         riskWeight: 1,
-        info: 'If under 35 and trying for 12+ months, or 35+ and trying for 6+ months, evaluation is recommended.'
+        info: 'If under 35 and trying for 12+ months, or 35+ and trying for 6+ months, fertility evaluation is recommended per ASRM guidelines.'
     },
     {
         id: 'pcos',
@@ -73,7 +75,31 @@ const factors: Factor[] = [
         icon: Activity,
         type: 'toggle',
         riskWeight: 2,
-        info: 'Polycystic ovary syndrome affects ovulation and hormone balance, but is highly treatable.'
+        info: 'Polycystic ovary syndrome affects 8-13% of reproductive-aged women, impacting ovulation and hormone balance. Highly treatable with medication.'
+    },
+    {
+        id: 'endometriosis',
+        label: 'Endometriosis',
+        icon: Droplet,
+        type: 'toggle',
+        riskWeight: 2,
+        info: 'Endometriosis affects 10-15% of women and can impact egg quality, tubal function, and implantation. Treatment options include surgery and IVF.'
+    },
+    {
+        id: 'thyroid',
+        label: 'Thyroid Disorder',
+        icon: Zap,
+        type: 'toggle',
+        riskWeight: 1.5,
+        info: 'Thyroid disorders (hypo/hyperthyroidism) affect reproductive hormones and pregnancy outcomes. Usually manageable with medication.'
+    },
+    {
+        id: 'diabetes',
+        label: 'Diabetes',
+        icon: Beaker,
+        type: 'toggle',
+        riskWeight: 1.5,
+        info: 'Diabetes can affect fertility in both men and women by impacting hormone levels and reproductive function. Good glycemic control improves outcomes.'
     },
     {
         id: 'bmi',
@@ -87,23 +113,31 @@ const factors: Factor[] = [
             { value: 'obese', label: 'Obese (30+)' }
         ],
         riskWeight: 1,
-        info: 'Both underweight and overweight can affect hormone production and ovulation.'
+        info: 'BMI outside normal range can affect hormone production, ovulation, and IVF success rates. Optimal BMI is 18.5-24.9 for fertility.'
     },
     {
         id: 'smoking',
-        label: 'Smoking',
+        label: 'Smoking/Tobacco',
         icon: Cigarette,
         type: 'toggle',
         riskWeight: 2,
-        info: 'Smoking accelerates egg loss, reduces sperm quality, and increases miscarriage risk.'
+        info: 'Smoking accelerates egg depletion by 1-4 years, reduces sperm quality, and increases miscarriage risk by 2-fold.'
+    },
+    {
+        id: 'alcohol',
+        label: 'Regular Alcohol',
+        icon: Shield,
+        type: 'toggle',
+        riskWeight: 1,
+        info: 'Regular heavy alcohol consumption (>7 drinks/week) can affect ovulation, sperm quality, and early pregnancy development.'
     },
     {
         id: 'stress',
-        label: 'High Stress',
+        label: 'High Chronic Stress',
         icon: Brain,
         type: 'toggle',
         riskWeight: 1,
-        info: 'Chronic stress can disrupt hormones and affect reproductive function in both partners.'
+        info: 'Chronic stress elevates cortisol, which can disrupt GnRH and affect ovulation and sperm production. Stress management improves outcomes.'
     },
     {
         id: 'irregular-cycles',
@@ -111,7 +145,23 @@ const factors: Factor[] = [
         icon: Heart,
         type: 'toggle',
         riskWeight: 2,
-        info: 'Irregular cycles may indicate ovulation issues, but are often treatable with medication.'
+        info: 'Irregular cycles (>35 days or <21 days) often indicate anovulation or hormonal imbalances. Treatable with medications like Clomid or Letrozole.'
+    },
+    {
+        id: 'previous-pregnancy',
+        label: 'Previous Pregnancy Loss',
+        icon: Pill,
+        type: 'toggle',
+        riskWeight: 1.5,
+        info: 'Recurrent pregnancy loss (2+ miscarriages) may indicate chromosomal, anatomical, or immunological factors requiring evaluation.'
+    },
+    {
+        id: 'std-history',
+        label: 'STI/PID History',
+        icon: Stethoscope,
+        type: 'toggle',
+        riskWeight: 1.5,
+        info: 'History of sexually transmitted infections or pelvic inflammatory disease can cause tubal damage. Treatable with surgery or IVF.'
     }
 ];
 
@@ -142,7 +192,8 @@ const getRiskPoints = (factorId: string, value: string | boolean): number => {
 
     // Age-based scoring
     if (factorId === 'female-age') {
-        if (value === '41+') return 4;
+        if (value === '43+') return 5;
+        if (value === '41-42') return 4;
         if (value === '38-40') return 3;
         if (value === '35-37') return 2;
         if (value === '30-34') return 1;
@@ -150,7 +201,8 @@ const getRiskPoints = (factorId: string, value: string | boolean): number => {
     }
 
     if (factorId === 'male-age') {
-        if (value === '50+') return 2;
+        if (value === '55+') return 2.5;
+        if (value === '50-55') return 2;
         if (value === '45-50') return 1.5;
         if (value === '40-45') return 1;
         return 0;
@@ -172,34 +224,38 @@ const getRiskPoints = (factorId: string, value: string | boolean): number => {
     return factor.riskWeight;
 };
 
-const getReadinessZone = (score: number): { zone: string; color: string; message: string; recommendation: string } => {
-    if (score <= 2) {
+const getReadinessZone = (score: number): { zone: string; color: string; bgColor: string; message: string; recommendation: string } => {
+    if (score <= 3) {
         return {
-            zone: 'Green Zone - Good Readiness',
-            color: 'bg-green-500',
-            message: 'Your fertility indicators suggest good readiness. Keep monitoring your health and timing.',
-            recommendation: 'Continue healthy habits. If not conceiving within expected timeframes, consult a specialist.'
+            zone: 'Optimal Zone - Excellent Readiness',
+            color: 'text-santaan-teal',
+            bgColor: 'bg-santaan-teal',
+            message: 'Your fertility indicators look very favorable. You have excellent readiness for conception.',
+            recommendation: 'Continue healthy habits and track your cycle. If not conceiving within expected timeframes (12 months if under 35, 6 months if 35+), schedule a consultation for optimization.'
         };
-    } else if (score <= 5) {
+    } else if (score <= 6) {
         return {
-            zone: 'Yellow Zone - Moderate Factors',
-            color: 'bg-yellow-500',
-            message: 'Some factors may impact your fertility timeline. A consultation can help optimize your chances.',
-            recommendation: 'Consider scheduling a fertility assessment to understand your specific situation better.'
+            zone: 'Good Zone - Minor Considerations',
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-500',
+            message: 'Some factors may influence your timeline. A proactive consultation can help optimize your fertility journey.',
+            recommendation: 'Consider scheduling a fertility wellness check to understand your specific situation and create a personalized plan.'
         };
-    } else if (score <= 8) {
+    } else if (score <= 10) {
         return {
-            zone: 'Orange Zone - Multiple Factors',
-            color: 'bg-orange-500',
-            message: 'Multiple factors suggest you may benefit from medical guidance sooner rather than later.',
-            recommendation: 'We recommend consulting with a fertility specialist to discuss personalized options.'
+            zone: 'Action Zone - Professional Guidance Recommended',
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-500',
+            message: 'Multiple factors suggest you would benefit from professional fertility guidance to maximize your chances.',
+            recommendation: 'We recommend scheduling a comprehensive fertility evaluation to discuss personalized treatment options and optimize outcomes.'
         };
     } else {
         return {
-            zone: 'Red Zone - Immediate Consultation',
-            color: 'bg-red-500',
-            message: 'Your profile suggests time-sensitive factors. Professional evaluation is strongly recommended.',
-            recommendation: 'Schedule a comprehensive fertility evaluation to explore all available pathways.'
+            zone: 'Priority Zone - Specialist Evaluation Important',
+            color: 'text-amber-600',
+            bgColor: 'bg-santaan-amber',
+            message: 'Your profile indicates time-sensitive factors. Early specialist consultation is valuable to explore all available pathways.',
+            recommendation: 'Book a comprehensive fertility assessment soon. Many factors are highly treatable, and early intervention improves success rates significantly.'
         };
     }
 };
@@ -275,8 +331,8 @@ export function FertilityReadinessAssessment() {
                 </div>
 
                 {/* Factor Bubbles Grid */}
-                <div className="max-w-5xl mx-auto mb-12">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="max-w-6xl mx-auto mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                         {factors.map((factor, index) => {
                             const Icon = factor.icon;
                             const isSelected = selectedFactors.some(f => f.factorId === factor.id && (
@@ -403,7 +459,7 @@ export function FertilityReadinessAssessment() {
                         >
                             <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
                                 {/* Score Header */}
-                                <div className={`p-8 text-white ${readiness.color}`}>
+                                <div className={`p-8 text-white ${readiness.bgColor}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <h3 className="text-2xl font-bold mb-1">Your Readiness Zone</h3>
@@ -416,7 +472,7 @@ export function FertilityReadinessAssessment() {
                                     <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
                                         <motion.div
                                             initial={{ width: 0 }}
-                                            animate={{ width: `${Math.min((riskScore / 12) * 100, 100)}%` }}
+                                            animate={{ width: `${Math.min((riskScore / 15) * 100, 100)}%` }}
                                             transition={{ duration: 1, ease: "easeOut" }}
                                             className="h-full bg-white/90"
                                         />
@@ -426,11 +482,7 @@ export function FertilityReadinessAssessment() {
                                 {/* Details */}
                                 <div className="p-8">
                                     <div className="flex items-start gap-3 mb-6">
-                                        {riskScore <= 2 ? (
-                                            <CheckCircle className="w-6 h-6 text-green-500 shrink-0 mt-1" />
-                                        ) : (
-                                            <AlertTriangle className="w-6 h-6 text-orange-500 shrink-0 mt-1" />
-                                        )}
+                                        <CheckCircle className={`w-6 h-6 ${readiness.color} shrink-0 mt-1`} />
                                         <div>
                                             <h4 className="text-xl font-bold text-gray-900 mb-2">What This Means</h4>
                                             <p className="text-gray-700 leading-relaxed mb-4">{readiness.message}</p>
