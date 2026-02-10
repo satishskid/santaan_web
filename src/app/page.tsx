@@ -5,7 +5,7 @@ import { TrustBar } from "@/components/sections/TrustBar";
 import { MythBusting } from "@/components/sections/MythBusting";
 import { WonderOfLife } from "@/components/sections/WonderOfLife";
 import { Insights } from "@/components/sections/Insights";
-import { SantaanSignal } from "@/components/sections/SantaanSignal";
+import { FertilityReadinessAssessment } from "@/components/sections/FertilityReadinessAssessment";
 import { FertilityJourneyMap } from "@/components/sections/FertilityJourneyMap";
 import { Awards } from "@/components/sections/Awards";
 import { SantaanLab } from "@/components/sections/SantaanLab";
@@ -81,7 +81,7 @@ export default function Home() {
       <MythBusting />
       
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
-      <SantaanSignal />
+      <FertilityReadinessAssessment />
       <FertilityJourneyMap />
       
       {/* 4. Educate - Knowledge Building */}
