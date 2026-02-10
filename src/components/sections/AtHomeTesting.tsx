@@ -1,39 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import { Phone, Home, TestTube, Video, Clock, Lock, CheckCircle2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { AtHomeRegistrationModal } from '@/components/features/AtHomeRegistrationModal';
 
 export default function AtHomeTesting() {
-    const handleBookCall = async () => {
-        // Track in CRM
-        if (typeof window !== 'undefined') {
-            try {
-                // Get UTM data from localStorage
-                const utmData = {
-                    intent: 'at_home_fertility_test',
-                    phone: '+918971234567',
-                    utmSource: localStorage.getItem('utm_source') || 'direct',
-                    utmMedium: localStorage.getItem('utm_medium') || 'website',
-                    utmCampaign: localStorage.getItem('utm_campaign') || 'home_testing',
-                };
-                
-                // Track call intent
-                await fetch('/api/track-call', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(utmData)
-                });
-            } catch (error) {
-                console.error('Failed to track call:', error);
-            }
-            
-            // Initiate phone call
-            window.location.href = 'tel:+918971234567';
-        }
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleBookCall = () => {
+        setIsModalOpen(true);
     };
 
     return (
         <section className="py-20 bg-linear-to-br from-santaan-cream via-white to-santaan-sage/10 relative overflow-hidden">
+            <AtHomeRegistrationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-0 left-0 w-96 h-96 bg-santaan-teal/10 rounded-full blur-3xl"></div>
