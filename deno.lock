@@ -40,7 +40,8 @@
         "npm:react@19.2.3",
         "npm:tailwind-merge@^3.4.0",
         "npm:tailwindcss@4",
-        "npm:typescript@5"
+        "npm:typescript@5",
+        "npm:zod@^3.24.1"
       ]
     }
   }
