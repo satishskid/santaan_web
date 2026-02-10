@@ -13,14 +13,14 @@ const stories = [
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-couple.png",
+        image: "/assets/hero-family.png",
         name: "Rahul & Anjali*, 33",
         type: "IT Couple - Male Factor",
         quote: "We thought it was my fault. Turns out, it was male factor. The team helped us understand this affects 50% of cases. Now expecting twins!",
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-family.png",
+        image: "/assets/hero-couple.png",
         name: "Meera*, 37",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
@@ -41,14 +41,14 @@ const stories = [
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-origin.png",
+        image: "/assets/hero-older-couple.png",
         name: "Arjun & Shreya*, 45",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
         location: "Puri"
     },
     {
-        image: "/assets/hero-older-couple.png",
+        image: "/assets/hero-origin.png",
         name: "Dr. Ramesh & Lakshmi*, 48",
         type: "Advanced Maternal Age - Donor Eggs",
         quote: "At 48, we were told it was impossible. With donor eggs and Santaan's expertise, we're now proud parents. Age is just a number when science meets compassion.",

@@ -319,16 +319,28 @@ function SettingsTab() {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        fetch('/api/admin/settings')
-            .then(res => res.json())
-            .then(data => {
-                setSettings(data);
-                setLoading(false);
-            })
-            .catch(err => {
+        const fetchSettings = async () => {
+            try {
+                // Fetch regular settings
+                const settingsRes = await fetch('/api/admin/settings');
+                const settingsData = await settingsRes.json();
+                
+                // Fetch chatbot status
+                const chatbotRes = await fetch('/api/admin/chatbot');
+                const chatbotData = await chatbotRes.json();
+                
+                setSettings({
+                    ...settingsData,
+                    'chatbot_enabled': chatbotData.enabled ? 'true' : 'false'
+                });
+            } catch (err) {
                 console.error(err);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+        
+        fetchSettings();
     }, []);
 
     const handleSave = async (key: string, value: string) => {
@@ -390,6 +402,64 @@ function SettingsTab() {
                         </div>
                         <p className="text-xs text-gray-500 mt-2">Your Meta Pixel ID for tracking conversions.</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Chatbot Health Check */}
+            <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">System Controls</h2>
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-900">AI Chatbot</h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Enable or disable the AI-powered chatbot widget. 
+                                {settings['chatbot_enabled'] === 'true' ? (
+                                    <span className="ml-2 inline-flex items-center gap-1 text-green-600">
+                                        <span className="w-2 h-2 rounded-full bg-green-600"></span>
+                                        Online
+                                    </span>
+                                ) : (
+                                    <span className="ml-2 inline-flex items-center gap-1 text-red-600">
+                                        <span className="w-2 h-2 rounded-full bg-red-600"></span>
+                                        Offline
+                                    </span>
+                                )}
+                            </p>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                const newValue = settings['chatbot_enabled'] === 'true' ? 'false' : 'true';
+                                setSaving(true);
+                                try {
+                                    await fetch('/api/admin/chatbot', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ enabled: newValue === 'true' })
+                                    });
+                                    setSettings(prev => ({ ...prev, 'chatbot_enabled': newValue }));
+                                } catch (error) {
+                                    console.error(error);
+                                    alert('Failed to toggle chatbot');
+                                } finally {
+                                    setSaving(false);
+                                }
+                            }}
+                            disabled={saving}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                settings['chatbot_enabled'] === 'true' ? 'bg-green-600' : 'bg-gray-200'
+                            } ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    settings['chatbot_enabled'] === 'true' ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                            />
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-3">
+                        ⚠️ Toggle off if experiencing API errors. Users will see a maintenance message.
+                    </p>
                 </div>
             </div>
 

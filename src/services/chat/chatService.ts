@@ -6,6 +6,15 @@ export const sendMessageWithFallback = async (
     history: ChatMessage[]
 ): Promise<string> => {
     try {
+        // First check if chatbot is enabled
+        const statusResponse = await fetch('/api/admin/chatbot');
+        if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            if (!statusData.enabled) {
+                throw new Error("I'm currently offline for maintenance. Our team is working to bring me back online soon. Please try again later or contact our support team directly.");
+            }
+        }
+
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -25,7 +34,7 @@ export const sendMessageWithFallback = async (
                 throw new Error('I am currently receiving too many messages. Please wait a moment and try again.');
             }
 
-            throw new Error("I'm currently experiencing very high traffic. Please try again in a few minutes.");
+            throw new Error("I'm currently experiencing technical difficulties. Our IT team has been notified. Please try again in a few minutes or contact support.");
         }
 
         const data = await response.json();

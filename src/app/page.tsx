@@ -10,6 +10,7 @@ import { FertilityJourneyMap } from "@/components/sections/FertilityJourneyMap";
 import { Awards } from "@/components/sections/Awards";
 import { SantaanLab } from "@/components/sections/SantaanLab";
 import { CareGap } from "@/components/sections/CareGap";
+import AtHomeTesting from "@/components/sections/AtHomeTesting";
 import { SuccessStories } from "@/components/sections/SuccessStories";
 import { Doctors } from "@/components/sections/Doctors";
 import { Locations } from "@/components/sections/Locations";
@@ -90,6 +91,7 @@ export default function Home() {
       
       {/* 5. Establish Credibility - Expertise & Infrastructure */}
       <CareGap />
+      <AtHomeTesting />
       <SantaanLab />
       <Doctors />
       <Locations />
