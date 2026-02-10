@@ -6,7 +6,7 @@ import { MythBusting } from "@/components/sections/MythBusting";
 import { WonderOfLife } from "@/components/sections/WonderOfLife";
 import { Insights } from "@/components/sections/Insights";
 import { SantaanSignal } from "@/components/sections/SantaanSignal";
-import { AssessmentCallback } from "@/components/sections/AssessmentCallback";
+import { FertilityJourneyMap } from "@/components/sections/FertilityJourneyMap";
 import { Awards } from "@/components/sections/Awards";
 import { SantaanLab } from "@/components/sections/SantaanLab";
 import { CareGap } from "@/components/sections/CareGap";
@@ -82,7 +82,7 @@ export default function Home() {
       
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <SantaanSignal />
-      <AssessmentCallback />
+      <FertilityJourneyMap />
       
       {/* 4. Educate - Knowledge Building */}
       <Insights />

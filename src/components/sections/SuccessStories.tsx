@@ -20,7 +20,7 @@ const stories = [
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-couple.png",
+        image: "/assets/hero-older-couple.png",
         name: "Meera*, 38",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
@@ -41,7 +41,7 @@ const stories = [
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-egg-freezing.png",
+        image: "/assets/hero-couple.png",
         name: "Arjun & Shreya*, 40",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
