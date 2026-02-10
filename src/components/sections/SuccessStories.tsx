@@ -7,42 +7,42 @@ import { Quote } from 'lucide-react';
 const stories = [
     {
         image: "/assets/hero-egg-freezing.png",
-        name: "Priya, 32",
+        name: "Priya*, 32",
         type: "Career Woman - Egg Freezing",
         quote: "As a software engineer at Google, I wanted to focus on my career. Santaan gave me the freedom to preserve my future without compromise.",
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-couple.png",
-        name: "Rahul & Anjali, 35",
+        image: "/assets/hero-family.png",
+        name: "Rahul & Anjali*, 35",
         type: "IT Couple - Male Factor",
         quote: "We thought it was my fault. Turns out, it was male factor. The team helped us understand this affects 50% of cases. Now expecting twins!",
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-family.png",
-        name: "Meera, 38",
+        image: "/assets/hero-couple.png",
+        name: "Meera*, 38",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
         location: "Cuttack"
     },
     {
         image: "/assets/hero-twins.png",
-        name: "Sanjay & Divya, 36",
+        name: "Sanjay & Divya*, 36",
         type: "Late Start - IVF",
         quote: "We focused on building our business first. At 36, we thought we'd missed our chance. Science said otherwise. Our twins arrived last month.",
         location: "Berhampur"
     },
     {
         image: "/assets/hero-baby.png",
-        name: "Kavita, 34",
+        name: "Kavita*, 34",
         type: "Single Mother by Choice",
         quote: "I didn't have a partner, but I had a dream. Santaan supported my journey to solo motherhood with donor IUI. My son is my world.",
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-couple.png",
-        name: "Arjun & Shreya, 40",
+        image: "/assets/hero-egg-freezing.png",
+        name: "Arjun & Shreya*, 40",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
         location: "Puri"
@@ -61,6 +61,7 @@ export function SuccessStories() {
                     <p className="text-black max-w-2xl mx-auto">
                         Every family we help create adds a new chapter to our story. Here are just a few of the 7,000+ journeys we've been honored to be part of.
                     </p>
+                    <p className="text-gray-500 text-sm mt-2">*Names changed for privacy</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

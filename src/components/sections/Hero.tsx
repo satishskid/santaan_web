@@ -80,6 +80,26 @@ export function Hero() {
             </div>
 
             <div className="container relative z-10 px-4 md:px-6 text-center max-w-4xl mx-auto">
+                {/* Sanskrit Verse - Elegant Header */}
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                    className="mb-8 md:mb-10"
+                >
+                    <div className="bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 md:px-8 md:py-6 shadow-xl max-w-3xl mx-auto">
+                        <p className="font-playfair text-white text-lg md:text-xl mb-2 italic tracking-wide">
+                            संतानः वंशस्य सातत्यम्, जीवनस्य समृद्धिः, प्रीतेः स्वरूपम्।
+                        </p>
+                        <p className="text-white/70 text-xs md:text-sm mb-1 font-light tracking-wider">
+                            Santānaḥ vaṃśasya sātatyam, jīvanasya samṛddhiḥ, prīteḥ svarūpam.
+                        </p>
+                        <p className="text-white/90 text-sm md:text-base font-medium">
+                            "Santaan is the continuity of lineage, the prosperity of life, and the embodiment of love."
+                        </p>
+                    </div>
+                </motion.div>
+
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}

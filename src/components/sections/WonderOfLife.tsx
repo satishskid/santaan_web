@@ -210,6 +210,23 @@ export function WonderOfLife() {
                             <h2 className="text-5xl md:text-6xl font-playfair font-bold mb-6">
                                 The Golden <br /> Harvest
                             </h2>
+                            
+                            {/* Sanskrit Verse */}
+                            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 mb-6 max-w-lg">
+                                <p className="font-playfair text-white text-base md:text-lg mb-2 italic tracking-wide leading-relaxed">
+                                    ऋतुक्षेत्राम्बुबीजानां सामग्र्यादङ्कुरो यथा,<br/>
+                                    तद्वत् सान्निध्यात् संतानः।
+                                </p>
+                                <p className="text-white/60 text-xs mb-2 font-light tracking-wide">
+                                    Ṛtukṣetrāmbubījānāṃ sāmagryādaṅkuro yathā,<br/>
+                                    tadvat sānnidhyāt santānaḥ.
+                                </p>
+                                <p className="text-white/80 text-sm font-medium leading-snug">
+                                    "Just as a sprout emerges when the season, soil, water, and seed are in perfect harmony, so does the child appear when all conditions are optimally met."
+                                </p>
+                                <p className="text-white/50 text-xs mt-2 italic">— Inspired by Sushruta Samhita</p>
+                            </div>
+
                             <p className="text-xl text-gray-300 max-w-md italic">
                                 "Suna Chasa"
                             </p>
