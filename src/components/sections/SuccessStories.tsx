@@ -6,56 +6,56 @@ import { Quote } from 'lucide-react';
 
 const stories = [
     {
-        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-egg-freezing.png",
         name: "Priya*, 30",
         type: "Career Woman - Egg Freezing",
         quote: "As a software engineer at Google, I wanted to focus on my career. Santaan gave me the freedom to preserve my future without compromise.",
         location: "Bhubaneswar"
     },
     {
-        image: "https://images.unsplash.com/photo-1623091411315-bd4dc3a06a20?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-family.png",
         name: "Rahul & Anjali*, 33",
         type: "IT Couple - Male Factor",
         quote: "We thought it was my fault. Turns out, it was male factor. The team helped us understand this affects 50% of cases. Now expecting twins!",
         location: "Bangalore"
     },
     {
-        image: "https://images.unsplash.com/photo-1610664972986-1262f293b27b?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-couple.png",
         name: "Meera*, 37",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
         location: "Cuttack"
     },
     {
-        image: "https://images.unsplash.com/photo-1544641619-3286bf5c8c51?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-twins.png",
         name: "Sanjay & Divya*, 40",
         type: "Late Start - IVF Success",
         quote: "We focused on building our business first. At 40, we thought we'd missed our chance. Science said otherwise. Our twins arrived last month.",
         location: "Berhampur"
     },
     {
-        image: "https://images.unsplash.com/photo-1614088927891-b3b08ae6a086?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-baby.png",
         name: "Kavita*, 35",
         type: "Single Mother by Choice",
         quote: "I didn't have a partner, but I had a dream. Santaan supported my journey to solo motherhood with donor IUI. My son is my world.",
         location: "Bhubaneswar"
     },
     {
-        image: "https://images.unsplash.com/photo-1549488316-2f63b9de2774?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-older-couple.png",
         name: "Arjun & Shreya*, 45",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
         location: "Puri"
     },
     {
-        image: "https://images.unsplash.com/photo-1552693952-4752b07eebb6?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-origin.png",
         name: "Dr. Ramesh & Lakshmi*, 48",
         type: "Advanced Maternal Age - Donor Eggs",
         quote: "At 48, we were told it was impossible. With donor eggs and Santaan's expertise, we're now proud parents. Age is just a number when science meets compassion.",
         location: "Bangalore"
     },
     {
-        image: "https://images.unsplash.com/photo-1545657805-4dc2483863a8?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/myth-busting-feature.png",
         name: "Neha & Vikram*, 52",
         type: "Hope After 50 - Comprehensive IVF",
         quote: "Everyone said we were too old. But Santaan believed in us. Through advanced IVF protocols and donor support, our dream came true at 52.",
