@@ -20,7 +20,7 @@ const stories = [
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-couple.png",
+        image: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=800",
         name: "Meera*, 37",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
@@ -41,21 +41,21 @@ const stories = [
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-older-couple.png",
+        image: "https://images.unsplash.com/photo-1549488316-2f63b9de2774?auto=format&fit=crop&q=80&w=800",
         name: "Arjun & Shreya*, 45",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
         location: "Puri"
     },
     {
-        image: "/assets/hero-origin.png",
+        image: "/assets/hero-older-couple.png",
         name: "Dr. Ramesh & Lakshmi*, 48",
         type: "Advanced Maternal Age - Donor Eggs",
         quote: "At 48, we were told it was impossible. With donor eggs and Santaan's expertise, we're now proud parents. Age is just a number when science meets compassion.",
         location: "Bangalore"
     },
     {
-        image: "/assets/myth-busting-feature.png",
+        image: "/assets/hero-couple.png",
         name: "Neha & Vikram*, 52",
         type: "Hope After 50 - Comprehensive IVF",
         quote: "Everyone said we were too old. But Santaan believed in us. Through advanced IVF protocols and donor support, our dream came true at 52.",
