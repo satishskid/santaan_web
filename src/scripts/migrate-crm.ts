@@ -1,12 +1,37 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
+import { resolve } from 'path';
 
-const client = createClient({
-    url: process.env.DATABASE_URL!,
-    authToken: process.env.DATABASE_AUTH_TOKEN!,
-});
+// Load environment variables from .env.local
+config({ path: resolve(__dirname, '../../.env.local') });
 
+// Use the same dynamic client factory as the main app
+const getDatabaseClient = () => {
+    const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL;
+    const authToken = process.env.TURSO_AUTH_TOKEN || process.env.DATABASE_AUTH_TOKEN;
+
+    if (!url) {
+        throw new Error('TURSO_DATABASE_URL or DATABASE_URL environment variable is required');
+    }
+
+    console.log('Connecting to database:', url.substring(0, 30) + '...');
+
+    // Use web client for serverless environments (Netlify)
+    if (url.startsWith('libsql://') || url.startsWith('https://')) {
+        return createClient({
+            url,
+            authToken,
+        });
+    }
+
+    // Local SQLite file
+    return createClient({
+        url: `file:${url}`,
+    });
+};
+
+const client = getDatabaseClient();
 const db = drizzle(client);
 
 async function migrate() {
