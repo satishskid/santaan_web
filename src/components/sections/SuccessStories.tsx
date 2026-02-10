@@ -20,14 +20,14 @@ const stories = [
         location: "Bangalore"
     },
     {
-        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-meera.jpg",
         name: "Meera*, 37",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
         location: "Cuttack"
     },
     {
-        image: "/assets/hero-twins.png",
+        image: "/assets/hero-family.png",
         name: "Sanjay & Divya*, 40",
         type: "Late Start - IVF Success",
         quote: "We focused on building our business first. At 40, we thought we'd missed our chance. Science said otherwise. Our twins arrived last month.",
@@ -41,7 +41,7 @@ const stories = [
         location: "Bhubaneswar"
     },
     {
-        image: "https://images.unsplash.com/photo-1543328427-0ae90ce3fa45?auto=format&fit=crop&q=80&w=800",
+        image: "/assets/hero-family.png",
         name: "Arjun & Shreya*, 45",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
