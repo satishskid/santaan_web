@@ -26,8 +26,9 @@ export async function POST(request: Request) {
         if (!existing) {
             // Try by phone if not found by email
             // Note: phone stored might be formatted, so this is a simple check
+            type Contact = typeof contacts.$inferSelect;
             const allContacts = await db.select().from(contacts).all();
-            existing = allContacts.find(c => c.phone && c.phone.replace(/\D/g, '').includes(cleanPhone.slice(-10)));
+            existing = allContacts.find((c: Contact) => c.phone && c.phone.replace(/\D/g, '').includes(cleanPhone.slice(-10)));
         }
 
         if (existing) {
