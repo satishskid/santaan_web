@@ -6,7 +6,7 @@ import { Quote } from 'lucide-react';
 
 const stories = [
     {
-        image: "/assets/hero-egg-freezing.png",
+        image: "/assets/hero-priya-final.jpg",
         name: "Priya*, 30",
         type: "Career Woman - Egg Freezing",
         quote: "As a software engineer at Google, I wanted to focus on my career. Santaan gave me the freedom to preserve my future without compromise.",
@@ -20,28 +20,28 @@ const stories = [
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-meera.jpg",
+        image: "/assets/hero-meera-final.jpg",
         name: "Meera*, 37",
         type: "PCOS Success",
         quote: "I was told PCOS meant I'd never conceive. Santaan proved them wrong. My daughter is now 2 years old—PCOS is treatable!",
         location: "Cuttack"
     },
     {
-        image: "/assets/hero-family.png",
+        image: "/assets/hero-twins.png",
         name: "Sanjay & Divya*, 40",
         type: "Late Start - IVF Success",
         quote: "We focused on building our business first. At 40, we thought we'd missed our chance. Science said otherwise. Our twins arrived last month.",
         location: "Berhampur"
     },
     {
-        image: "/assets/hero-baby.png",
+        image: "/assets/hero-kavita-final.png",
         name: "Kavita*, 35",
         type: "Single Mother by Choice",
         quote: "I didn't have a partner, but I had a dream. Santaan supported my journey to solo motherhood with donor IUI. My son is my world.",
         location: "Bhubaneswar"
     },
     {
-        image: "/assets/hero-family.png",
+        image: "/assets/hero-arjun-shreya-final.png",
         name: "Arjun & Shreya*, 45",
         type: "Second Chance - After Miscarriage",
         quote: "After three miscarriages, we had lost hope. The genetic testing and personalized protocols at Santaan gave us our rainbow baby.",
@@ -55,7 +55,7 @@ const stories = [
         location: "Bangalore"
     },
     {
-        image: "/assets/hero-couple.png",
+        image: "/assets/hero-neha-vikram-final.jpg",
         name: "Neha & Vikram*, 52",
         type: "Hope After 50 - Comprehensive IVF",
         quote: "Everyone said we were too old. But Santaan believed in us. Through advanced IVF protocols and donor support, our dream came true at 52.",

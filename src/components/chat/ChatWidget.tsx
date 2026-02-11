@@ -65,18 +65,27 @@ const ChatWidget: React.FC = () => {
         } catch (err: any) {
             console.error("Chat Error:", err);
 
-            // Friendly message for users
-            const displayError = err.message.includes('DEVELOPER NOTE')
-                ? err.message
-                : err.message || "I'm currently experiencing high traffic. Please try again in a moment.";
-
-            setError(displayError);
-
-            // Fallback bot message
-            addMessage(
-                "I apologize, I'm taking a short break due to high traffic as I am serving many patients. Please ask me again in a moment.",
-                MessageSender.BOT
-            );
+            // Determine the appropriate message based on error type
+            const isMaintenanceError = err.message?.includes('offline for scheduled maintenance');
+            
+            // Show a single, friendly bot message (not the red error banner)
+            if (isMaintenanceError) {
+                addMessage(
+                    "I'm currently offline for scheduled maintenance. Our team will have me back online shortly. Please try again in a few minutes! 🙏",
+                    MessageSender.BOT
+                );
+            } else {
+                addMessage(
+                    "I'm having a brief moment to think. Please try your question again in a few seconds. If this continues, our team has been notified. 🌟",
+                    MessageSender.BOT
+                );
+            }
+            
+            // Don't show the red error banner for normal users - it's alarming
+            // Only log for debugging
+            if (process.env.NODE_ENV === 'development') {
+                setError(err.message);
+            }
         } finally {
             setIsLoading(false);
         }

@@ -63,11 +63,15 @@ export function HeaderClient({ session }: HeaderClientProps) {
                 <nav className="flex items-center justify-between" aria-label="Global">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
-                        {/* Placeholder Logo Icon */}
-                        <div className="w-8 h-8 rounded-full bg-santaan-sage/20 flex items-center justify-center group-hover:bg-santaan-sage/30 transition-colors">
-                            <span className="text-santaan-teal text-lg font-playfair font-bold">S</span>
-                        </div>
-                        <span className="text-xl font-playfair font-bold text-santaan-teal tracking-tight">
+                        <Image 
+                            src="/assets/santaan-logo.png" 
+                            alt="Santaan Logo" 
+                            width={120} 
+                            height={67}
+                            className="h-8 w-auto object-contain"
+                            priority
+                        />
+                        <span className="text-xl font-playfair font-bold text-santaan-teal tracking-tight hidden sm:inline">
                             Santaan
                         </span>
                     </Link>

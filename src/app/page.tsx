@@ -15,6 +15,7 @@ import { SuccessStories } from "@/components/sections/SuccessStories";
 import { Doctors } from "@/components/sections/Doctors";
 import { Locations } from "@/components/sections/Locations";
 import { FAQ } from "@/components/sections/FAQ";
+import { NewsAnnouncements } from "@/components/sections/NewsAnnouncements";
 import Script from "next/script";
 import { faqs } from "@/data/faqs";
 
@@ -77,6 +78,7 @@ export default function Home() {
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
       <Awards />
+      <NewsAnnouncements />
       
       {/* 2. Address Confusion - Problem Awareness */}
       <MythBusting />

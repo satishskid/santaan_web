@@ -11,7 +11,8 @@ export async function GET() {
             .where(eq(settings.key, 'chatbot_enabled'))
             .limit(1);
 
-        const isEnabled = chatbotSetting[0]?.value === 'true';
+        // Default to ENABLED if no setting exists (chatbot should work by default)
+        const isEnabled = chatbotSetting.length === 0 || chatbotSetting[0]?.value !== 'false';
 
         return NextResponse.json({ 
             enabled: isEnabled,
@@ -19,11 +20,12 @@ export async function GET() {
         });
     } catch (error) {
         console.error('Error checking chatbot status:', error);
+        // On error, assume enabled to not block users
         return NextResponse.json({ 
-            enabled: false,
-            status: 'error',
-            message: 'Unable to check chatbot status'
-        }, { status: 500 });
+            enabled: true,
+            status: 'online',
+            message: 'Status check failed, defaulting to enabled'
+        });
     }
 }
 

@@ -6,13 +6,24 @@ export const sendMessageWithFallback = async (
     history: ChatMessage[]
 ): Promise<string> => {
     try {
-        // First check if chatbot is enabled
-        const statusResponse = await fetch('/api/admin/chatbot');
-        if (statusResponse.ok) {
-            const statusData = await statusResponse.json();
-            if (!statusData.enabled) {
-                throw new Error("I'm currently offline for maintenance. Our team is working to bring me back online soon. Please try again later or contact our support team directly.");
+        // Check if chatbot is explicitly disabled (optional check - don't block on failure)
+        try {
+            const statusResponse = await fetch('/api/admin/chatbot', { 
+                signal: AbortSignal.timeout(3000) // 3 second timeout
+            });
+            if (statusResponse.ok) {
+                const statusData = await statusResponse.json();
+                if (statusData.enabled === false && statusData.status === 'offline') {
+                    // Only block if explicitly disabled by admin
+                    throw new Error("I'm currently offline for scheduled maintenance. Our team is working to bring me back online soon. Please try again later or contact our support team directly.");
+                }
             }
+        } catch (statusError: any) {
+            // If status check fails, continue anyway - don't block the chat
+            if (statusError.message?.includes('offline for scheduled maintenance')) {
+                throw statusError; // Re-throw if it's the explicit offline error
+            }
+            console.warn('Chatbot status check failed, continuing:', statusError.message);
         }
 
         const response = await fetch('/api/chat', {

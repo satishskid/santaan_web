@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -46,7 +47,14 @@ export function Footer() {
 
                     {/* Brand Column */}
                     <div className="space-y-6">
-                        <Link href="/" className="inline-block">
+                        <Link href="/" className="inline-flex items-center gap-3">
+                            <Image 
+                                src="/assets/santaan-logo.png" 
+                                alt="Santaan Logo" 
+                                width={140} 
+                                height={78}
+                                className="h-10 w-auto object-contain brightness-0 invert"
+                            />
                             <span className="text-2xl font-playfair font-bold text-white tracking-tight">
                                 Santaan
                             </span>
@@ -163,6 +171,7 @@ export function Footer() {
                     <div className="flex gap-6">
                         <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
                         <Link href="/terms" className="hover:text-white">Terms of Service</Link>
+                        <Link href="/login" className="hover:text-white/50 text-white/20 text-xs">•</Link>
                     </div>
                 </div>
             </div>

@@ -153,6 +153,23 @@ const sendToGemini = async (message: string, history: ChatMessage[]) => {
     return text;
 };
 
+const getLocalFallbackResponse = (message: string) => {
+    const lower = message.toLowerCase();
+
+    if (lower.includes("success rate") || (lower.includes("ivf") && lower.includes("success"))) {
+        return [
+            "IVF success rates depend on several factors, especially age, egg quality, sperm quality, and embryo quality.",
+            "Other important factors include the cause of infertility, uterine health, lifestyle (smoking, alcohol, weight), and the clinic’s lab quality and protocols.",
+            "If you share your age range and any known diagnosis, I can give a more tailored, general overview."
+        ].join(" ");
+    }
+
+    return [
+        "I’m currently experiencing high traffic with our AI providers, but I’m still here to help.",
+        "Please tell me a bit more about your question so I can share the most relevant general guidance."
+    ].join(" ");
+};
+
 export async function POST(request: Request) {
     try {
         const body = (await request.json()) as ChatRequestBody;
@@ -172,10 +189,8 @@ export async function POST(request: Request) {
                 return NextResponse.json({ reply });
             } catch (geminiError) {
                 console.error("Chat provider failure", { groqError, geminiError });
-                return NextResponse.json(
-                    { error: "AI providers are currently unavailable." },
-                    { status: 503 }
-                );
+                const reply = getLocalFallbackResponse(message);
+                return NextResponse.json({ reply });
             }
         }
     } catch (error) {

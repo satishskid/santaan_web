@@ -35,7 +35,7 @@ const doctors = [
     {
         name: "Dr. Sakshi",
         role: "Center Head Bangalore",
-        specialty: "Reproductive Medicine",
+        specialty: "She & Her Specialist",
         image: "https://static.wixstatic.com/media/8b6a24_e67b9b008cac4e038128fc4f0884b7ec~mv2.jpg/v1/crop/x_45,y_0,w_504,h_940/fill/w_227,h_427,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Dr%20Sakshi%20Lalwani_edited.jpg"
     }
 ];
@@ -100,7 +100,7 @@ export function Doctors() {
                             >
                                 {member.image ? (
                                     <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-md">
-                                        <img src={member.image} alt={member.name} className="w-full h-full object-cover object-top" />
+                                        <img src={member.image} alt={member.name} className="w-full h-full object-cover object-[center_20%]" />
                                     </div>
                                 ) : (
                                     <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white flex items-center justify-center text-santaan-teal shadow-md">

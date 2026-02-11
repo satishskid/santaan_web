@@ -67,3 +67,36 @@ export const users = sqliteTable('users', {
     role: text('role').default('user'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+// Centers/Locations - Admin-manageable clinic locations
+export const centers = sqliteTable('centers', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    city: text('city').notNull(),
+    title: text('title').notNull(), // e.g., "The Temple City"
+    address: text('address').notNull(),
+    description: text('description'),
+    email: text('email').notNull(),
+    phones: text('phones').notNull(), // JSON array of phone numbers
+    mapUrl: text('map_url'), // Google Maps embed URL
+    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    sortOrder: integer('sort_order').default(0),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// News/Announcements - Admin-manageable updates, campaigns, awards
+export const announcements = sqliteTable('announcements', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    title: text('title').notNull(),
+    content: text('content'), // Short description/body
+    type: text('type').default('news'), // news, award, campaign, event
+    imageUrl: text('image_url'), // Optional image
+    linkUrl: text('link_url'), // Optional external link
+    linkText: text('link_text'), // e.g., "Learn More"
+    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    isPinned: integer('is_pinned', { mode: 'boolean' }).default(false), // Show at top
+    publishDate: text('publish_date').default(sql`CURRENT_TIMESTAMP`),
+    expiryDate: text('expiry_date'), // Optional auto-hide date
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});

@@ -82,3 +82,92 @@ To seed the production database with initial users:
 ```bash
 npx tsx src/scripts/seed-prod.ts
 ```
+
+---
+
+## Future Enhancement: Google Analytics API Integration
+
+To display live GA data in the admin dashboard (instead of just links), follow these steps:
+
+### Step 1: Create Google Cloud Service Account
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create or select project: "Santaan Analytics"
+3. Enable API:
+   - Go to "APIs & Services" → "Enable APIs"
+   - Search for "Google Analytics Data API"
+   - Click "Enable"
+
+### Step 2: Create Service Account Credentials
+
+1. Go to "IAM & Admin" → "Service Accounts"
+2. Click "Create Service Account"
+   - Name: `santaan-analytics-reader`
+   - Role: None (we'll add in GA4)
+3. Click on the created service account
+4. Go to "Keys" tab → "Add Key" → "Create new key" → JSON
+5. Download the JSON file
+
+### Step 3: Add Service Account to GA4
+
+1. Go to [Google Analytics](https://analytics.google.com)
+2. Admin → Property Access Management
+3. Click "+" → "Add users"
+4. Enter the service account email (from JSON file, looks like `xxx@project.iam.gserviceaccount.com`)
+5. Set role: "Viewer"
+6. Save
+
+### Step 4: Add Credentials to Environment
+
+Add to `.env.local`:
+```env
+GA4_PROPERTY_ID=123456789
+GOOGLE_SERVICE_ACCOUNT_EMAIL=santaan-analytics@project.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+### Step 5: Install Package & Implement
+
+```bash
+npm install @google-analytics/data
+```
+
+Then create API route `/api/admin/analytics` to fetch:
+- Active users (real-time)
+- Page views (today, week, month)
+- Top pages
+- Traffic sources
+
+---
+
+## Admin Access
+
+| URL | Purpose |
+|-----|---------|
+| `/login` | Admin login page |
+| `/admin/dashboard` | CRM & Settings |
+
+### Admin Credentials (Production)
+| Email | Password |
+|-------|----------|
+| raghab.panda@santaan.in | Santaan@2026! |
+| satish.rath@santaan.in | Santaan@2026! |
+| satish@skids.health | Santaan@2026! |
+| demo@santaan.com | Demo@2026! |
+
+### Secret Footer Link
+A tiny "•" dot after "Terms of Service" in footer links to `/login`
+
+---
+
+## Content Management
+
+### Centers (Admin Dashboard)
+- Go to Dashboard → "📍 Centers" tab
+- Add/Edit/Delete clinic locations
+- Changes reflect immediately on homepage
+
+### News & Announcements (via Medium)
+- Publish on Medium (@santaanIVF)
+- Add tag `santaan-news` for it to appear in News section
+- See `BLOG_WRITER_GUIDE.md` for details

@@ -31,7 +31,14 @@ export function Insights() {
                 const data = await response.json();
 
                 if (data.status === 'ok') {
-                    setPosts(data.items.slice(0, 6)); // Get latest 6 posts
+                    // Filter OUT posts tagged as news/announcements (those go to News section)
+                    const blogPosts = data.items.filter((post: MediumPost) => 
+                        !post.categories.some((cat: string) => 
+                            cat.toLowerCase().includes('santaan-news') || 
+                            cat.toLowerCase().includes('announcement')
+                        )
+                    );
+                    setPosts(blogPosts.slice(0, 6)); // Get latest 6 blog posts
                 } else {
                     setError(true);
                 }

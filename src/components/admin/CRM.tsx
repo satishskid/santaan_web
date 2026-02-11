@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -47,7 +47,7 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'settings';
+type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'settings' | 'centers' | 'announcements';
 
 export function CRM() {
     const [contacts, setContacts] = useState<Contact[]>([]);
@@ -292,6 +292,18 @@ export function CRM() {
                     Team
                 </button>
                 <button
+                    onClick={() => setActiveTab('centers')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'centers' ? 'border-teal-600 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    📍 Centers
+                </button>
+                <button
+                    onClick={() => setActiveTab('announcements')}
+                    className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'announcements' ? 'border-amber-600 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    📢 News
+                </button>
+                <button
                     onClick={() => setActiveTab('analytics')}
                     className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'analytics' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
@@ -320,6 +332,10 @@ export function CRM() {
                     <AnalyticsTab />
                 ) : activeTab === 'settings' ? (
                     <SettingsTab />
+                ) : activeTab === 'centers' ? (
+                    <CentersTab />
+                ) : activeTab === 'announcements' ? (
+                    <AnnouncementsTab />
                 ) : (
                     <ContactsTable
                         activeTab={activeTab}
@@ -329,7 +345,7 @@ export function CRM() {
                     />
                 )}
             </div>
-            {activeTab !== 'team' && activeTab !== 'analytics' && activeTab !== 'settings' && (
+            {activeTab !== 'team' && activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'centers' && activeTab !== 'announcements' && (
                 <div className="p-4 border-t border-gray-100 text-xs text-gray-400 flex justify-between">
                     <span>Showing {filteredContacts.length} of {contacts.length} contacts</span>
                     <span>Last synced: Just now</span>
@@ -716,5 +732,507 @@ function ContactsTable({ activeTab, isLoading, filteredContacts, contacts }: any
                 )
             }
         </div >
+    );
+}
+
+// ==================== CENTERS TAB ====================
+interface Center {
+    id: number;
+    city: string;
+    title: string;
+    address: string;
+    description: string | null;
+    email: string;
+    phones: string[];
+    mapUrl: string | null;
+    isActive: boolean;
+    sortOrder: number;
+}
+
+function CentersTab() {
+    const [centers, setCenters] = useState<Center[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [formData, setFormData] = useState<Partial<Center>>({
+        city: '',
+        title: '',
+        address: '',
+        description: '',
+        email: '',
+        phones: [],
+        sortOrder: 0,
+        isActive: true
+    });
+    const [phonesInput, setPhonesInput] = useState('');
+
+    const fetchCenters = async () => {
+        try {
+            const res = await fetch('/api/admin/centers?all=true');
+            if (res.ok) {
+                const data = await res.json();
+                setCenters(data.centers || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch centers:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCenters();
+    }, []);
+
+    const handleSave = async () => {
+        const phones = phonesInput.split(',').map(p => p.trim()).filter(Boolean);
+        
+        try {
+            if (editingId) {
+                // Update existing
+                const res = await fetch('/api/admin/centers', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...formData, id: editingId, phones })
+                });
+                if (!res.ok) throw new Error('Failed to update');
+            } else {
+                // Create new
+                const res = await fetch('/api/admin/centers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...formData, phones })
+                });
+                if (!res.ok) throw new Error('Failed to create');
+            }
+            
+            setEditingId(null);
+            setShowAddForm(false);
+            setFormData({ city: '', title: '', address: '', description: '', email: '', phones: [], sortOrder: 0, isActive: true });
+            setPhonesInput('');
+            fetchCenters();
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Failed to save center');
+        }
+    };
+
+    const handleEdit = (center: Center) => {
+        setEditingId(center.id);
+        setFormData(center);
+        setPhonesInput(center.phones.join(', '));
+        setShowAddForm(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this center?')) return;
+        
+        try {
+            await fetch(`/api/admin/centers?id=${id}`, { method: 'DELETE' });
+            fetchCenters();
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete center');
+        }
+    };
+
+    const handleToggleActive = async (center: Center) => {
+        try {
+            await fetch('/api/admin/centers', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: center.id, isActive: !center.isActive })
+            });
+            fetchCenters();
+        } catch (error) {
+            console.error('Toggle error:', error);
+        }
+    };
+
+    return (
+        <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900">Manage Centers</h2>
+                    <p className="text-sm text-gray-500">Add, edit, or remove clinic locations displayed on the website</p>
+                </div>
+                <Button onClick={() => { setShowAddForm(true); setEditingId(null); setFormData({ city: '', title: '', address: '', description: '', email: '', phones: [], sortOrder: 0, isActive: true }); setPhonesInput(''); }} className="gap-2 bg-teal-600 hover:bg-teal-700">
+                    <Plus className="w-4 h-4" /> Add Center
+                </Button>
+            </div>
+
+            {showAddForm && (
+                <div className="mb-6 bg-teal-50 p-6 rounded-xl border border-teal-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-teal-600" />
+                        {editingId ? 'Edit Center' : 'Add New Center'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                            <Input value={formData.city || ''} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="e.g., Bhubaneswar" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tagline *</label>
+                            <Input value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g., The Temple City" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                            <Input value={formData.address || ''} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Full address" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <Input value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Brief description of this center" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <Input value={formData.email || ''} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="center@santaan.in" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Numbers *</label>
+                            <Input value={phonesInput} onChange={(e) => setPhonesInput(e.target.value)} placeholder="+91 9337326896, +91 7328839934" />
+                            <p className="text-xs text-gray-500 mt-1">Separate multiple numbers with commas</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                            <Input type="number" value={formData.sortOrder || 0} onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })} placeholder="0" />
+                        </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <Button onClick={handleSave} className="bg-teal-600 hover:bg-teal-700 gap-2">
+                            <Save className="w-4 h-4" /> {editingId ? 'Update' : 'Save'} Center
+                        </Button>
+                        <Button variant="outline" onClick={() => { setShowAddForm(false); setEditingId(null); }}>
+                            <X className="w-4 h-4" /> Cancel
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {isLoading ? (
+                <div className="text-center py-8 text-gray-500">Loading centers...</div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>City</TableHead>
+                            <TableHead>Address</TableHead>
+                            <TableHead>Contact</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {centers.map((center) => (
+                            <TableRow key={center.id} className={!center.isActive ? 'opacity-50' : ''}>
+                                <TableCell>
+                                    <div>
+                                        <span className="font-medium text-gray-900">{center.city}</span>
+                                        <span className="block text-xs text-gray-500">{center.title}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-sm text-gray-600">{center.address}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="text-xs text-gray-500">
+                                        <div>{center.email}</div>
+                                        <div>{center.phones[0]}</div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <button onClick={() => handleToggleActive(center)} className={`px-2 py-1 rounded-full text-xs font-medium ${center.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                        {center.isActive ? 'Active' : 'Inactive'}
+                                    </button>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-1">
+                                        <Button variant="ghost" size="sm" onClick={() => handleEdit(center)} className="text-blue-600 hover:text-blue-800">
+                                            <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" onClick={() => handleDelete(center.id)} className="text-red-500 hover:text-red-700">
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </div>
+    );
+}
+
+// ==================== ANNOUNCEMENTS TAB ====================
+interface Announcement {
+    id: number;
+    title: string;
+    content: string | null;
+    type: string;
+    imageUrl: string | null;
+    linkUrl: string | null;
+    linkText: string | null;
+    isActive: boolean;
+    isPinned: boolean;
+    publishDate: string;
+    expiryDate: string | null;
+}
+
+function AnnouncementsTab() {
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [formData, setFormData] = useState<Partial<Announcement>>({
+        title: '',
+        content: '',
+        type: 'news',
+        linkUrl: '',
+        linkText: '',
+        isPinned: false,
+        isActive: true
+    });
+
+    const fetchAnnouncements = async () => {
+        try {
+            const res = await fetch('/api/admin/announcements?all=true');
+            if (res.ok) {
+                const data = await res.json();
+                setAnnouncements(data.announcements || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch announcements:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAnnouncements();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            if (editingId) {
+                const res = await fetch('/api/admin/announcements', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...formData, id: editingId })
+                });
+                if (!res.ok) throw new Error('Failed to update');
+            } else {
+                const res = await fetch('/api/admin/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if (!res.ok) throw new Error('Failed to create');
+            }
+            
+            setEditingId(null);
+            setShowAddForm(false);
+            setFormData({ title: '', content: '', type: 'news', linkUrl: '', linkText: '', isPinned: false, isActive: true });
+            fetchAnnouncements();
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Failed to save announcement');
+        }
+    };
+
+    const handleEdit = (announcement: Announcement) => {
+        setEditingId(announcement.id);
+        setFormData(announcement);
+        setShowAddForm(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this announcement?')) return;
+        
+        try {
+            await fetch(`/api/admin/announcements?id=${id}`, { method: 'DELETE' });
+            fetchAnnouncements();
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete announcement');
+        }
+    };
+
+    const handleToggleActive = async (announcement: Announcement) => {
+        try {
+            await fetch('/api/admin/announcements', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: announcement.id, isActive: !announcement.isActive })
+            });
+            fetchAnnouncements();
+        } catch (error) {
+            console.error('Toggle error:', error);
+        }
+    };
+
+    const handleTogglePinned = async (announcement: Announcement) => {
+        try {
+            await fetch('/api/admin/announcements', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: announcement.id, isPinned: !announcement.isPinned })
+            });
+            fetchAnnouncements();
+        } catch (error) {
+            console.error('Pin toggle error:', error);
+        }
+    };
+
+    const typeColors: Record<string, string> = {
+        news: 'bg-blue-100 text-blue-700',
+        award: 'bg-amber-100 text-amber-700',
+        event: 'bg-purple-100 text-purple-700',
+        campaign: 'bg-green-100 text-green-700',
+    };
+
+    return (
+        <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900">News & Announcements</h2>
+                    <p className="text-sm text-gray-500">Manage news, awards, campaigns, and event announcements</p>
+                </div>
+                <Button onClick={() => { setShowAddForm(true); setEditingId(null); setFormData({ title: '', content: '', type: 'news', linkUrl: '', linkText: '', isPinned: false, isActive: true }); }} className="gap-2 bg-amber-600 hover:bg-amber-700">
+                    <Plus className="w-4 h-4" /> Add Announcement
+                </Button>
+            </div>
+
+            {showAddForm && (
+                <div className="mb-6 bg-amber-50 p-6 rounded-xl border border-amber-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Megaphone className="w-5 h-5 text-amber-600" />
+                        {editingId ? 'Edit Announcement' : 'Add New Announcement'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                            <Input value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Announcement title" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                            <textarea
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                                rows={3}
+                                value={formData.content || ''}
+                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                placeholder="Brief description or content"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <select
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                                value={formData.type || 'news'}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            >
+                                <option value="news">📰 News</option>
+                                <option value="award">🏆 Award</option>
+                                <option value="event">📅 Event</option>
+                                <option value="campaign">📢 Campaign</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isPinned || false}
+                                    onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })}
+                                    className="rounded border-gray-300"
+                                />
+                                <span className="text-sm text-gray-700">Pin to Featured</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                            <Input value={formData.linkUrl || ''} onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })} placeholder="https://..." />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Link Text</label>
+                            <Input value={formData.linkText || ''} onChange={(e) => setFormData({ ...formData, linkText: e.target.value })} placeholder="Learn More" />
+                        </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <Button onClick={handleSave} className="bg-amber-600 hover:bg-amber-700 gap-2">
+                            <Save className="w-4 h-4" /> {editingId ? 'Update' : 'Save'} Announcement
+                        </Button>
+                        <Button variant="outline" onClick={() => { setShowAddForm(false); setEditingId(null); }}>
+                            <X className="w-4 h-4" /> Cancel
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {isLoading ? (
+                <div className="text-center py-8 text-gray-500">Loading announcements...</div>
+            ) : announcements.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                    <Megaphone className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No announcements yet. Create your first one!</p>
+                </div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Published</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {announcements.map((ann) => (
+                            <TableRow key={ann.id} className={!ann.isActive ? 'opacity-50' : ''}>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        {ann.isPinned && <span className="text-amber-500" title="Pinned">📌</span>}
+                                        <div>
+                                            <span className="font-medium text-gray-900">{ann.title}</span>
+                                            {ann.content && <span className="block text-xs text-gray-500 truncate max-w-xs">{ann.content}</span>}
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${typeColors[ann.type] || 'bg-gray-100 text-gray-700'}`}>
+                                        {ann.type}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-sm text-gray-500">
+                                        {new Date(ann.publishDate).toLocaleDateString()}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => handleToggleActive(ann)} className={`px-2 py-1 rounded-full text-xs font-medium ${ann.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                            {ann.isActive ? 'Live' : 'Hidden'}
+                                        </button>
+                                        <button onClick={() => handleTogglePinned(ann)} className={`px-2 py-1 rounded text-xs ${ann.isPinned ? 'text-amber-600' : 'text-gray-400 hover:text-amber-500'}`} title={ann.isPinned ? 'Unpin' : 'Pin to Featured'}>
+                                            📌
+                                        </button>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-1">
+                                        <Button variant="ghost" size="sm" onClick={() => handleEdit(ann)} className="text-blue-600 hover:text-blue-800">
+                                            <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" onClick={() => handleDelete(ann.id)} className="text-red-500 hover:text-red-700">
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </div>
     );
 }
