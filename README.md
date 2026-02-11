@@ -87,13 +87,17 @@ npx tsx src/scripts/seed-prod.ts
 
 ## Future Enhancement: Google Analytics API Integration
 
-To display live GA data in the admin dashboard (instead of just links), follow these steps:
+To display **live GA data** in the admin dashboard (instead of just external links), follow these steps:
 
-### Step 1: Create Google Cloud Service Account
+### Prerequisites
+- Access to the Google account that owns the GA4 property
+- Google Cloud Console access
+
+### Step 1: Create Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create or select project: "Santaan Analytics"
-3. Enable API:
+2. Create new project: **"Santaan Analytics"**
+3. Enable the **Google Analytics Data API**:
    - Go to "APIs & Services" → "Enable APIs"
    - Search for "Google Analytics Data API"
    - Click "Enable"
@@ -103,40 +107,93 @@ To display live GA data in the admin dashboard (instead of just links), follow t
 1. Go to "IAM & Admin" → "Service Accounts"
 2. Click "Create Service Account"
    - Name: `santaan-analytics-reader`
-   - Role: None (we'll add in GA4)
-3. Click on the created service account
-4. Go to "Keys" tab → "Add Key" → "Create new key" → JSON
-5. Download the JSON file
+   - Description: "Reads GA4 data for dashboard"
+3. Skip role assignment (we'll add in GA4 directly)
+4. Click "Done"
+5. Click on the created service account email
+6. Go to "Keys" tab → "Add Key" → "Create new key" → **JSON**
+7. **Download the JSON file** - keep it secure!
 
-### Step 3: Add Service Account to GA4
+### Step 3: Grant Access in Google Analytics
 
 1. Go to [Google Analytics](https://analytics.google.com)
-2. Admin → Property Access Management
-3. Click "+" → "Add users"
-4. Enter the service account email (from JSON file, looks like `xxx@project.iam.gserviceaccount.com`)
-5. Set role: "Viewer"
-6. Save
+2. Select your Santaan property
+3. Admin (gear icon) → Property Access Management
+4. Click "+" → "Add users"
+5. Paste the service account email from the JSON file
+   - Format: `santaan-analytics-reader@project-id.iam.gserviceaccount.com`
+6. Set role: **Viewer**
+7. Uncheck "Notify new users by email"
+8. Click "Add"
 
-### Step 4: Add Credentials to Environment
+### Step 4: Get GA4 Property ID
 
-Add to `.env.local`:
+1. In Google Analytics → Admin → Property Settings
+2. Copy the **Property ID** (numeric, e.g., `123456789`)
+
+### Step 5: Add Environment Variables
+
+Add to Netlify (Site Settings → Environment Variables):
+
 ```env
 GA4_PROPERTY_ID=123456789
-GOOGLE_SERVICE_ACCOUNT_EMAIL=santaan-analytics@project.iam.gserviceaccount.com
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GOOGLE_SERVICE_ACCOUNT_EMAIL=santaan-analytics-reader@project-id.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBAD...\n-----END PRIVATE KEY-----\n"
 ```
 
-### Step 5: Install Package & Implement
+**Note:** The private key is in the downloaded JSON file. Copy the entire value including `\n` characters.
+
+### Step 6: Install Dependencies
 
 ```bash
 npm install @google-analytics/data
 ```
 
-Then create API route `/api/admin/analytics` to fetch:
-- Active users (real-time)
-- Page views (today, week, month)
-- Top pages
-- Traffic sources
+### Step 7: Create API Route
+
+Create `/src/app/api/admin/analytics/route.ts`:
+
+```typescript
+import { BetaAnalyticsDataClient } from '@google-analytics/data';
+
+const analyticsDataClient = new BetaAnalyticsDataClient({
+  credentials: {
+    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  },
+});
+
+export async function GET() {
+  const [response] = await analyticsDataClient.runReport({
+    property: `properties/${process.env.GA4_PROPERTY_ID}`,
+    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+    metrics: [
+      { name: 'activeUsers' },
+      { name: 'screenPageViews' },
+      { name: 'bounceRate' },
+    ],
+  });
+  
+  return Response.json({ data: response });
+}
+```
+
+### Step 8: Update Dashboard
+
+Modify `AnalyticsTab` in `CRM.tsx` to fetch from `/api/admin/analytics` and display live data.
+
+---
+
+## Facebook Pixel API (Optional)
+
+For Facebook/Meta analytics API access:
+
+1. Create app at [Meta for Developers](https://developers.facebook.com)
+2. Request Marketing API access
+3. Generate System User Access Token
+4. Use Marketing API to fetch pixel events
+
+**Note:** Facebook API requires business verification and app review for production use. The external links in the dashboard provide immediate access without API setup.
 
 ---
 

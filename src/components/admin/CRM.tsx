@@ -414,43 +414,140 @@ function AnalyticsTab() {
     return (
         <div className="p-8 max-w-4xl mx-auto">
             <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Analytics Overview</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">📊 Analytics Overview</h2>
                 <p className="text-gray-600">Track your website performance and visitor behavior.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Google Analytics Card */}
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 text-orange-600">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z" /></svg> {/* Placeholder icon */}
+                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#F9AB00"/>
+                            <path d="M12 6v6l4 2" stroke="#E37400" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Google Analytics 4</h3>
-                    <p className="text-gray-500 text-sm mb-6">View detailed reports on traffic, user engagement, and conversions.</p>
-                    <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-                        Open Dashboard &rarr;
-                    </a>
+                    <p className="text-gray-500 text-sm mb-4">View detailed reports on traffic, user engagement, and conversions.</p>
+                    <div className="space-y-2">
+                        <a 
+                            href="https://analytics.google.com/analytics/web/" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+                        >
+                            <span className="text-sm font-medium text-orange-700">Open GA4 Dashboard</span>
+                            <span className="text-orange-500">→</span>
+                        </a>
+                        <a 
+                            href="https://analytics.google.com/analytics/web/#/report/visitors-overview" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="text-sm text-gray-600">Audience Overview</span>
+                            <span className="text-gray-400">→</span>
+                        </a>
+                        <a 
+                            href="https://analytics.google.com/analytics/web/#/realtime" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="text-sm text-gray-600">Real-time Visitors</span>
+                            <span className="text-gray-400">→</span>
+                        </a>
+                    </div>
                 </div>
 
+                {/* Facebook/Meta Card */}
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5.01 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.5-3.89 3.77-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z" /></svg>
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg className="w-7 h-7" fill="#1877F2" viewBox="0 0 24 24">
+                            <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5.01 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.5-3.89 3.77-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/>
+                        </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Meta Business Suite</h3>
-                    <p className="text-gray-500 text-sm mb-6">Track Facebook and Instagram ad performance and pixel events.</p>
-                    <a href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-                        Open Business Suite &rarr;
-                    </a>
+                    <p className="text-gray-500 text-sm mb-4">Track Facebook Pixel events, conversions, and ad performance.</p>
+                    <div className="space-y-2">
+                        <a 
+                            href="https://business.facebook.com/events_manager" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                            <span className="text-sm font-medium text-blue-700">Events Manager</span>
+                            <span className="text-blue-500">→</span>
+                        </a>
+                        <a 
+                            href="https://business.facebook.com/latest/insights" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="text-sm text-gray-600">Page Insights</span>
+                            <span className="text-gray-400">→</span>
+                        </a>
+                        <a 
+                            href="https://adsmanager.facebook.com/" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            <span className="text-sm text-gray-600">Ads Manager</span>
+                            <span className="text-gray-400">→</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            {/* Quick Stats Placeholder */}
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                    <p className="text-xs text-green-600 font-medium">Today&apos;s Visitors</p>
+                    <p className="text-2xl font-bold text-green-700 mt-1">—</p>
+                    <p className="text-xs text-green-500 mt-1">View in GA4</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                    <p className="text-xs text-blue-600 font-medium">Page Views</p>
+                    <p className="text-2xl font-bold text-blue-700 mt-1">—</p>
+                    <p className="text-xs text-blue-500 mt-1">This week</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+                    <p className="text-xs text-purple-600 font-medium">Conversions</p>
+                    <p className="text-2xl font-bold text-purple-700 mt-1">—</p>
+                    <p className="text-xs text-purple-500 mt-1">Form submissions</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
+                    <p className="text-xs text-orange-600 font-medium">Bounce Rate</p>
+                    <p className="text-2xl font-bold text-orange-700 mt-1">—</p>
+                    <p className="text-xs text-orange-500 mt-1">Avg. this month</p>
+                </div>
+            </div>
+
+            <div className="mt-6 bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <div className="flex gap-3">
+                    <div className="shrink-0">
+                        <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-medium text-amber-800">Live Data Coming Soon</h4>
+                        <p className="mt-1 text-sm text-amber-700">
+                            Stats above will populate once Google Analytics API is connected. See README for setup instructions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
                 <div className="flex gap-3">
                     <div className="shrink-0">
                         <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                     </div>
                     <div>
-                        <h4 className="text-sm font-medium text-blue-800">Connection Status</h4>
+                        <h4 className="text-sm font-medium text-blue-800">Configuration</h4>
                         <p className="mt-1 text-sm text-blue-700">
-                            Analytics scripts are injected based on the IDs configured in the Settings tab. Ensure you have added your Google Analytics Measurement ID and Facebook Pixel ID.
+                            Analytics Measurement IDs are configured in the <strong>Settings</strong> tab. Make sure GA4 and Facebook Pixel IDs are set correctly.
                         </p>
                     </div>
                 </div>
