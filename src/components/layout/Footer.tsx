@@ -167,13 +167,13 @@ export function Footer() {
                 </div>
 
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
-                    <div>
+                    <div className="flex items-center gap-2">
                         © 2026 Santaan Fertility. All rights reserved.
+                        <Link href="/login" className="text-white/30 hover:text-white/60 text-xs ml-2">Admin</Link>
                     </div>
                     <div className="flex gap-6">
                         <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
                         <Link href="/terms" className="hover:text-white">Terms of Service</Link>
-                        <Link href="/login" className="hover:text-white/50 text-white/20 text-xs">•</Link>
                     </div>
                 </div>
             </div>
