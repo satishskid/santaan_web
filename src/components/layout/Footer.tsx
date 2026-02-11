@@ -48,13 +48,15 @@ export function Footer() {
                     {/* Brand Column */}
                     <div className="space-y-6">
                         <Link href="/" className="inline-flex items-center gap-3">
-                            <Image 
-                                src="/assets/santaan-logo.png" 
-                                alt="Santaan Logo" 
-                                width={140} 
-                                height={78}
-                                className="h-10 w-auto object-contain brightness-0 invert"
-                            />
+                            <div className="bg-white rounded-lg p-2">
+                                <Image 
+                                    src="/assets/santaan-logo.png" 
+                                    alt="Santaan Logo" 
+                                    width={120} 
+                                    height={67}
+                                    className="h-8 w-auto object-contain"
+                                />
+                            </div>
                             <span className="text-2xl font-playfair font-bold text-white tracking-tight">
                                 Santaan
                             </span>
