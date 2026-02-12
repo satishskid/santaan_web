@@ -1,6 +1,5 @@
 import type { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
-import { JwtParams, SessionParams } from "@/types/auth";
 
 const providers = [] as any[];
 
@@ -15,15 +14,15 @@ export const authConfig = {
         signIn: "/login",
     },
     callbacks: {
-        async jwt({ token, user }: JwtParams) {
+        async jwt({ token, user }) {
             if (user) {
-                token.role = user.role;
+                (token as { role?: unknown }).role = (user as { role?: unknown }).role;
             }
             return token;
         },
-        async session({ session, token }: SessionParams) {
+        async session({ session, token }) {
             if (token && session.user) {
-                session.user.role = token.role;
+                (session.user as { role?: unknown }).role = (token as { role?: unknown }).role;
             }
             return session;
         },

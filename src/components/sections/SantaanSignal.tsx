@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, Sprout, Activity, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, Sprout, Activity, Lock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useJourney } from '@/context/JourneyContext';
 import { useSession, signIn } from 'next-auth/react';

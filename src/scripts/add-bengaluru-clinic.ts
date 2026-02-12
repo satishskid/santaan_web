@@ -37,12 +37,9 @@ async function addBengaluruClinic() {
         city: "Bengaluru",
         title: "Santaan Brookefield",
         address: "Brookefield, Bengaluru, Karnataka",
-        phone: "+91 9337326896",
         email: "care@santaan.in",
-        image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
         description: "Advanced fertility care in Bengaluru's tech hub",
-        services: ["IVF", "IUI", "Fertility Assessment", "Semen Analysis"],
-        coordinates: { lat: 12.9716, lng: 77.5946 },
+        phones: JSON.stringify(["+91 9337326896"]),
         sortOrder: 2
     });
     console.log('✅ Bengaluru Brookefield clinic added!');

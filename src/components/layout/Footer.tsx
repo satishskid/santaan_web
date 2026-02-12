@@ -36,7 +36,8 @@ export function Footer() {
             setEmail("");
         } catch (error: unknown) {
             setStatus("error");
-            setMessage(error?.message || "Failed to subscribe");
+            const errorMessage = error instanceof Error ? error.message : "Failed to subscribe";
+            setMessage(errorMessage);
         }
     };
 

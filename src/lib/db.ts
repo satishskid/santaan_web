@@ -9,7 +9,7 @@ import * as schema from '@/db/schema';
 const url = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
-let db: ReturnType<typeof drizzle>;
+let db: ReturnType<typeof drizzle> | ReturnType<typeof drizzleBetterSqlite3>;
 
 // Always use Turso in production/build environments
 if (url && authToken) {

@@ -65,6 +65,8 @@ const ChatWidget: React.FC = () => {
         } catch (err: unknown) {
             console.error("Chat Error:", err);
 
+            const errorMessage = err instanceof Error ? err.message : typeof err === 'string' ? err : 'Unknown error';
+
             // Determine the appropriate message based on error type
             const isMaintenanceError = (err as { message?: string })?.message?.includes('offline for scheduled maintenance');
             
@@ -84,7 +86,7 @@ const ChatWidget: React.FC = () => {
             // Don't show the red error banner for normal users - it's alarming
             // Only log for debugging
             if (process.env.NODE_ENV === 'development') {
-                setError(err.message);
+                setError(errorMessage);
             }
         } finally {
             setIsLoading(false);
