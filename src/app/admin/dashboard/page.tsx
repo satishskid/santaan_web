@@ -1,5 +1,5 @@
 
-import { CRM } from "@/components/admin/CRM";
+import CRM from "@/components/admin/CRM";
 
 export default function AdminDashboardPage() {
     return (
