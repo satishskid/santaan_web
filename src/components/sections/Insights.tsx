@@ -63,13 +63,7 @@ export function Insights() {
         });
     };
 
-    // Helper to extract a text snippet from HTML content if description is empty or too short
-    const getSnippet = (htmlContent: string) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        const text = tempDiv.textContent || tempDiv.innerText || "";
-        return text.slice(0, 120) + "...";
-    };
+
 
     if (error) return null; // Hide section if feed fails
 

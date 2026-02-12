@@ -2,8 +2,8 @@
 
 import { useJourney } from '@/context/JourneyContext';
 import { Button } from '@/components/ui/Button';
-import { Sprout, CheckCircle, AlertCircle, HelpCircle, ArrowRight, Video, Stethoscope, FileText } from 'lucide-react';
-import Image from 'next/image';
+import { Sprout, CheckCircle, AlertCircle, Video, Stethoscope, FileText, ArrowRight, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export function ProfileContent() {
     const { signal } = useJourney();
@@ -12,10 +12,10 @@ export function ProfileContent() {
         if (!signal) {
             return (
                 <div className="bg-gray-50 rounded-xl p-6 text-center">
-                    <p className="text-gray-500 mb-4">You haven't taken the full clinical assessment yet.</p>
-                    <a href="/#assessment">
+                    <p className="text-gray-500 mb-4">You haven&apos;t taken the full clinical assessment yet.</p>
+                    <Link href="/#assessment">
                         <Button className="w-full">Start Assessment</Button>
-                    </a>
+                    </Link>
                 </div>
             );
         }
@@ -52,7 +52,7 @@ export function ProfileContent() {
                         <h4 className="font-bold text-amber-800 flex items-center gap-2">
                             <HelpCircle className="w-4 h-4" /> Yellow Signal: Needs a Little Care
                         </h4>
-                        <p className="text-sm text-amber-700 mt-1">A minor hurdle might be present. Let's clear the path with expert guidance.</p>
+                        <p className="text-sm text-amber-700 mt-1">A minor hurdle might be present. Let&apos;s clear the path with expert guidance.</p>
                     </div>
                     <OfferCard
                         title="30-Min Tele-Consult"
@@ -110,7 +110,15 @@ export function ProfileContent() {
     );
 }
 
-function OfferCard({ title, description, icon: Icon, color, highlight = false }: any) {
+interface OfferCardProps {
+    title: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: 'emerald' | 'amber' | 'rose';
+    highlight?: boolean;
+}
+
+function OfferCard({ title, description, icon: Icon, color, highlight = false }: OfferCardProps) {
     const colorClasses = {
         emerald: 'bg-emerald-100 text-emerald-600',
         amber: 'bg-amber-100 text-amber-600',

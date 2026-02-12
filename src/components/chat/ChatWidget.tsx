@@ -62,11 +62,11 @@ const ChatWidget: React.FC = () => {
         try {
             const response = await sendMessageWithFallback(text, messages);
             addMessage(response, MessageSender.BOT);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Chat Error:", err);
 
             // Determine the appropriate message based on error type
-            const isMaintenanceError = err.message?.includes('offline for scheduled maintenance');
+            const isMaintenanceError = (err as { message?: string })?.message?.includes('offline for scheduled maintenance');
             
             // Show a single, friendly bot message (not the red error banner)
             if (isMaintenanceError) {

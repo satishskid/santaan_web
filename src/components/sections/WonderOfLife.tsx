@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { Sparkles, Microscope, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -222,13 +222,13 @@ export function WonderOfLife() {
                                     tadvat sānnidhyāt santānaḥ.
                                 </p>
                                 <p className="text-white/80 text-sm font-medium leading-snug">
-                                    "Just as a sprout emerges when the season, soil, water, and seed are in perfect harmony, so does the child appear when all conditions are optimally met."
+                                    &quot;Just as a sprout emerges when the season, soil, water, and seed are in perfect harmony, so does the child appear when all conditions are optimally met.&quot;
                                 </p>
                                 <p className="text-white/50 text-xs mt-2 italic">— Inspired by Sushruta Samhita</p>
                             </div>
 
                             <p className="text-xl text-gray-300 max-w-md italic">
-                                "Suna Chasa"
+                                &quot;Suna Chasa&quot;
                             </p>
                             <p className="text-lg text-gray-300 mt-4 max-w-md">
                                 A journey through the dual layers of storytelling and science. Scroll to explore.
@@ -282,7 +282,7 @@ function JourneyCard({ step }: { step: typeof journeySteps[0] }) {
                         <span className="font-bold text-sm uppercase tracking-wider">The Story</span>
                     </div>
                     <p className="text-xl md:text-2xl text-gray-100 leading-relaxed font-light font-playfair italic">
-                        "{step.story}"
+                        &quot;{step.story}&quot;
                     </p>
                 </div>
             </div>

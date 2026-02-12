@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Microscope, Dna, Database, FileCheck, Users, BarChart3, Shield, CheckCircle2, Award, Zap, Sparkles } from 'lucide-react';
+import { Microscope, Dna, Database, FileCheck, Users, BarChart3, Shield, Zap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export function SantaanLab() {

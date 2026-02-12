@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Youtube, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { readUtmParams } from "@/lib/utm";
 
@@ -34,7 +34,7 @@ export function Footer() {
             setStatus("success");
             setMessage(data?.message || "Subscribed successfully");
             setEmail("");
-        } catch (error: any) {
+        } catch (error: unknown) {
             setStatus("error");
             setMessage(error?.message || "Failed to subscribe");
         }

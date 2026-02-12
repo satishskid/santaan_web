@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, ArrowRight, Sprout, Activity, Calendar, Clock, Weight, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, Sprout, Activity, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useJourney } from '@/context/JourneyContext';
 import { useSession, signIn } from 'next-auth/react';
@@ -369,7 +369,7 @@ export function SantaanSignal() {
                                                         </div>
                                                         <h3 className="text-xl font-bold text-gray-800 mb-2">Unlock Your Report</h3>
                                                         <p className="text-gray-500 mb-6 text-sm">
-                                                            Sign in to view your detailed fertility signal, personalized insights, and gardener's advice.
+                                                            Sign in to view your detailed fertility signal, personalized insights, and gardener&apos;s advice.
                                                         </p>
                                                         <Button
                                                             onClick={() => signIn('google')}

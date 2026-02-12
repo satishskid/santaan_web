@@ -4,7 +4,7 @@ import { ChatMessage, MessageSender } from '@/types/chat';
 import { Bot, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-interface ChatMessageProps extends ChatMessage { }
+type ChatMessageProps = ChatMessage;
 
 const ChatMessageComponent: React.FC<ChatMessageProps> = ({ text, sender, timestamp }) => {
     const isUser = sender === MessageSender.USER;

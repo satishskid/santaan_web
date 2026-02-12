@@ -91,7 +91,7 @@ export function AssessmentCallback() {
                                     Hi there! I'm here to help you understand your fertility health. Ready to start?
                                 </div>
                                 <div className="bg-santaan-teal/5 text-santaan-teal rounded-lg rounded-tr-none p-4 text-sm ml-auto max-w-[80%]">
-                                    Yes, I'd like to clarity on my chances.
+                                    Yes, I&apos;d like to clarity on my chances.
                                 </div>
                                 <div className="bg-gray-50 rounded-lg rounded-tl-none p-4 text-sm text-gray-700 flex gap-2">
                                     <span className="w-1 h-4 bg-gray-400 rounded-full animate-bounce" />

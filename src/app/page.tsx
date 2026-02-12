@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
-import { TrustBar } from "@/components/sections/TrustBar";
 import { MythBusting } from "@/components/sections/MythBusting";
 import { WonderOfLife } from "@/components/sections/WonderOfLife";
 import { Insights } from "@/components/sections/Insights";

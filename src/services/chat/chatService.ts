@@ -18,12 +18,12 @@ export const sendMessageWithFallback = async (
                     throw new Error("I'm currently offline for scheduled maintenance. Our team is working to bring me back online soon. Please try again later or contact our support team directly.");
                 }
             }
-        } catch (statusError: any) {
+        } catch (statusError: unknown) {
             // If status check fails, continue anyway - don't block the chat
-            if (statusError.message?.includes('offline for scheduled maintenance')) {
+            if ((statusError as { message?: string })?.message?.includes('offline for scheduled maintenance')) {
                 throw statusError; // Re-throw if it's the explicit offline error
             }
-            console.warn('Chatbot status check failed, continuing:', statusError.message);
+            console.warn('Chatbot status check failed, continuing:', (statusError as { message?: string })?.message);
         }
 
         const response = await fetch('/api/chat', {
@@ -55,7 +55,7 @@ export const sendMessageWithFallback = async (
         }
 
         return data.reply as string;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Chat API failure:', error);
         throw error;
     }

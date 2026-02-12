@@ -46,14 +46,14 @@ export function CareGap() {
                                 In India, <span className="font-bold text-white">27.5 Million couples</span> face fertility challenges. Yet, for most, the journey is filled with barriers, not hope.
                             </p>
                             <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/5 shadow-xl">
-                                <h4 className="font-bold text-xl mb-2 text-santaan-amber">The "Quality Care Gap"</h4>
+                                <h4 className="font-bold text-xl mb-2 text-santaan-amber">The &quot;Quality Care Gap&quot;</h4>
                                 <p className="text-base text-white/80 leading-relaxed">
                                     Clinics are crowded in metros. If you live in a smaller town, you are forced to choose between <strong className="text-white bg-red-500/20 px-1 rounded">traveling constantly</strong> or <strong className="text-white bg-red-500/20 px-1 rounded">compromising on quality</strong>.
                                 </p>
                             </div>
 
                             <div className="pt-4">
-                                <p className="text-white/60 text-sm mb-4">It doesn't have to be this way.</p>
+                                <p className="text-white/60 text-sm mb-4">It doesn&apos;t have to be this way.</p>
                                 <a href="#contact">
                                     <button className="bg-gradient-to-r from-santaan-amber to-orange-500 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2">
                                         Bridge the Gap with Santaan

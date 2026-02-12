@@ -81,7 +81,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                             <CheckCircle2 className="w-8 h-8 text-green-600" />
                         </div>
-                        <p className="text-green-800 font-medium">We'll be in touch soon!</p>
+                        <p className="text-green-800 font-medium">We&apos;ll be in touch soon!</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4 mt-2">

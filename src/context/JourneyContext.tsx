@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useJourneySignal } from '@/hooks/useJourneySignal';
 
 type SignalType = 'green' | 'yellow' | 'red' | null;
 
@@ -13,30 +14,10 @@ interface JourneyState {
 const JourneyContext = createContext<JourneyState | undefined>(undefined);
 
 export function JourneyProvider({ children }: { children: ReactNode }) {
-    const [signal, setSignalState] = useState<SignalType>(null);
-    const [hasAssessment, setHasAssessment] = useState(false);
-
-    // Load from local storage on mount
-    useEffect(() => {
-        const savedSignal = localStorage.getItem('santaan_signal') as SignalType;
-        if (savedSignal) {
-            setSignalState(savedSignal);
-            setHasAssessment(true);
-        }
-    }, []);
-
-    const setSignal = (newSignal: SignalType) => {
-        setSignalState(newSignal);
-        setHasAssessment(!!newSignal);
-        if (newSignal) {
-            localStorage.setItem('santaan_signal', newSignal);
-        } else {
-            localStorage.removeItem('santaan_signal');
-        }
-    };
+    const journey = useJourneySignal();
 
     return (
-        <JourneyContext.Provider value={{ signal, setSignal, hasAssessment }}>
+        <JourneyContext.Provider value={journey}>
             {children}
         </JourneyContext.Provider>
     );

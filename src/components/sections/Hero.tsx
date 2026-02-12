@@ -95,7 +95,7 @@ export function Hero() {
                             Santānaḥ vaṃśasya sātatyam, jīvanasya samṛddhiḥ, prīteḥ svarūpam.
                         </p>
                         <p className="text-white/90 text-sm md:text-base font-medium">
-                            "Santaan is the continuity of lineage, the prosperity of life, and the embodiment of love."
+                            &quot;Santaan is the continuity of lineage, the prosperity of life, and the embodiment of love.&quot;
                         </p>
                     </div>
                 </motion.div>

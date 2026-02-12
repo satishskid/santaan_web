@@ -2,6 +2,7 @@
 import Groq from "groq-sdk";
 import { ChatMessage, MessageSender } from '@/types/chat';
 import { SYSTEM_INSTRUCTION } from './prompts';
+import { convertChatMessagesToGroqFormat } from './types';
 
 const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY;
 
@@ -19,10 +20,7 @@ export const sendMessageToGroq = async (
         dangerouslyAllowBrowser: true // Enabled for client-side usage as per user preference
     });
 
-    const messages = history.map(msg => ({
-        role: msg.sender === MessageSender.USER ? 'user' : 'assistant',
-        content: msg.text
-    }));
+    const messages = convertChatMessagesToGroqFormat(history);
 
     // Add system instruction as first message for Groq/Llama
     messages.unshift({ role: 'system', content: SYSTEM_INSTRUCTION });
@@ -34,7 +32,7 @@ export const sendMessageToGroq = async (
 
     try {
         const completion = await groq.chat.completions.create({
-            messages: messages as any[], // Typing mismatch workaround for now
+            messages: convertChatMessagesToGroqFormat(messages),
             model: "llama3-70b-8192", // High performance, good free tier limits
             temperature: 0.7,
             max_tokens: 1024,

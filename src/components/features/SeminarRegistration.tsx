@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Calendar, CheckCircle2, CheckCircle, X } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { readUtmParams } from '@/lib/utm';
 
 interface SeminarRegistrationProps {
@@ -65,7 +65,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
             }
 
             setStep('success');
-        } catch (err) {
+        } catch {
             setError('Something went wrong. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -78,7 +78,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                 {step === 'form' ? (
                     <>
                         <DialogHeader>
-                            <DialogTitle>Register for Dr. Satish's Seminar</DialogTitle>
+                            <DialogTitle>Register for Dr. Satish&apos;s Seminar</DialogTitle>
                             <DialogDescription>
                                 Join the upcoming session to discuss your score of {score}.
                                 Your privacy is our priority.

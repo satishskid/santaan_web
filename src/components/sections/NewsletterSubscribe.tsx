@@ -52,7 +52,7 @@ export default function NewsletterSubscribe() {
                 const data = await response.json();
                 setError(data.error || 'Failed to subscribe. Please try again.');
             }
-        } catch (err) {
+        } catch {
             setError('Failed to subscribe. Please try again.');
         } finally {
             setLoading(false);
@@ -95,7 +95,7 @@ export default function NewsletterSubscribe() {
                         placeholder="your@email.com"
                         value={email}
                         onChange={(e) => setError('')}
-                        onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
+                        onInput={(e: React.FormEvent<HTMLInputElement>) => setEmail((e.target as HTMLInputElement).value)}
                         className="flex-1 bg-white"
                         required
                     />

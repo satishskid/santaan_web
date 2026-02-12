@@ -1,9 +1,7 @@
-import { NextResponse } from 'next/server';
-
 const BHASH_API_URL = 'http://bhashsms.com/api/sendmsg.php';
 const DEFAULT_USER = 'Santaan_01';
+const DEFAULT_PASS = '123456';
 const DEFAULT_SENDER = 'BUZWAP';
-const ADMIN_PHONE = '9668904011'; // User provided admin/notification number
 
 interface WhatsAppMessage {
     phone: string;      // Mobile Number without 91
@@ -17,7 +15,7 @@ interface WhatsAppMessage {
  */
 export async function sendWhatsAppMessage(data: WhatsAppMessage) {
     const user = process.env.BHASH_USER || DEFAULT_USER;
-    const pass = process.env.BHASH_PASS;
+    const pass = process.env.BHASH_PASS || DEFAULT_PASS;
     const sender = process.env.BHASH_SENDER || DEFAULT_SENDER;
 
     if (!pass) {
