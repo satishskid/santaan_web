@@ -103,12 +103,21 @@ export function Locations() {
                                         {loc.description}
                                     </p>
                                 )}
-                                
+
                                 {/* Contact Info */}
                                 <div className="space-y-3 pt-4 border-t border-white/10">
                                     <div className="flex items-start gap-2">
                                         <Mail className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
-                                        <a href={`mailto:${loc.email}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors">
+                                        <a href={`mailto:${loc.email}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
+                                            onClick={() => {
+                                                if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                    (window as any).gtag('event', 'click', {
+                                                        event_category: 'contact',
+                                                        event_label: `location_email_${loc.city}`
+                                                    });
+                                                }
+                                            }}
+                                        >
                                             {loc.email}
                                         </a>
                                     </div>
@@ -116,7 +125,16 @@ export function Locations() {
                                         <Phone className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
                                         <div className="flex flex-col gap-1">
                                             {loc.phones.map((phone, idx) => (
-                                                <a key={idx} href={`tel:${phone}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors">
+                                                <a key={idx} href={`tel:${phone}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
+                                                    onClick={() => {
+                                                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                            (window as any).gtag('event', 'click', {
+                                                                event_category: 'contact',
+                                                                event_label: `location_phone_${loc.city}_${phone}`
+                                                            });
+                                                        }
+                                                    }}
+                                                >
                                                     {phone}
                                                 </a>
                                             ))}

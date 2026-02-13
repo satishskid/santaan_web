@@ -63,10 +63,10 @@ export function HeaderClient({ session }: HeaderClientProps) {
                 <nav className="flex items-center justify-between" aria-label="Global">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
-                        <Image 
-                            src="/assets/santaan-logo.png" 
-                            alt="Santaan Logo" 
-                            width={120} 
+                        <Image
+                            src="/assets/santaan-logo.png"
+                            alt="Santaan Logo"
+                            width={120}
                             height={67}
                             className="h-8 w-auto object-contain"
                             priority
@@ -112,6 +112,14 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                                         key={phone}
                                                         href={`tel:${phone}`}
                                                         className="block text-sm text-gray-700 hover:text-santaan-amber"
+                                                        onClick={() => {
+                                                            if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                                (window as any).gtag('event', 'click', {
+                                                                    event_category: 'contact',
+                                                                    event_label: `header_phone_${center.name}_${phone}`
+                                                                });
+                                                            }
+                                                        }}
                                                     >
                                                         {phone}
                                                     </a>
@@ -155,7 +163,15 @@ export function HeaderClient({ session }: HeaderClientProps) {
                         ) : (
                             <div className="flex gap-2">
                                 <div className="relative group hidden lg:flex">
-                                    <Button size="sm">
+                                    <Button size="sm" onClick={() => {
+                                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                                            (window as any).gtag('event', 'click', {
+                                                event_category: 'engagement',
+                                                event_label: 'header_cta_book_consultation'
+                                            });
+                                        }
+                                        window.location.href = '#assessment';
+                                    }}>
                                         <Calendar className="w-4 h-4 mr-2" />
                                         Book Consultation
                                     </Button>

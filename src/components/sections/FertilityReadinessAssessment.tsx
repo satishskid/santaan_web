@@ -167,7 +167,7 @@ const factors: Factor[] = [
 
 const calculateRiskScore = (values: FactorValue[]): number => {
     let score = 0;
-    
+
     values.forEach(v => {
         const factor = factors.find(f => f.id === v.factorId);
         if (!factor) return;
@@ -267,13 +267,13 @@ export function FertilityReadinessAssessment() {
 
     const handleFactorChange = (factorId: string, value: string | boolean) => {
         const riskPoints = getRiskPoints(factorId, value);
-        
+
         setSelectedFactors(prev => {
             const existing = prev.find(f => f.factorId === factorId);
             if (existing) {
-                return prev.map(f => 
-                    f.factorId === factorId 
-                        ? { ...f, value, riskPoints } 
+                return prev.map(f =>
+                    f.factorId === factorId
+                        ? { ...f, value, riskPoints }
                         : f
                 );
             }
@@ -287,6 +287,13 @@ export function FertilityReadinessAssessment() {
     };
 
     const handleCalculate = () => {
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'calculate', {
+                event_category: 'assessment',
+                event_label: 'fertility_readiness_calculated',
+                value: calculateRiskScore(selectedFactors)
+            });
+        }
         setShowResults(true);
     };
 
@@ -302,7 +309,7 @@ export function FertilityReadinessAssessment() {
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Header */}
                 <div className="text-center mb-12 max-w-3xl mx-auto">
-                    <motion.span 
+                    <motion.span
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -310,7 +317,7 @@ export function FertilityReadinessAssessment() {
                     >
                         Interactive Assessment
                     </motion.span>
-                    <motion.h2 
+                    <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -319,7 +326,7 @@ export function FertilityReadinessAssessment() {
                     >
                         Check Your <span className="text-santaan-amber">Fertility Readiness</span>
                     </motion.h2>
-                    <motion.p 
+                    <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -351,22 +358,20 @@ export function FertilityReadinessAssessment() {
                                 >
                                     {/* Factor Card */}
                                     <div
-                                        className={`relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
-                                            isSelected
-                                                ? 'bg-santaan-teal text-white border-santaan-teal shadow-lg'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-santaan-teal/50 hover:shadow-md'
-                                        }`}
+                                        className={`relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${isSelected
+                                            ? 'bg-santaan-teal text-white border-santaan-teal shadow-lg'
+                                            : 'bg-white text-gray-700 border-gray-200 hover:border-santaan-teal/50 hover:shadow-md'
+                                            }`}
                                         onMouseEnter={() => setHoveredFactor(factor.id)}
                                         onMouseLeave={() => setHoveredFactor(null)}
                                     >
                                         <div className="flex flex-col items-center text-center">
-                                            <div className={`w-12 h-12 rounded-full mb-3 flex items-center justify-center ${
-                                                isSelected ? 'bg-white/20' : 'bg-santaan-teal/10'
-                                            }`}>
+                                            <div className={`w-12 h-12 rounded-full mb-3 flex items-center justify-center ${isSelected ? 'bg-white/20' : 'bg-santaan-teal/10'
+                                                }`}>
                                                 <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-santaan-teal'}`} />
                                             </div>
                                             <h3 className="text-sm font-bold mb-2">{factor.label}</h3>
-                                            
+
                                             {/* Toggle or Select */}
                                             {factor.type === 'toggle' ? (
                                                 <button
@@ -374,11 +379,10 @@ export function FertilityReadinessAssessment() {
                                                         const current = selectedFactors.find(f => f.factorId === factor.id);
                                                         handleFactorChange(factor.id, !current?.value);
                                                     }}
-                                                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
-                                                        isSelected
-                                                            ? 'bg-white text-santaan-teal'
-                                                            : 'bg-gray-100 text-gray-600 hover:bg-santaan-teal/10'
-                                                    }`}
+                                                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${isSelected
+                                                        ? 'bg-white text-santaan-teal'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-santaan-teal/10'
+                                                        }`}
                                                 >
                                                     {isSelected ? 'Yes' : 'Click to select'}
                                                 </button>
@@ -386,11 +390,10 @@ export function FertilityReadinessAssessment() {
                                                 <select
                                                     value={selectedFactors.find(f => f.factorId === factor.id)?.value as string || 'none'}
                                                     onChange={(e) => handleFactorChange(factor.id, e.target.value)}
-                                                    className={`text-xs w-full px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-santaan-teal ${
-                                                        isSelected
-                                                            ? 'bg-white text-gray-900 border-white'
-                                                            : 'bg-white text-gray-700 border-gray-200'
-                                                    }`}
+                                                    className={`text-xs w-full px-2 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-santaan-teal ${isSelected
+                                                        ? 'bg-white text-gray-900 border-white'
+                                                        : 'bg-white text-gray-700 border-gray-200'
+                                                        }`}
                                                 >
                                                     {factor.options?.map(opt => (
                                                         <option key={opt.value} value={opt.value}>
@@ -436,7 +439,7 @@ export function FertilityReadinessAssessment() {
                         Calculate My Readiness
                         <ArrowRight className="w-4 h-4" />
                     </motion.button>
-                    
+
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -467,7 +470,7 @@ export function FertilityReadinessAssessment() {
                                         </div>
                                         <div className="text-5xl font-bold opacity-90">{riskScore}</div>
                                     </div>
-                                    
+
                                     {/* Progress Bar */}
                                     <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
                                         <motion.div
@@ -491,37 +494,37 @@ export function FertilityReadinessAssessment() {
                                     </div>
 
                                     {/* Selected Factors Summary */}
-                                    {selectedFactors.filter(f => 
+                                    {selectedFactors.filter(f =>
                                         (factors.find(factor => factor.id === f.factorId)?.type === 'toggle' && f.value === true) ||
                                         (factors.find(factor => factor.id === f.factorId)?.type === 'select' && f.value !== 'none')
                                     ).length > 0 && (
-                                        <div className="border-t border-gray-100 pt-6">
-                                            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                                                Factors Considered
-                                            </h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {selectedFactors
-                                                    .filter(f => 
-                                                        (factors.find(factor => factor.id === f.factorId)?.type === 'toggle' && f.value === true) ||
-                                                        (factors.find(factor => factor.id === f.factorId)?.type === 'select' && f.value !== 'none')
-                                                    )
-                                                    .map(f => {
-                                                        const factor = factors.find(factor => factor.id === f.factorId);
-                                                        if (!factor) return null;
-                                                        
-                                                        return (
-                                                            <span
-                                                                key={f.factorId}
-                                                                className="px-3 py-1 bg-santaan-teal/10 text-santaan-teal text-sm font-medium rounded-full"
-                                                            >
-                                                                {factor.label}
-                                                                {factor.type === 'select' && f.value !== 'none' && `: ${factor.options?.find(o => o.value === f.value)?.label}`}
-                                                            </span>
-                                                        );
-                                                    })}
+                                            <div className="border-t border-gray-100 pt-6">
+                                                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                                                    Factors Considered
+                                                </h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedFactors
+                                                        .filter(f =>
+                                                            (factors.find(factor => factor.id === f.factorId)?.type === 'toggle' && f.value === true) ||
+                                                            (factors.find(factor => factor.id === f.factorId)?.type === 'select' && f.value !== 'none')
+                                                        )
+                                                        .map(f => {
+                                                            const factor = factors.find(factor => factor.id === f.factorId);
+                                                            if (!factor) return null;
+
+                                                            return (
+                                                                <span
+                                                                    key={f.factorId}
+                                                                    className="px-3 py-1 bg-santaan-teal/10 text-santaan-teal text-sm font-medium rounded-full"
+                                                                >
+                                                                    {factor.label}
+                                                                    {factor.type === 'select' && f.value !== 'none' && `: ${factor.options?.find(o => o.value === f.value)?.label}`}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
                                 </div>
 
                                 {/* CTA Footer */}
@@ -535,6 +538,14 @@ export function FertilityReadinessAssessment() {
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                                 className="px-6 py-2.5 bg-santaan-teal hover:bg-santaan-teal/90 text-white font-semibold rounded-full shadow-md transition-colors"
+                                                onClick={() => {
+                                                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                        (window as any).gtag('event', 'click', {
+                                                            event_category: 'conversion',
+                                                            event_label: 'assessment_result_book_consultation'
+                                                        });
+                                                    }
+                                                }}
                                             >
                                                 Book Consultation
                                             </motion.button>
@@ -551,8 +562,8 @@ export function FertilityReadinessAssessment() {
                     <div className="flex items-start gap-2 justify-center text-sm text-gray-500 italic bg-gray-50 p-4 rounded-lg">
                         <Info className="w-4 h-4 shrink-0 mt-0.5" />
                         <p className="text-left">
-                            <strong>Educational Tool:</strong> This assessment is for informational purposes based on general scientific principles. 
-                            It does not constitute medical advice. Individual fertility is complex and requires professional evaluation. 
+                            <strong>Educational Tool:</strong> This assessment is for informational purposes based on general scientific principles.
+                            It does not constitute medical advice. Individual fertility is complex and requires professional evaluation.
                             Please consult with a fertility specialist for accurate diagnosis and personalized treatment options.
                         </p>
                     </div>

@@ -34,6 +34,13 @@ export function Footer() {
             setStatus("success");
             setMessage(data?.message || "Subscribed successfully");
             setEmail("");
+
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'sign_up', {
+                    event_category: 'engagement',
+                    event_label: 'newsletter_subscription'
+                });
+            }
         } catch (error: unknown) {
             setStatus("error");
             const errorMessage = error instanceof Error ? error.message : "Failed to subscribe";
@@ -50,10 +57,10 @@ export function Footer() {
                     <div className="space-y-6">
                         <Link href="/" className="inline-flex items-center gap-3">
                             <div className="bg-white rounded-lg p-2">
-                                <Image 
-                                    src="/assets/santaan-logo.png" 
-                                    alt="Santaan Logo" 
-                                    width={120} 
+                                <Image
+                                    src="/assets/santaan-logo.png"
+                                    alt="Santaan Logo"
+                                    width={120}
                                     height={67}
                                     className="h-8 w-auto object-contain"
                                 />
