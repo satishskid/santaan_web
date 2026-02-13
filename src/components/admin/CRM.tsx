@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import CampaignAnalytics from './CampaignAnalytics';
 import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -314,106 +315,112 @@ export default function CRM() {
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-12">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setSelectedContacts(filteredContacts.map(c => c.id));
-                                        } else {
-                                            setSelectedContacts([]);
-                                        }
-                                    }}
-                                />
-                            </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Last Contact</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+                {activeTab === 'analytics' ? (
+                    <div className="p-6">
+                        <CampaignAnalytics contacts={contacts} />
+                    </div>
+                ) : (
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">Loading contacts...</TableCell>
+                                <TableHead className="w-12">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedContacts(filteredContacts.map(c => c.id));
+                                            } else {
+                                                setSelectedContacts([]);
+                                            }
+                                        }}
+                                    />
+                                </TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Phone</TableHead>
+                                <TableHead>Role</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Last Contact</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
-                        ) : filteredContacts.length > 0 ? (
-                            filteredContacts.map((contact) => (
-                                <TableRow key={contact.id} className="group hover:bg-gray-50 transition-colors">
-                                    <TableCell><input type="checkbox" className="rounded border-gray-300" /></TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium text-gray-900">{contact.name}</span>
-                                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                                                <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {contact.email}</span>
-                                                {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {contact.phone}</span>}
-                                            </div>
-                                            {(contact.utmSource || contact.utmMedium || contact.utmCampaign || contact.landingPath) && (
-                                                <div className="text-[11px] text-gray-400 mt-2">
-                                                    <span className="font-medium text-gray-500">Attribution:</span>{" "}
-                                                    {[contact.utmSource, contact.utmMedium, contact.utmCampaign, contact.landingPath].filter(Boolean).join(' → ')}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-600">{contact.email}</TableCell>
-                                    <TableCell className="text-gray-600">{contact.phone}</TableCell>
-                                    <TableCell>
-                                        <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                                            {contact.role}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs ${contact.status === 'new' ? 'bg-blue-100 text-blue-700' :
-                                            contact.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
-                                                contact.status === 'qualified' ? 'bg-green-100 text-green-700' :
-                                                    contact.status === 'converted' ? 'bg-emerald-100 text-emerald-700' :
-                                                        contact.status === 'lost' ? 'bg-red-100 text-red-700' :
-                                                            'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {contact.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-gray-600">{contact.lastContact}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                onClick={() => {
-                                                    setEditingContact(contact);
-                                                    setEditForm(contact);
-                                                }}
-                                                variant="ghost"
-                                                size="sm"
-                                                className="p-1"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleContactDelete(contact.id)}
-                                                variant="ghost"
-                                                size="sm"
-                                                className="p-1 text-red-600 hover:text-red-700"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">Loading contacts...</TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-gray-500">No contacts found</TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : filteredContacts.length > 0 ? (
+                                filteredContacts.map((contact) => (
+                                    <TableRow key={contact.id} className="group hover:bg-gray-50 transition-colors">
+                                        <TableCell><input type="checkbox" className="rounded border-gray-300" /></TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">{contact.name}</span>
+                                                <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {contact.email}</span>
+                                                    {contact.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {contact.phone}</span>}
+                                                </div>
+                                                {(contact.utmSource || contact.utmMedium || contact.utmCampaign || contact.landingPath) && (
+                                                    <div className="text-[11px] text-gray-400 mt-2">
+                                                        <span className="font-medium text-gray-500">Attribution:</span>{" "}
+                                                        {[contact.utmSource, contact.utmMedium, contact.utmCampaign, contact.landingPath].filter(Boolean).join(' → ')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-600">{contact.email}</TableCell>
+                                        <TableCell className="text-gray-600">{contact.phone}</TableCell>
+                                        <TableCell>
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                                                {contact.role}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`px-2 py-1 rounded-full text-xs ${contact.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                                                contact.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
+                                                    contact.status === 'qualified' ? 'bg-green-100 text-green-700' :
+                                                        contact.status === 'converted' ? 'bg-emerald-100 text-emerald-700' :
+                                                            contact.status === 'lost' ? 'bg-red-100 text-red-700' :
+                                                                'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                {contact.status}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-gray-600">{contact.lastContact}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    onClick={() => {
+                                                        setEditingContact(contact);
+                                                        setEditForm(contact);
+                                                    }}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="p-1"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleContactDelete(contact.id)}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="p-1 text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">No contacts found</TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                )}
             </div>
 
             {editingContact && (
