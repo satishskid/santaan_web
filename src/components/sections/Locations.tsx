@@ -21,13 +21,30 @@ export function Locations() {
     const [centers, setCenters] = useState<Center[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const displayCity = (city: string) => {
+        if (city.toLowerCase() === 'bengaluru' || city.toLowerCase() === 'bangalore') return 'Bangalore (R&D)';
+        return city;
+    };
+
     useEffect(() => {
         const fetchCenters = async () => {
             try {
                 const res = await fetch('/api/admin/centers');
                 if (res.ok) {
                     const data = await res.json();
-                    setCenters(data.centers || []);
+                    const desiredOrder = ['Berhampur', 'Bhubaneswar', 'Cuttack', 'Bengaluru', 'Bangalore'];
+                    const orderIndex = (city: string) => {
+                        const idx = desiredOrder.findIndex((x) => x.toLowerCase() === city.toLowerCase());
+                        return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+                    };
+                    const nextCenters = (data.centers || []) as Center[];
+                    nextCenters.sort((a, b) => {
+                        const ao = orderIndex(a.city);
+                        const bo = orderIndex(b.city);
+                        if (ao !== bo) return ao - bo;
+                        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+                    });
+                    setCenters(nextCenters);
                 }
             } catch (error) {
                 console.error('Failed to fetch centers:', error);
@@ -73,7 +90,7 @@ export function Locations() {
                             >
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
-                                        <h3 className="font-playfair font-bold text-2xl mb-1">{loc.city}</h3>
+                                        <h3 className="font-playfair font-bold text-2xl mb-1">{displayCity(loc.city)}</h3>
                                         <p className="text-santaan-amber text-sm">{loc.title}</p>
                                     </div>
                                     <MapPin className="w-6 h-6 text-santaan-amber" />

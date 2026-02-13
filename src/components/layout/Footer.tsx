@@ -122,10 +122,10 @@ export function Footer() {
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Our Centers</h4>
                         <ul className="space-y-4">
                             {[
-                                "Bhubaneswar (Main)",
                                 "Berhampur",
+                                "Bhubaneswar",
                                 "Cuttack",
-                                "Bangalore"
+                                "Bangalore (R&D)"
                             ].map((loc) => (
                                 <li key={loc} className="flex gap-3 text-gray-300">
                                     <MapPin className="w-5 h-5 text-santaan-amber shrink-0" />

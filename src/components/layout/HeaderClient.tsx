@@ -19,15 +19,15 @@ const navigation = [
 
 const centers = [
     {
-        name: 'Bhubaneswar',
-        phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
-    },
-    {
         name: 'Berhampur',
         phones: ['+91 7008990582', '+91 9777989739'],
     },
     {
-        name: 'Bengaluru',
+        name: 'Bhubaneswar',
+        phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
+    },
+    {
+        name: 'Bangalore (R&D)',
         phones: ['+91 8105108416'],
     },
 ];
