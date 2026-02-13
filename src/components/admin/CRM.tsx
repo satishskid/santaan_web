@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X } from 'lucide-react';
+import Link from 'next/link';
+import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -158,7 +159,7 @@ export default function CRM() {
         if (selectedContacts.length === 0) return;
         if (confirm(`Are you sure you want to delete ${selectedContacts.length} contacts?`)) {
             try {
-                await Promise.all(selectedContacts.map(id => 
+                await Promise.all(selectedContacts.map(id =>
                     fetch(`/api/admin/contacts/${id}`, { method: 'DELETE' })
                 ));
                 setSelectedContacts([]);
@@ -247,6 +248,11 @@ export default function CRM() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">CRM Dashboard</h1>
                 <div className="flex gap-2">
+                    <Link href="/admin/marketing-manual">
+                        <Button variant="outline" className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50">
+                            <BookOpen className="w-4 h-4" /> Manual & SLA
+                        </Button>
+                    </Link>
                     <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
                         <UserPlus className="w-4 h-4" /> Add Contact
                     </Button>
@@ -365,14 +371,13 @@ export default function CRM() {
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`px-2 py-1 rounded-full text-xs ${
-                                            contact.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                                        <span className={`px-2 py-1 rounded-full text-xs ${contact.status === 'new' ? 'bg-blue-100 text-blue-700' :
                                             contact.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
-                                            contact.status === 'qualified' ? 'bg-green-100 text-green-700' :
-                                            contact.status === 'converted' ? 'bg-emerald-100 text-emerald-700' :
-                                            contact.status === 'lost' ? 'bg-red-100 text-red-700' :
-                                            'bg-gray-100 text-gray-700'
-                                        }`}>
+                                                contact.status === 'qualified' ? 'bg-green-100 text-green-700' :
+                                                    contact.status === 'converted' ? 'bg-emerald-100 text-emerald-700' :
+                                                        contact.status === 'lost' ? 'bg-red-100 text-red-700' :
+                                                            'bg-gray-100 text-gray-700'
+                                            }`}>
                                             {contact.status}
                                         </span>
                                     </TableCell>
