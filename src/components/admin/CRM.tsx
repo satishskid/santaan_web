@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CampaignAnalytics from './CampaignAnalytics';
+import CeoCommandCenter from './CeoCommandCenter';
 import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +50,7 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'settings' | 'centers' | 'announcements';
+type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements';
 
 interface ContactsTableProps {
     contacts: Contact[];
@@ -235,6 +236,7 @@ export default function CRM() {
         { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone },
         { id: 'team', label: 'Team', icon: UserPlus },
         { id: 'analytics', label: 'Analytics', icon: Search },
+        { id: 'ceo_command', label: 'CEO Command', icon: Clock },
         { id: 'settings', label: 'Settings', icon: Search },
         { id: 'centers', label: 'Centers', icon: MapPin },
         { id: 'announcements', label: 'Announcements', icon: Megaphone }
@@ -318,6 +320,10 @@ export default function CRM() {
                 {activeTab === 'analytics' ? (
                     <div className="p-6">
                         <CampaignAnalytics contacts={contacts} />
+                    </div>
+                ) : activeTab === 'ceo_command' ? (
+                    <div className="p-6">
+                        <CeoCommandCenter contacts={contacts} />
                     </div>
                 ) : (
                     <Table>
