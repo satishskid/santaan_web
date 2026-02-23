@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, BarChart2, MousePointer, ExternalLink, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ArrowLeft, BarChart2, MousePointer, ExternalLink, Shield } from 'lucide-react';
 
 export default function MarketingManualPage() {
     return (
@@ -18,7 +17,7 @@ export default function MarketingManualPage() {
                                 Training Resource
                             </span>
                         </div>
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Marketing Manager's Manual & SLA</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Marketing Manager&apos;s Manual & SLA</h1>
                         <p className="text-gray-500 mt-1">
                             Your guide to using `santaan-web` as a high-performance engine for lead generation.
                         </p>
@@ -56,7 +55,7 @@ export default function MarketingManualPage() {
                                             <td className="px-4 py-3 font-mono text-xs text-blue-600">click</td>
                                             <td className="px-4 py-3">engagement</td>
                                             <td className="px-4 py-3 text-gray-500">header_cta_book_consultation</td>
-                                            <td className="px-4 py-3 font-medium text-green-700">High Intent: User clicked "Book Consultation"</td>
+                                            <td className="px-4 py-3 font-medium text-green-700">High Intent: User clicked &quot;Book Consultation&quot;</td>
                                         </tr>
                                         <tr className="hover:bg-gray-50/50">
                                             <td className="px-4 py-3 font-mono text-xs text-blue-600">click</td>
@@ -83,7 +82,7 @@ export default function MarketingManualPage() {
                             <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg flex gap-3 items-start">
                                 <MousePointer className="w-5 h-5 shrink-0 mt-0.5" />
                                 <div>
-                                    <strong>Optimization Tip:</strong> High Intent leads come from the Assessment and Header CTA. Prioritize optimizing pages that lead to these clicks. Mobile users favor the "Phone Click".
+                                    <strong>Optimization Tip:</strong> High Intent leads come from the Assessment and Header CTA. Prioritize optimizing pages that lead to these clicks. Mobile users favor the &quot;Phone Click&quot;.
                                 </div>
                             </div>
                         </div>
@@ -103,22 +102,36 @@ export default function MarketingManualPage() {
                             </p>
 
                             <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-xs break-all">
-                                https://santaan.in/?utm_source=instagram&utm_medium=bio&utm_campaign=brand_awareness
+                                https://santaan.in/landing-page?utm_source=meta&utm_medium=paid_social&utm_campaign=ivf_bhubaneswar_q2&utm_content=reel_a&utm_term=female_fertility&center=bhubaneswar&asset=tv_qr_001
+                            </div>
+
+                            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                <strong>Mandatory for every ad link and QR code:</strong> <code className="font-mono">utm_source</code>, <code className="font-mono">utm_medium</code>, <code className="font-mono">utm_campaign</code>, <code className="font-mono">center</code>, <code className="font-mono">asset</code>.
+                                Missing fields are auto-filled as <code className="font-mono">direct / website / always_on</code> and reported as unattributed quality.
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div className="p-4 border border-gray-200 rounded-lg">
                                     <h4 className="font-semibold text-sm mb-2">Facebook Ad Example</h4>
                                     <div className="text-xs text-gray-500 break-all">
-                                        .../ivf-treatment?utm_source=facebook&utm_medium=cpc&utm_campaign=ivf_promo_q1
+                                        .../ivf-clinic-bhubaneswar?utm_source=facebook&utm_medium=cpc&utm_campaign=ivf_bhubaneswar_q2&utm_content=creative_3&utm_term=ivf_couples&center=bhubaneswar&asset=fb_adset3_creative3
                                     </div>
                                 </div>
                                 <div className="p-4 border border-gray-200 rounded-lg">
-                                    <h4 className="font-semibold text-sm mb-2">Email Blast Example</h4>
+                                    <h4 className="font-semibold text-sm mb-2">TV/OOH QR Example</h4>
                                     <div className="text-xs text-gray-500 break-all">
-                                        .../blog/myth-busting?utm_source=newsletter&utm_medium=email&utm_campaign=january_wellness
+                                        .../at-home-fertility-testing?utm_source=tv&utm_medium=qr&utm_campaign=brand_hope_feb&utm_content=tvc_20s&utm_term=prime_time&center=berhampur&asset=tv_qr_slide_04
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="rounded-lg border border-gray-200 p-4">
+                                <h4 className="font-semibold text-sm mb-2 text-gray-900">Naming Convention (Enforced)</h4>
+                                <ul className="text-sm text-gray-600 space-y-1">
+                                    <li><code className="font-mono">utm_campaign</code>: <code className="font-mono">service_city_month</code> (example: <code className="font-mono">ivf_bhubaneswar_march</code>)</li>
+                                    <li><code className="font-mono">center</code>: <code className="font-mono">bhubaneswar | berhampur | bangalore</code></li>
+                                    <li><code className="font-mono">asset</code>: exact creative id from media plan (example: <code className="font-mono">meta_reel_07</code>)</li>
+                                </ul>
                             </div>
                         </div>
                     </section>

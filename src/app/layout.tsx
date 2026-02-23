@@ -6,6 +6,9 @@ import { JourneyProvider } from "@/context/JourneyContext";
 import ChatWidget from "@/components/chat/ChatWidget";
 import AuthProvider from "@/components/providers/AuthProvider";
 import UtmTracker from "@/components/analytics/UtmTracker";
+import CtaContactTracker from "@/components/analytics/CtaContactTracker";
+import { defaultSeoMetadata } from "@/lib/seo";
+import StickyContactBar from "@/components/layout/StickyContactBar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,32 +20,7 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.santaan.in"),
-  title: "Santaan - Where Science Meets Hope",
-  description: "Experience the wonder of life with Santaan Fertility. Daily insights, myth-busting science, and compassionate care.",
-  openGraph: {
-    title: "Santaan - Where Science Meets Hope",
-    description: "We demystify fertility through deeper scientific insights to bring you closer to joy.",
-    url: 'https://santaan.in',
-    siteName: 'Santaan Fertility',
-    images: [
-      {
-        url: '/assets/hero-origin.png', // Fallback to hero image
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: 'en_IN',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: "Santaan Fertility",
-    description: "Where Science Meets Hope.",
-    images: ['/assets/hero-origin.png'],
-  },
-};
+export const metadata: Metadata = defaultSeoMetadata;
 
 import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
 
@@ -58,12 +36,14 @@ export default function RootLayout({
       >
         <AnalyticsScripts />
         <UtmTracker />
+        <CtaContactTracker />
 
         <AuthProvider>
           <SmoothScrollProvider>
             <JourneyProvider>
               {children}
               <ChatWidget />
+              <StickyContactBar />
             </JourneyProvider>
           </SmoothScrollProvider>
         </AuthProvider>
@@ -71,4 +51,3 @@ export default function RootLayout({
     </html>
   );
 }
-

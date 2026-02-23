@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
+import { text, integer, real, sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const contacts = sqliteTable('contacts', {
     id: integer('id').primaryKey({ autoIncrement: true }),
@@ -98,5 +98,132 @@ export const announcements = sqliteTable('announcements', {
     publishDate: text('publish_date').default(sql`CURRENT_TIMESTAMP`),
     expiryDate: text('expiry_date'), // Optional auto-hide date
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Campaign spend tracking for financial ROI (CPL / CPP) in admin dashboards
+export const campaignSpend = sqliteTable('campaign_spend', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    spendDate: text('spend_date').notNull(), // YYYY-MM-DD
+    channel: text('channel').notNull(), // meta, google, youtube, offline, etc.
+    utmCampaign: text('utm_campaign').notNull(),
+    center: text('center').default('network'),
+    asset: text('asset'),
+    amount: real('amount').notNull(), // INR amount
+    notes: text('notes'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Daily paid media reporting from agency (Meta/Google/YouTube)
+export const agencyPerformanceLogs = sqliteTable('agency_performance_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    reportDate: text('report_date').notNull(), // YYYY-MM-DD
+    platform: text('platform').notNull(), // meta | google | youtube
+    center: text('center').notNull(), // bhubaneswar | berhampur | bangalore
+    campaignId: text('campaign_id').notNull(),
+    campaignName: text('campaign_name').notNull(),
+    utmSource: text('utm_source').notNull(),
+    utmMedium: text('utm_medium').notNull(),
+    utmCampaign: text('utm_campaign').notNull(),
+    spend: real('spend').notNull(), // INR
+    impressions: integer('impressions').default(0),
+    clicks: integer('clicks').default(0),
+    leads: integer('leads').default(0),
+    qualifiedLeads: integer('qualified_leads').default(0),
+    registrations: integer('registrations').default(0),
+    notes: text('notes'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Offline activity logs entered by field team
+export const fieldActivityLogs = sqliteTable('field_activity_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    activityDate: text('activity_date').notNull(), // YYYY-MM-DD
+    center: text('center').notNull(),
+    activityType: text('activity_type').notNull(), // doctor_visit | hoarding | camp | event
+    assetCode: text('asset_code').notNull(),
+    location: text('location').notNull(),
+    ownerName: text('owner_name').notNull(),
+    spend: real('spend').default(0),
+    estimatedReach: integer('estimated_reach').default(0),
+    actualFootfall: integer('actual_footfall').default(0),
+    leadsCollected: integer('leads_collected').default(0),
+    qualifiedLeads: integer('qualified_leads').default(0),
+    registrations: integer('registrations').default(0),
+    utmCampaign: text('utm_campaign').notNull(),
+    qrCodeId: text('qr_code_id'),
+    callNumber: text('call_number'),
+    whatsappNumber: text('whatsapp_number'),
+    proofUrl: text('proof_url'),
+    notes: text('notes'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// TV ad log entered by media/marketing operations
+export const tvAdLogs = sqliteTable('tv_ad_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    airingDate: text('airing_date').notNull(), // YYYY-MM-DD
+    center: text('center').notNull(),
+    channelName: text('channel_name').notNull(),
+    programName: text('program_name').notNull(),
+    timeSlot: text('time_slot').notNull(), // HH:mm or label
+    spotDurationSec: integer('spot_duration_sec').default(20),
+    spotsCount: integer('spots_count').default(1),
+    spend: real('spend').default(0),
+    creativeCode: text('creative_code').notNull(),
+    tvCampaignCode: text('tv_campaign_code').notNull(),
+    utmCampaign: text('utm_campaign').notNull(),
+    qrCodeId: text('qr_code_id'),
+    ivrNumber: text('ivr_number'),
+    whatsappKeyword: text('whatsapp_keyword'),
+    notes: text('notes'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Daily execution status by role/profile for interim Growth OS operations
+export const opsTaskUpdates = sqliteTable(
+    'ops_task_updates',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        taskDate: text('task_date').notNull(), // YYYY-MM-DD
+        profileKey: text('profile_key').notNull(), // agency_ops, field_exec_bhubaneswar, etc.
+        center: text('center').default('network'),
+        taskCode: text('task_code').notNull(),
+        status: text('status').default('pending'), // pending | in_progress | done | blocked
+        note: text('note'),
+        updatedByEmail: text('updated_by_email'),
+        updatedByName: text('updated_by_name'),
+        updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    },
+    (table) => ({
+        uniqueTaskPerDay: uniqueIndex('ops_task_updates_unique_day_task').on(
+            table.taskDate,
+            table.profileKey,
+            table.center,
+            table.taskCode
+        ),
+    })
+);
+
+// Blog posts synced from Medium and served on Santaan domain
+export const blogPosts = sqliteTable('blog_posts', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    excerpt: text('excerpt').notNull(),
+    html: text('html').notNull(),
+    author: text('author').default('Santaan Editorial Team'),
+    thumbnail: text('thumbnail'),
+    tags: text('tags').default('[]'), // JSON array of tags
+    sourceUrl: text('source_url').notNull(),
+    type: text('type').default('blog'), // blog | news
+    readMinutes: integer('read_minutes').default(1),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    publishedAt: text('published_at').notNull(),
+    syncedAt: text('synced_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });

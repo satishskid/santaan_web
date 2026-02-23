@@ -1,46 +1,46 @@
 
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-import * as dotenv from "dotenv";
-import * as path from 'path';
+import { drizzle } from 'drizzle-orm/libsql/web';
+import { createClient } from '@libsql/client/web';
+import * as schema from '../db/schema';
+import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
+import * as dotenv from 'dotenv';
+import path from 'path';
 
-// Load environment variables
+// Load .env.local
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const DEFAULT_PASSWORD = "password123"; // INSECURE: Change immediately after login
+if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+    console.error("❌ Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN in .env.local");
+    process.exit(1);
+}
+
+const client = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN
+});
+
+const db = drizzle(client, { schema });
+
+const DEFAULT_PASSWORD = "sant_growth26";
 const ADMINS = [
     { email: "raghab.panda@santaan.in", name: "Raghab Panda" },
     { email: "satish.rath@santaan.in", name: "Satish Rath" },
-    { email: "satish@skids.health", name: "Satish Skids" },
+    { email: "satish@skids.health", name: "Satish Rath (Skids)" },
     { email: "demo@santaan.com", name: "Demo Admin" }
 ];
 
-async function seedProd() {
-    const url = process.env.TURSO_DATABASE_URL;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
-
-    if (!url || !authToken) {
-        throw new Error("❌ Missing Turso credentials for seeding");
-    }
-
-    console.log("🚀 Connecting to Production Turso DB for Seeding...");
-    const client = createClient({ url, authToken });
-    const db = drizzle(client, { schema: { users } });
-
-    console.log("🌱 Seeding production users...");
+async function seed() {
+    console.log("🌱 Seeding PRODUCTION users to Turso...");
 
     const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
     for (const admin of ADMINS) {
         try {
-            // Check if user exists (using raw query or dql if select fails heavily)
-            const existingUser = await db.select().from(users).where(eq(users.email, admin.email)).get();
+            const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, admin.email)).get();
 
             if (!existingUser) {
-                await db.insert(users).values({
+                await db.insert(schema.users).values({
                     email: admin.email,
                     name: admin.name,
                     password: hashedPassword,
@@ -49,17 +49,20 @@ async function seedProd() {
                 console.log(`✅ Created admin: ${admin.email}`);
             } else {
                 console.log(`⚠️ User already exists: ${admin.email}`);
+                // Force update password to ensure access
+                await db.update(schema.users).set({ password: hashedPassword }).where(eq(schema.users.email, admin.email));
+                console.log(`🔄 Reset password for: ${admin.email}`);
             }
         } catch (e) {
-            console.error(`❌ Failed to seed ${admin.email}:`, e);
+            console.error(`❌ Failed to process ${admin.email}:`, e);
         }
     }
 
-    console.log("\n🔐 Production Seeding complete.");
-    client.close();
+    console.log("\n🔐 Seeding complete.");
+    console.log(`👉 Default password: ${DEFAULT_PASSWORD}`);
 }
 
-seedProd().catch((err) => {
-    console.error("Fatal error during seeding:", err);
+seed().catch((err) => {
+    console.error("❌ Seeding failed:", err);
     process.exit(1);
 });

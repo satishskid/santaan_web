@@ -17,40 +17,32 @@ import { FAQ } from "@/components/sections/FAQ";
 import { NewsAnnouncements } from "@/components/sections/NewsAnnouncements";
 import Script from "next/script";
 import { faqs } from "@/data/faqs";
+import { buildMetadata } from "@/lib/seo";
+import { buildFaqSchema, buildLocalClinicSchemas, buildOrganizationSchema } from "@/lib/schema";
+
+export const metadata = buildMetadata({
+  title: "Santaan IVF | Fertility & IVF Centre in Bhubaneswar, Berhampur & Bangalore",
+  description:
+    "Evidence-driven fertility and IVF care in Bhubaneswar, Berhampur and Bangalore with advanced diagnostics, compassionate specialists, and personalized treatment pathways.",
+  path: "/",
+  keywords: [
+    "ivf centre in bhubaneswar",
+    "ivf clinic in berhampur",
+    "fertility centre in bangalore",
+    "male infertility clinic",
+    "pcos fertility treatment",
+  ],
+});
 
 export default function Home() {
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
-    })),
-  };
-
-  const clinicSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalClinic",
-    name: "Santaan Fertility",
-    url: "https://www.santaan.in",
-    telephone: "+91 9337326896",
-    address: {
-      "@type": "PostalAddress",
-      addressCountry: "IN",
-      addressRegion: "Odisha",
-      addressLocality: "Bhubaneswar",
-    },
-  };
-
+  const faqSchema = buildFaqSchema(faqs);
+  const organizationSchema = buildOrganizationSchema();
+  const localClinicSchemas = buildLocalClinicSchemas();
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Santaan Fertility",
-    url: "https://www.santaan.in",
+    name: "Santaan IVF",
+    url: "https://santaan.in",
   };
 
   return (
@@ -61,14 +53,19 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <Script
-        id="santaan-clinic-schema"
+        id="santaan-organization-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(clinicSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
       <Script
         id="santaan-website-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <Script
+        id="santaan-local-clinics-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localClinicSchemas) }}
       />
 
       <Header />

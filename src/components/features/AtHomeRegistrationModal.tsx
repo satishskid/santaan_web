@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { ensureMandatoryUtm, readUtmParams } from "@/lib/utm";
 
 interface AtHomeRegistrationModalProps {
     isOpen: boolean;
@@ -32,11 +33,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
 
         try {
             // Get UTM params
-            const utm = {
-                utm_source: localStorage.getItem('utm_source'),
-                utm_medium: localStorage.getItem('utm_medium'),
-                utm_campaign: localStorage.getItem('utm_campaign'),
-            };
+            const utm = ensureMandatoryUtm(readUtmParams());
 
             const res = await fetch("/api/at-home/register", {
                 method: "POST",
@@ -55,8 +52,9 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                 setFormData({ name: "", phone: "", email: "", location: "", concerns: "" });
             }, 3000);
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Something went wrong";
+            setError(message);
         } finally {
             setIsLoading(false);
         }

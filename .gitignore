@@ -42,3 +42,9 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+netlify/
+
+# local runtime/data artifacts
+santaan.db
+tmp/
+output/

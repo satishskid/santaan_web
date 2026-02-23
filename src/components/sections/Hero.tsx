@@ -54,7 +54,7 @@ export function Hero() {
     const currentSlide = slides[currentIndex];
 
     return (
-        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-santaan-cream via-[#E6F0E6] to-[#FDF6F0]">
+        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 md:pt-28 bg-gradient-to-br from-santaan-cream via-[#E6F0E6] to-[#FDF6F0]">
             {/* Background Visual Slider */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-santaan-teal/90 via-santaan-teal/60 to-transparent mix-blend-multiply z-10" />
@@ -81,12 +81,12 @@ export function Hero() {
 
             <div className="container relative z-10 px-4 md:px-6 text-center max-w-4xl mx-auto">
                 {/* Sanskrit Verse - Elegant Header */}
-                <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 0.3 }}
-                    className="mb-8 md:mb-10"
-                >
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                        className="mb-8 md:mb-10 mt-10 md:mt-12"
+                    >
                     <div className="bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 md:px-8 md:py-6 shadow-xl max-w-3xl mx-auto">
                         <p className="font-playfair text-white text-lg md:text-xl mb-2 italic tracking-wide">
                             संतानः वंशस्य सातत्यम्, जीवनस्य समृद्धिः, प्रीतेः स्वरूपम्।
@@ -112,8 +112,12 @@ export function Hero() {
                             {currentSlide.badge}
                         </span>
 
-                        <h1
-                            className="text-5xl md:text-7xl font-playfair font-bold text-white mb-6 leading-tight drop-shadow-md"
+                        <h1 className="text-3xl md:text-5xl font-playfair font-bold text-white mb-3 leading-tight drop-shadow-md">
+                            Evidence-Driven IVF & Fertility Care in Bhubaneswar, Berhampur and Bangalore
+                        </h1>
+
+                        <p
+                            className="text-2xl md:text-4xl font-playfair font-bold text-white mb-6 leading-tight drop-shadow-md"
                             dangerouslySetInnerHTML={{ __html: currentSlide.title }}
                         />
 

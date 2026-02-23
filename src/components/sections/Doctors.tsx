@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
+import type { ElementType } from 'react';
 
 const management = [
     {
@@ -39,15 +40,21 @@ const doctors = [
     }
 ];
 
-export function Doctors() {
+interface DoctorsProps {
+    headingAs?: Extract<ElementType, 'h1' | 'h2'>;
+}
+
+export function Doctors({ headingAs = 'h2' }: DoctorsProps) {
+    const HeadingTag = headingAs;
+
     return (
         <section id="doctors" className="py-24 bg-[#E6F0E6]/30">
             <div className="container px-4 md:px-6 mx-auto">
                 <div className="text-center mb-16">
                     <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Our Expertise</span>
-                    <h2 className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-2 mb-4">
+                    <HeadingTag className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-2 mb-4">
                         Meet the Minds Behind the <span className="text-santaan-amber">Miracles</span>
-                    </h2>
+                    </HeadingTag>
                     <p className="text-black max-w-2xl mx-auto">
                         A team of award-winning scientists, clinicians, and embryologists dedicated to turning your hope into reality.
                     </p>

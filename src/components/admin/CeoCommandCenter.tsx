@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -9,7 +9,10 @@ import {
   CircleDot,
   Clock3,
   Crosshair,
+  IndianRupee,
   Megaphone,
+  MessageCircle,
+  Phone,
   Target,
   TrendingUp,
   Users,
@@ -21,12 +24,22 @@ interface Contact {
   leadScore?: number;
   leadSource?: string;
   preferredChannel?: string;
+  tags?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
   landingPath?: string;
   createdAt?: string;
   lastContact?: string;
+}
+
+interface SpendEntry {
+  id: number;
+  spendDate: string;
+  channel: string;
+  utmCampaign: string;
+  center: string;
+  amount: number;
 }
 
 interface CeoCommandCenterProps {
@@ -40,14 +53,35 @@ interface KpiCardProps {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface WeekTarget {
+  leadsTarget: number | null;
+  leadsStretch: number | null;
+  convertedTarget: number | null;
+  conversionRateMin: number | null;
+  attributionMin: number | null;
+  pending24hMax: number | null;
+}
+
 const pendingStatuses = new Set(["new", "contacted", "qualified"]);
 const statusOrder = ["new", "contacted", "qualified", "converted", "lost"];
 const referenceTime = Date.now();
+const centerTargetKey: Record<string, string> = {
+  Bhubaneswar: "bhubaneswar",
+  Berhampur: "berhampur",
+  Bangalore: "bangalore",
+};
 
 function normalizeStatus(status?: string) {
   return String(status || "")
     .trim()
     .toLowerCase();
+}
+
+function normalizeToken(value?: string | null, fallback = "unknown") {
+  const token = String(value || "")
+    .trim()
+    .toLowerCase();
+  return token || fallback;
 }
 
 function parseTimestamp(value?: string): number | null {
@@ -65,12 +99,34 @@ function formatNumber(value: number) {
   return Intl.NumberFormat("en-IN").format(Math.max(0, Math.round(value)));
 }
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number.isFinite(value) ? value : 0);
+}
+
 function inferCenter(landingPath?: string, campaign?: string) {
   const path = `${landingPath || ""} ${campaign || ""}`.toLowerCase();
   if (path.includes("bhubaneswar")) return "Bhubaneswar";
   if (path.includes("berhampur")) return "Berhampur";
   if (path.includes("bangalore") || path.includes("bengaluru") || path.includes("aecs")) return "Bangalore";
   return "Not Tagged";
+}
+
+function normalizeCenter(value?: string | null) {
+  const lower = normalizeToken(value, "network");
+  if (lower.includes("bhubaneswar") || lower.includes("bbsr")) return "Bhubaneswar";
+  if (lower.includes("berhampur") || lower.includes("brahmapur")) return "Berhampur";
+  if (lower.includes("bangalore") || lower.includes("bengaluru") || lower.includes("aecs")) return "Bangalore";
+  return "Network";
+}
+
+function parseNumber(value?: string): number | null {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function KpiCard({ title, value, subtitle, icon: Icon }: KpiCardProps) {
@@ -89,6 +145,97 @@ function KpiCard({ title, value, subtitle, icon: Icon }: KpiCardProps) {
 }
 
 export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
+  const [settingsMap, setSettingsMap] = useState<Record<string, string>>({});
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
+  const [opsSubmission, setOpsSubmission] = useState({
+    loading: true,
+    agencyToday: 0,
+    fieldToday: 0,
+    tvToday: 0,
+  });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSettings() {
+      try {
+        const response = await fetch("/api/admin/settings");
+        if (!response.ok) return;
+        const payload = (await response.json()) as Record<string, string>;
+        if (active && payload && typeof payload === "object") {
+          setSettingsMap(payload);
+        }
+      } catch {
+        // Non-blocking for CEO UI; metrics still render from contacts.
+      } finally {
+        if (active) setSettingsLoaded(true);
+      }
+    }
+
+    loadSettings();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const today = new Date().toISOString().slice(0, 10);
+
+    async function loadOpsSubmission() {
+      try {
+        const [agencyRes, fieldRes, tvRes] = await Promise.all([
+          fetch(`/api/admin/agency-performance?from=${today}&to=${today}`),
+          fetch(`/api/admin/field-activities?from=${today}&to=${today}`),
+          fetch(`/api/admin/tv-ads?from=${today}&to=${today}`),
+        ]);
+
+        const [agencyPayload, fieldPayload, tvPayload] = await Promise.all([
+          agencyRes.json(),
+          fieldRes.json(),
+          tvRes.json(),
+        ]);
+
+        if (!active) return;
+        setOpsSubmission({
+          loading: false,
+          agencyToday: Array.isArray(agencyPayload?.rows) ? agencyPayload.rows.length : 0,
+          fieldToday: Array.isArray(fieldPayload?.rows) ? fieldPayload.rows.length : 0,
+          tvToday: Array.isArray(tvPayload?.rows) ? tvPayload.rows.length : 0,
+        });
+      } catch {
+        if (!active) return;
+        setOpsSubmission((prev) => ({ ...prev, loading: false }));
+      }
+    }
+
+    loadOpsSubmission();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSpend() {
+      try {
+        const response = await fetch("/api/admin/spend");
+        const payload = await response.json();
+        if (!active || !response.ok) return;
+        setSpendEntries((payload.spend || []) as SpendEntry[]);
+      } catch {
+        // no-op; spend widgets degrade gracefully
+      }
+    }
+
+    loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const metrics = useMemo(() => {
     const totalLeads = contacts.length;
     const convertedLeads = contacts.filter((contact) => normalizeStatus(contact.status) === "converted").length;
@@ -99,6 +246,45 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     const avgLeadScore = totalLeads > 0 ? totalLeadScore / totalLeads : 0;
     const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
     const lostRate = totalLeads > 0 ? (lostLeads / totalLeads) * 100 : 0;
+    const totalSpend = spendEntries.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const cpl = totalLeads > 0 ? totalSpend / totalLeads : 0;
+    const cpp = convertedLeads > 0 ? totalSpend / convertedLeads : 0;
+
+    const spendByChannel = spendEntries.reduce((acc, row) => {
+      const channel = normalizeToken(row.channel, "direct");
+      acc[channel] = (acc[channel] || 0) + Number(row.amount || 0);
+      return acc;
+    }, {} as Record<string, number>);
+    const spendByCampaign = spendEntries.reduce((acc, row) => {
+      const campaign = normalizeToken(row.utmCampaign, "organic");
+      acc[campaign] = (acc[campaign] || 0) + Number(row.amount || 0);
+      return acc;
+    }, {} as Record<string, number>);
+    const spendByCenter = spendEntries.reduce((acc, row) => {
+      const center = normalizeCenter(row.center);
+      acc[center] = (acc[center] || 0) + Number(row.amount || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const callLeads = contacts.filter((contact) => {
+      const source = `${contact.leadSource || ""} ${contact.utmSource || ""} ${contact.preferredChannel || ""} ${contact.tags || ""}`.toLowerCase();
+      return source.includes("call") || source.includes("phone");
+    }).length;
+    const whatsappLeads = contacts.filter((contact) => {
+      const source = `${contact.leadSource || ""} ${contact.utmSource || ""} ${contact.preferredChannel || ""} ${contact.tags || ""}`.toLowerCase();
+      return source.includes("whatsapp");
+    }).length;
+    const hotLineSlaBreaches = contacts.filter((contact) => {
+      const source = `${contact.leadSource || ""} ${contact.utmSource || ""} ${contact.preferredChannel || ""} ${contact.tags || ""}`.toLowerCase();
+      const isCallOrWhatsApp = source.includes("call") || source.includes("phone") || source.includes("whatsapp");
+      if (!isCallOrWhatsApp) return false;
+      const normalizedStatus = normalizeStatus(contact.status);
+      if (!pendingStatuses.has(normalizedStatus)) return false;
+      const anchor = parseTimestamp(contact.lastContact) || parseTimestamp(contact.createdAt);
+      if (!anchor) return false;
+      const ageHours = (referenceTime - anchor) / (1000 * 60 * 60);
+      return ageHours >= 2;
+    }).length;
 
     const stalePendingLeads = contacts.filter((contact) => {
       const normalizedStatus = normalizeStatus(contact.status);
@@ -134,7 +320,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
         highIntent: number;
       }
     >();
-    const centerMap = new Map<string, { leads: number; converted: number; highIntent: number }>();
+    const centerMap = new Map<string, { leads: number; converted: number; highIntent: number; stalePending: number; attributed: number }>();
 
     for (const contact of contacts) {
       const status = normalizeStatus(contact.status);
@@ -147,9 +333,9 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
         return (referenceTime - anchor) / (1000 * 60 * 60) >= 24;
       })();
 
-      const channel = String(
-        contact.utmSource || contact.leadSource || contact.preferredChannel || "Direct / Unknown"
-      ).trim();
+      const channel = normalizeToken(
+        contact.utmSource || contact.leadSource || contact.preferredChannel || "direct"
+      );
       const channelAgg = channelMap.get(channel) || {
         leads: 0,
         converted: 0,
@@ -164,8 +350,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       channelAgg.stale += isStale ? 1 : 0;
       channelMap.set(channel, channelAgg);
 
-      const campaign = String(contact.utmCampaign || "organic").trim();
-      const source = String(contact.utmSource || "direct").trim();
+      const campaign = normalizeToken(contact.utmCampaign, "organic");
+      const source = normalizeToken(contact.utmSource, "direct");
       const landingPath = String(contact.landingPath || "/").trim();
       const assetKey = `${campaign}|${landingPath}`;
       const assetAgg = assetMap.get(assetKey) || {
@@ -182,41 +368,68 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       assetMap.set(assetKey, assetAgg);
 
       const center = inferCenter(contact.landingPath, contact.utmCampaign);
-      const centerAgg = centerMap.get(center) || { leads: 0, converted: 0, highIntent: 0 };
+      const centerAgg = centerMap.get(center) || { leads: 0, converted: 0, highIntent: 0, stalePending: 0, attributed: 0 };
       centerAgg.leads += 1;
       centerAgg.converted += isConverted ? 1 : 0;
       centerAgg.highIntent += isHighIntent ? 1 : 0;
+      centerAgg.stalePending += isStale ? 1 : 0;
+      centerAgg.attributed += contact.utmSource || contact.utmCampaign || contact.utmMedium ? 1 : 0;
       centerMap.set(center, centerAgg);
     }
 
     const channelPerformance = Array.from(channelMap.entries())
-      .map(([channel, agg]) => ({
-        channel,
-        ...agg,
-        conversionRate: agg.leads > 0 ? (agg.converted / agg.leads) * 100 : 0,
-        highIntentRate: agg.leads > 0 ? (agg.highIntent / agg.leads) * 100 : 0,
-        avgScore: agg.leads > 0 ? agg.scoreTotal / agg.leads : 0,
-      }))
+      .map(([channel, agg]) => {
+        const spend = spendByChannel[channel] || 0;
+        return {
+          channel,
+          ...agg,
+          spend,
+          cpl: agg.leads > 0 ? spend / agg.leads : 0,
+          cpp: agg.converted > 0 ? spend / agg.converted : 0,
+          conversionRate: agg.leads > 0 ? (agg.converted / agg.leads) * 100 : 0,
+          highIntentRate: agg.leads > 0 ? (agg.highIntent / agg.leads) * 100 : 0,
+          avgScore: agg.leads > 0 ? agg.scoreTotal / agg.leads : 0,
+        };
+      })
       .sort((a, b) => b.converted - a.converted || b.leads - a.leads);
 
     const topChannel = channelPerformance[0];
     const weakChannels = channelPerformance.filter((item) => item.leads >= 5 && item.conversionRate < 8);
 
+    const campaignLeadTotals = Array.from(assetMap.values()).reduce((acc, asset) => {
+      acc[asset.campaign] = (acc[asset.campaign] || 0) + asset.leads;
+      return acc;
+    }, {} as Record<string, number>);
+
     const assetPerformance = Array.from(assetMap.values())
-      .map((asset) => ({
-        ...asset,
-        conversionRate: asset.leads > 0 ? (asset.converted / asset.leads) * 100 : 0,
-        roiScore: asset.converted * 3 + asset.highIntent,
-      }))
+      .map((asset) => {
+        const campaignSpend = spendByCampaign[asset.campaign] || 0;
+        const campaignLeads = campaignLeadTotals[asset.campaign] || 0;
+        const allocatedSpend = campaignLeads > 0 ? (campaignSpend * asset.leads) / campaignLeads : 0;
+        return {
+          ...asset,
+          spend: allocatedSpend,
+          cpl: asset.leads > 0 ? allocatedSpend / asset.leads : 0,
+          cpp: asset.converted > 0 ? allocatedSpend / asset.converted : 0,
+          conversionRate: asset.leads > 0 ? (asset.converted / asset.leads) * 100 : 0,
+          roiScore: asset.converted * 3 + asset.highIntent,
+        };
+      })
       .sort((a, b) => b.roiScore - a.roiScore || b.leads - a.leads)
       .slice(0, 12);
 
     const centerPerformance = Array.from(centerMap.entries())
-      .map(([center, agg]) => ({
-        center,
-        ...agg,
-        conversionRate: agg.leads > 0 ? (agg.converted / agg.leads) * 100 : 0,
-      }))
+      .map(([center, agg]) => {
+        const spend = spendByCenter[center] || 0;
+        return {
+          center,
+          ...agg,
+          spend,
+          cpp: agg.converted > 0 ? spend / agg.converted : 0,
+          conversionRate: agg.leads > 0 ? (agg.converted / agg.leads) * 100 : 0,
+          attributionCoverage: agg.leads > 0 ? (agg.attributed / agg.leads) * 100 : 0,
+        };
+      })
       .sort((a, b) => b.leads - a.leads);
 
     const actionItems: Array<{
@@ -237,6 +450,16 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       });
     }
 
+    if (hotLineSlaBreaches > 0) {
+      actionItems.push({
+        priority: "High",
+        owner: "Call Center Lead",
+        title: `${hotLineSlaBreaches} call/WhatsApp leads crossed 2-hour SLA`,
+        why: "Speed-to-lead is the highest predictor of consultation conversion for phone-first users.",
+        action: "Run missed-call recovery and WhatsApp callback workflow before end of day.",
+      });
+    }
+
     if (attributionCoverage < 85) {
       actionItems.push({
         priority: "High",
@@ -244,6 +467,16 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
         title: "Fix attribution coverage for paid and social assets",
         why: `${formatPercent(attributionCoverage)} coverage is below the 85% visibility baseline.`,
         action: "Enforce UTM templates on all TV/social/hoarding QR and paid links this week.",
+      });
+    }
+
+    if (totalSpend > 0 && convertedLeads === 0) {
+      actionItems.push({
+        priority: "High",
+        owner: "Growth Team",
+        title: "Spend detected with zero conversions",
+        why: `${formatCurrency(totalSpend)} logged spend has not produced converted leads yet.`,
+        action: "Pause weak campaigns, verify lead quality and counselling closure before further spend.",
       });
     }
 
@@ -303,16 +536,77 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       conversionRate,
       lostRate,
       highIntentLeads,
+      callLeads,
+      whatsappLeads,
+      hotLineSlaBreaches,
       avgLeadScore,
       stalePendingLeads,
       attributionCoverage,
+      totalSpend,
+      cpl,
+      cpp,
       funnel,
       channelPerformance,
       assetPerformance,
       centerPerformance,
       actionItems: actionItems.slice(0, 6),
     };
-  }, [contacts]);
+  }, [contacts, spendEntries]);
+
+  const hasWeekTargets = useMemo(
+    () => Object.keys(settingsMap).some((key) => key.startsWith("ceo_week1_")),
+    [settingsMap]
+  );
+
+  const weekWindow = useMemo(() => {
+    const start = settingsMap.ceo_week1_window_start;
+    const end = settingsMap.ceo_week1_window_end;
+    if (!start || !end) return null;
+    return `${start} to ${end}`;
+  }, [settingsMap.ceo_week1_window_end, settingsMap.ceo_week1_window_start]);
+
+  const weekTargets = useMemo(() => {
+    const result: Record<string, WeekTarget> = {};
+    for (const center of ["Bhubaneswar", "Berhampur", "Bangalore"]) {
+      const key = centerTargetKey[center];
+      result[center] = {
+        leadsTarget: parseNumber(settingsMap[`ceo_week1_${key}_target_leads`]),
+        leadsStretch: parseNumber(settingsMap[`ceo_week1_${key}_target_leads_stretch`]),
+        convertedTarget: parseNumber(settingsMap[`ceo_week1_${key}_target_converted_leads`]),
+        conversionRateMin: parseNumber(settingsMap[`ceo_week1_${key}_target_conversion_rate_pct_min`]),
+        attributionMin: parseNumber(settingsMap[`ceo_week1_${key}_target_attribution_pct_min`]),
+        pending24hMax: parseNumber(settingsMap[`ceo_week1_${key}_target_pending_gt24h_max`]),
+      };
+    }
+    return result;
+  }, [settingsMap]);
+
+  const weekTargetRows = useMemo(() => {
+    const map = new Map(metrics.centerPerformance.map((row) => [row.center, row]));
+    return ["Bhubaneswar", "Berhampur", "Bangalore"].map((center) => {
+      const actual = map.get(center) || {
+        center,
+        leads: 0,
+        converted: 0,
+        highIntent: 0,
+        stalePending: 0,
+        attributed: 0,
+        conversionRate: 0,
+        attributionCoverage: 0,
+      };
+      const target = weekTargets[center];
+
+      const checks: boolean[] = [];
+      if (target.leadsTarget !== null) checks.push(actual.leads >= target.leadsTarget);
+      if (target.convertedTarget !== null) checks.push(actual.converted >= target.convertedTarget);
+      if (target.conversionRateMin !== null) checks.push(actual.conversionRate >= target.conversionRateMin);
+      if (target.attributionMin !== null) checks.push(actual.attributionCoverage >= target.attributionMin);
+      if (target.pending24hMax !== null) checks.push(actual.stalePending <= target.pending24hMax);
+
+      const onTrack = checks.length > 0 ? checks.every(Boolean) : null;
+      return { center, actual, target, onTrack };
+    });
+  }, [metrics.centerPerformance, weekTargets]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -372,6 +666,153 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
           subtitle="UTM/source visibility"
           icon={Crosshair}
         />
+        <KpiCard
+          title="Phone Leads"
+          value={formatNumber(metrics.callLeads)}
+          subtitle="Inbound and CTA call intent"
+          icon={Phone}
+        />
+        <KpiCard
+          title="WhatsApp Leads"
+          value={formatNumber(metrics.whatsappLeads)}
+          subtitle="Inbound chat demand"
+          icon={MessageCircle}
+        />
+        <KpiCard
+          title="2h SLA Breaches"
+          value={formatNumber(metrics.hotLineSlaBreaches)}
+          subtitle="Call/WhatsApp pending > 2 hours"
+          icon={AlertTriangle}
+        />
+        <KpiCard
+          title="Logged Spend"
+          value={formatCurrency(metrics.totalSpend)}
+          subtitle="From Spend tab"
+          icon={IndianRupee}
+        />
+        <KpiCard
+          title="Cost Per Lead"
+          value={formatCurrency(metrics.cpl)}
+          subtitle="Spend / leads"
+          icon={IndianRupee}
+        />
+        <KpiCard
+          title="Cost Per Patient"
+          value={formatCurrency(metrics.cpp)}
+          subtitle="Spend / converted"
+          icon={IndianRupee}
+        />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900">Protocol Compliance (Today)</h3>
+        <p className="text-xs text-gray-500 mt-1">
+          Confirms whether agency, field team, and TV operations have submitted mandatory daily inputs.
+        </p>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Agency rows today</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {opsSubmission.loading ? "..." : formatNumber(opsSubmission.agencyToday)}
+            </p>
+            <p className={`text-xs mt-1 ${opsSubmission.loading ? "text-gray-500" : opsSubmission.agencyToday > 0 ? "text-emerald-700" : "text-rose-700"}`}>
+              {opsSubmission.loading ? "Checking..." : opsSubmission.agencyToday > 0 ? "Submitted" : "Missing"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Field rows today</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {opsSubmission.loading ? "..." : formatNumber(opsSubmission.fieldToday)}
+            </p>
+            <p className={`text-xs mt-1 ${opsSubmission.loading ? "text-gray-500" : opsSubmission.fieldToday > 0 ? "text-emerald-700" : "text-rose-700"}`}>
+              {opsSubmission.loading ? "Checking..." : opsSubmission.fieldToday > 0 ? "Submitted" : "Missing"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">TV rows today</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {opsSubmission.loading ? "..." : formatNumber(opsSubmission.tvToday)}
+            </p>
+            <p className={`text-xs mt-1 ${opsSubmission.loading ? "text-gray-500" : opsSubmission.tvToday > 0 ? "text-emerald-700" : "text-rose-700"}`}>
+              {opsSubmission.loading ? "Checking..." : opsSubmission.tvToday > 0 ? "Submitted" : "Missing"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-indigo-600" />
+            Week-1 Center Target vs Actual
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">
+            {weekWindow ? `Window: ${weekWindow}` : "Week window not configured in settings."}
+          </p>
+        </div>
+
+        {!hasWeekTargets && settingsLoaded ? (
+          <div className="px-5 py-6 text-sm text-amber-700 bg-amber-50 border-t border-amber-100">
+            No `ceo_week1_*` targets found in settings. Seed week targets to enable center target tracking.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium">Center</th>
+                  <th className="px-4 py-3 text-right font-medium">Leads</th>
+                  <th className="px-4 py-3 text-right font-medium">Converted</th>
+                  <th className="px-4 py-3 text-right font-medium">Conv. Rate</th>
+                  <th className="px-4 py-3 text-right font-medium">Attribution</th>
+                  <th className="px-4 py-3 text-right font-medium">Pending &gt;24h</th>
+                  <th className="px-4 py-3 text-right font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {weekTargetRows.map((row) => (
+                  <tr key={row.center}>
+                    <td className="px-4 py-3 font-medium text-gray-900">{row.center}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {row.actual.leads}
+                      {row.target.leadsTarget !== null ? ` / ${row.target.leadsTarget}` : ""}
+                      {row.target.leadsStretch !== null ? ` (S:${row.target.leadsStretch})` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {row.actual.converted}
+                      {row.target.convertedTarget !== null ? ` / ${row.target.convertedTarget}` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {formatPercent(row.actual.conversionRate)}
+                      {row.target.conversionRateMin !== null ? ` / >=${row.target.conversionRateMin}%` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {formatPercent(row.actual.attributionCoverage)}
+                      {row.target.attributionMin !== null ? ` / >=${row.target.attributionMin}%` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {row.actual.stalePending}
+                      {row.target.pending24hMax !== null ? ` / <=${row.target.pending24hMax}` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs border ${
+                          row.onTrack === null
+                            ? "bg-gray-100 text-gray-600 border-gray-200"
+                            : row.onTrack
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-rose-50 text-rose-700 border-rose-200"
+                        }`}
+                      >
+                        {row.onTrack === null ? "No target" : row.onTrack ? "On track" : "Behind"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
@@ -455,7 +896,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                   <th className="px-4 py-3 text-left font-medium">Channel</th>
                   <th className="px-4 py-3 text-right font-medium">Leads</th>
                   <th className="px-4 py-3 text-right font-medium">Conv.</th>
-                  <th className="px-4 py-3 text-right font-medium">Rate</th>
+                  <th className="px-4 py-3 text-right font-medium">Spend</th>
+                  <th className="px-4 py-3 text-right font-medium">CPP</th>
                   <th className="px-4 py-3 text-right font-medium">Stale</th>
                 </tr>
               </thead>
@@ -465,13 +907,16 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                     <td className="px-4 py-3 font-medium text-gray-900">{row.channel}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{row.leads}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{row.converted}</td>
-                    <td className="px-4 py-3 text-right text-gray-700">{formatPercent(row.conversionRate)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">{formatCurrency(row.spend)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      {row.converted > 0 && row.spend > 0 ? formatCurrency(row.cpp) : "-"}
+                    </td>
                     <td className="px-4 py-3 text-right text-gray-700">{row.stale}</td>
                   </tr>
                 ))}
                 {metrics.channelPerformance.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       No attributed channel data yet.
                     </td>
                   </tr>
@@ -496,6 +941,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                   <th className="px-4 py-3 text-right font-medium">Leads</th>
                   <th className="px-4 py-3 text-right font-medium">Conv.</th>
                   <th className="px-4 py-3 text-right font-medium">Rate</th>
+                  <th className="px-4 py-3 text-right font-medium">Spend</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -505,11 +951,12 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                     <td className="px-4 py-3 text-right text-gray-700">{row.leads}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{row.converted}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{formatPercent(row.conversionRate)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">{formatCurrency(row.spend)}</td>
                   </tr>
                 ))}
                 {metrics.centerPerformance.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                       Center tags will appear once city pages are used in campaign links.
                     </td>
                   </tr>
@@ -524,7 +971,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
         <div className="p-5 border-b border-gray-100 bg-gray-50/50">
           <h3 className="text-base font-semibold text-gray-900">Asset ROI (Campaign + Landing Path)</h3>
           <p className="text-xs text-gray-500 mt-1">
-            This shows which creative+page combinations drive qualified demand and conversions.
+            This shows which creative+page combinations drive qualified demand, conversions, and spend efficiency.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -536,8 +983,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                 <th className="px-4 py-3 text-left font-medium">Source</th>
                 <th className="px-4 py-3 text-right font-medium">Leads</th>
                 <th className="px-4 py-3 text-right font-medium">Conv.</th>
-                <th className="px-4 py-3 text-right font-medium">High Intent</th>
-                <th className="px-4 py-3 text-right font-medium">Rate</th>
+                <th className="px-4 py-3 text-right font-medium">Spend</th>
+                <th className="px-4 py-3 text-right font-medium">CPP</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -548,8 +995,10 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                   <td className="px-4 py-3 text-gray-700">{asset.source}</td>
                   <td className="px-4 py-3 text-right text-gray-700">{asset.leads}</td>
                   <td className="px-4 py-3 text-right text-gray-700">{asset.converted}</td>
-                  <td className="px-4 py-3 text-right text-gray-700">{asset.highIntent}</td>
-                  <td className="px-4 py-3 text-right text-gray-700">{formatPercent(asset.conversionRate)}</td>
+                  <td className="px-4 py-3 text-right text-gray-700">{formatCurrency(asset.spend)}</td>
+                  <td className="px-4 py-3 text-right text-gray-700">
+                    {asset.converted > 0 && asset.spend > 0 ? formatCurrency(asset.cpp) : "-"}
+                  </td>
                 </tr>
               ))}
               {metrics.assetPerformance.length === 0 && (

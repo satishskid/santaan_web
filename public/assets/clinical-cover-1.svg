@@ -1,0 +1,13 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#0A2239"/>
+  <circle cx="1300" cy="120" r="260" fill="#143B5A"/>
+  <circle cx="280" cy="820" r="340" fill="#11304B"/>
+  <path d="M120 660C360 520 560 520 820 660C1060 790 1260 790 1480 660" stroke="#7BC4A4" stroke-opacity="0.55" stroke-width="8"/>
+  <path d="M120 730C360 590 560 590 820 730C1060 860 1260 860 1480 730" stroke="#F2A65A" stroke-opacity="0.5" stroke-width="6"/>
+  <rect x="200" y="170" width="460" height="280" rx="22" fill="#F3F8FA" fill-opacity="0.12" stroke="#A9CBDC" stroke-opacity="0.4"/>
+  <path d="M260 380H610" stroke="#CDE4EE" stroke-width="10" stroke-linecap="round"/>
+  <path d="M260 330H560" stroke="#CDE4EE" stroke-width="10" stroke-linecap="round"/>
+  <path d="M260 280H610" stroke="#CDE4EE" stroke-width="10" stroke-linecap="round"/>
+  <text x="860" y="430" fill="#EAF4F8" font-family="Georgia, serif" font-size="66" font-weight="700">Clinical Insight</text>
+  <text x="860" y="500" fill="#CFE2EC" font-family="Arial, sans-serif" font-size="30">Evidence-Based Fertility Brief</text>
+</svg>

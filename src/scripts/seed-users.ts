@@ -11,7 +11,7 @@ dotenv.config({ path: ".env.local" });
 const sqlite = new Database('santaan.db');
 const db = drizzle(sqlite, { schema: { users } });
 
-const DEFAULT_PASSWORD = "password123"; // INSECURE: Change immediately after login
+const DEFAULT_PASSWORD = "sant_growth26";
 const ADMINS = [
     { email: "raghab.panda@santaan.in", name: "Raghab Panda" },
     { email: "satish.rath@santaan.in", name: "Satish Rath" },

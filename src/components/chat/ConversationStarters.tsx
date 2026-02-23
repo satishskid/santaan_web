@@ -15,8 +15,8 @@ const starterPrompts = [
         text: "What is Santaan's 'Science for Smiles'?",
     },
     {
-        id: 'success_rates',
-        text: "What affects IVF success rates?",
+        id: 'outcome_factors',
+        text: "Which clinical factors affect IVF outcomes?",
     },
     {
         id: 'common_myths',

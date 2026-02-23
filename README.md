@@ -10,7 +10,8 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
   - **Production**: Turso (LibSQL) for edge-compatible persistence.
 - **Admin CRM**: Protected dashboard for managing contacts and seminar registrations.
 - **Analytics**: Dynamic script injection for Google Analytics and Facebook Pixel.
-- **SEO**: Optimized metadata and semantic HTML structure.
+- **SEO**: Optimized metadata, schema, sitemap/robots, and service landing pages.
+- **Blog Engine**: Medium posts are synced into Turso and published on `santaan.in/fertility-insights/*`.
 
 ## Getting Started
 
@@ -36,6 +37,7 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
     TURSO_AUTH_TOKEN=your_turso_token
     NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_key
     NEXT_PUBLIC_GROQ_API_KEY=your_key
+    BLOG_SYNC_SECRET=choose_a_strong_secret
     ```
 
 4.  **Database Setup (Local):**
@@ -66,8 +68,12 @@ This project is configured for deployment on Netlify.
     -   `AUTH_SECRET` (Use a strong random string)
     -   `TURSO_DATABASE_URL`
     -   `TURSO_AUTH_TOKEN`
+    -   `BLOG_SYNC_SECRET`
     -   `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
     -   `NEXT_PUBLIC_GROQ_API_KEY`
+
+### ⚠️ Critical Architecture Constraints
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for essential rules regarding Database (Turso/LibSQL) and Authentication to prevent production errors.
 
 ## Database Migration (Production)
 
@@ -228,3 +234,27 @@ A tiny "•" dot after "Terms of Service" in footer links to `/login`
 - Publish on Medium (@santaanIVF)
 - Add tag `santaan-news` for it to appear in News section
 - See `BLOG_WRITER_GUIDE.md` for details
+
+## Medium-to-Santaan Sync
+
+This project now stores Medium content in Turso and serves it from Santaan routes.
+
+### 1) Create blog table
+
+```bash
+npm run migrate:blogs
+```
+
+### 2) Trigger manual sync (optional)
+
+```bash
+curl -X POST "https://santaan.in/api/blogs/sync?token=<BLOG_SYNC_SECRET>"
+```
+
+### 3) Automated daily sync
+
+Netlify Scheduled Function runs at `02:00 UTC` using:
+
+`netlify/functions/sync-medium-blogs.ts`
+
+It calls `/api/blogs/sync` securely using `BLOG_SYNC_SECRET`.

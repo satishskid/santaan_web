@@ -5,13 +5,34 @@ import { desc } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { eq } from 'drizzle-orm';
 
-import { isAuthorizedAdmin } from '@/lib/auth-helper';
+import { isAuthorizedOpsUser } from '@/lib/auth-helper';
+
+const CREATE_ROLES = new Set([
+    'admin',
+    'ceo',
+    'crm_ops_admin',
+    'ivr_manager',
+    'telecaller_manager',
+    'telecaller',
+    'counselor',
+]);
+
+function normalizeRole(role?: string | null) {
+    return String(role || '').trim().toLowerCase();
+}
+
+async function requireOpsAccess() {
+    const session = await auth();
+    const sessionRole = normalizeRole((session?.user as { role?: string } | undefined)?.role);
+    const authorized = await isAuthorizedOpsUser(session?.user?.email, sessionRole);
+    const role = sessionRole || 'admin';
+    return { authorized, role };
+}
 
 export async function GET() {
     try {
-        // Protect this route
-        const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const { authorized } = await requireOpsAccess();
+        if (!authorized) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -26,8 +47,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const { authorized, role } = await requireOpsAccess();
+        if (!authorized || !CREATE_ROLES.has(role)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

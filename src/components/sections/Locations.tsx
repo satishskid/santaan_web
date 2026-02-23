@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { MapPin, Mail, Phone, Loader2 } from 'lucide-react';
+import { MapPin, Mail, Phone, Loader2, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import type { ElementType } from 'react';
 
 interface Center {
     id: number;
@@ -17,9 +18,27 @@ interface Center {
     sortOrder: number;
 }
 
-export function Locations() {
+type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
+
+interface LocationsProps {
+    headingAs?: Extract<ElementType, 'h1' | 'h2'>;
+}
+
+export function Locations({ headingAs = 'h2' }: LocationsProps) {
     const [centers, setCenters] = useState<Center[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const HeadingTag = headingAs;
+
+    const trackLocationEvent = (eventLabel: string) => {
+        if (typeof window === 'undefined') return;
+        const analyticsWindow = window as GtagWindow;
+        if (!analyticsWindow.gtag) return;
+
+        analyticsWindow.gtag('event', 'click', {
+            event_category: 'contact',
+            event_label: eventLabel
+        });
+    };
 
     const displayCity = (city: string) => {
         if (city.toLowerCase() === 'bengaluru' || city.toLowerCase() === 'bangalore') return 'Bangalore (R&D)';
@@ -64,9 +83,9 @@ export function Locations() {
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div className="max-w-xl">
                         <span className="text-santaan-amber font-medium tracking-wide uppercase text-sm">Contact Us</span>
-                        <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2">
+                        <HeadingTag className="text-3xl md:text-4xl font-playfair font-bold mt-2">
                             Closer to You, Wherever You Are
-                        </h2>
+                        </HeadingTag>
                         <p className="text-white/80 text-sm mt-3">
                             Walk into one of our fertility clinics to get a detailed analysis of your fertility status
                         </p>
@@ -79,7 +98,10 @@ export function Locations() {
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-3 gap-8">
-                        {centers.map((loc, i) => (
+                        {centers.map((loc, i) => {
+                            const mapHref = loc.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${loc.title} ${loc.city} ${loc.address}`)}`;
+
+                            return (
                             <motion.div
                                 key={loc.id}
                                 initial={{ opacity: 0, x: -20 }}
@@ -110,12 +132,7 @@ export function Locations() {
                                         <Mail className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
                                         <a href={`mailto:${loc.email}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
                                             onClick={() => {
-                                                if (typeof window !== 'undefined' && (window as any).gtag) {
-                                                    (window as any).gtag('event', 'click', {
-                                                        event_category: 'contact',
-                                                        event_label: `location_email_${loc.city}`
-                                                    });
-                                                }
+                                                trackLocationEvent(`location_email_${loc.city}`);
                                             }}
                                         >
                                             {loc.email}
@@ -127,12 +144,7 @@ export function Locations() {
                                             {loc.phones.map((phone, idx) => (
                                                 <a key={idx} href={`tel:${phone}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
                                                     onClick={() => {
-                                                        if (typeof window !== 'undefined' && (window as any).gtag) {
-                                                            (window as any).gtag('event', 'click', {
-                                                                event_category: 'contact',
-                                                                event_label: `location_phone_${loc.city}_${phone}`
-                                                            });
-                                                        }
+                                                        trackLocationEvent(`location_phone_${loc.city}_${phone}`);
                                                     }}
                                                 >
                                                     {phone}
@@ -140,9 +152,25 @@ export function Locations() {
                                             ))}
                                         </div>
                                     </div>
+                                    <div className="flex items-start gap-2">
+                                        <MapPin className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
+                                        <a
+                                            href={mapHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-white/90 text-sm hover:text-santaan-amber transition-colors inline-flex items-center gap-1"
+                                            onClick={() => {
+                                                trackLocationEvent(`location_map_${loc.city}`);
+                                            }}
+                                        >
+                                            Open in Maps
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                        </a>
+                                    </div>
                                 </div>
                             </motion.div>
-                        ))}
+                        );
+                        })}
                     </div>
                 )}
             </div>

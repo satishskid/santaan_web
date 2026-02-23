@@ -301,7 +301,7 @@ export function FertilityReadinessAssessment() {
     const readiness = getReadinessZone(riskScore);
 
     return (
-        <section id="santaan-signal" className="py-20 md:py-28 bg-linear-to-br from-white via-santaan-cream/30 to-white relative overflow-hidden">
+        <section id="santaan-signal" className="py-16 md:py-20 bg-linear-to-br from-white via-santaan-cream/30 to-white relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-20 right-0 w-96 h-96 bg-santaan-sage/10 rounded-full blur-3xl" />
             <div className="absolute bottom-20 left-0 w-96 h-96 bg-santaan-teal/5 rounded-full blur-3xl" />

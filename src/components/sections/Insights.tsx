@@ -4,46 +4,34 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, BookOpen, Calendar } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
-interface MediumPost {
+interface SantaanPost {
+    slug: string;
     title: string;
-    pubDate: string;
-    link: string;
-    guid: string;
-    author: string;
-    thumbnail: string;
-    description: string;
-    content: string;
-    categories: string[];
+    publishedAt: string;
+    thumbnail?: string;
+    excerpt: string;
 }
 
 export function Insights() {
-    const [posts, setPosts] = useState<MediumPost[]>([]);
+    const [posts, setPosts] = useState<SantaanPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await fetch(
-                    'https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@santaanIVF'
-                );
+                const response = await fetch('/api/blogs?type=blog&limit=6');
                 const data = await response.json();
 
-                if (data.status === 'ok') {
-                    // Filter OUT posts tagged as news/announcements (those go to News section)
-                    const blogPosts = data.items.filter((post: MediumPost) => 
-                        !post.categories.some((cat: string) => 
-                            cat.toLowerCase().includes('santaan-news') || 
-                            cat.toLowerCase().includes('announcement')
-                        )
-                    );
-                    setPosts(blogPosts.slice(0, 6)); // Get latest 6 blog posts
+                if (response.ok && Array.isArray(data.posts)) {
+                    setPosts(data.posts);
                 } else {
                     setError(true);
                 }
             } catch (err) {
-                console.error("Failed to fetch Medium posts", err);
+                console.error("Failed to fetch Santaan blog posts", err);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -101,15 +89,13 @@ export function Insights() {
                         >
                             Get daily updates
                         </a>
-                        <a
-                            href="https://medium.com/@santaanIVF"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Link
+                            href="/fertility-insights"
                             className="group flex items-center gap-2 text-santaan-teal font-medium hover:text-santaan-amber transition-colors"
                         >
                             View all articles
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </a>
+                        </Link>
                     </div>
                 </div>
 
@@ -123,11 +109,8 @@ export function Insights() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {posts.map((post, index) => (
-                            <motion.a
-                                key={post.guid}
-                                href={post.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <motion.div
+                                key={post.slug}
                                 className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100"
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -138,10 +121,10 @@ export function Insights() {
                                 <div className="p-5 flex flex-col grow">
                                     <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                         <Calendar className="w-3 h-3" />
-                                        {formatDate(post.pubDate)}
+                                        {formatDate(post.publishedAt)}
                                     </div>
 
-                                    <h3 className="text-lg md:text-xl font-playfair font-bold text-gray-900 mb-3 group-hover:text-santaan-amber transition-colors line-clamp-2">
+                                    <h3 className="text-lg md:text-xl font-playfair font-bold text-gray-900 mb-3 group-hover:text-santaan-amber transition-colors line-clamp-2 min-h-[3.4rem]">
                                         {post.title}
                                     </h3>
                                     
@@ -156,26 +139,16 @@ export function Insights() {
                                         </div>
                                     )}
 
-                                    {/* Using a snippet generator or parser for description often returns HTML from RSS. 
-                                        We'll assume 'description' might have HTML, so we strip it carefully or just use line-clamp 
-                                        on a simple render if it's plain text. 
-                                        RSS2JSON 'description' is usually the content snippet.
-                                    */}
-                                    <div className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4 grow">
-                                        {/* We use a safe render approach or just CSS line clamping on the raw text if possible. 
-                                             Since we can't easily sanitize HTML here without a library, we'll try to rely on the browser's 
-                                             handling or just not render dangerous HTML if not needed. 
-                                             Let's try to just render the text context.
-                                          */}
-                                        <p dangerouslySetInnerHTML={{ __html: post.description }} className="line-clamp-3" />
+                                    <div className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4 grow min-h-[4.2rem]">
+                                        <p className="line-clamp-3">{post.excerpt}</p>
                                     </div>
 
-                                    <div className="mt-auto flex items-center text-santaan-amber text-sm font-bold uppercase tracking-wide group-hover:gap-2 transition-all">
-                                        Read Article
+                                    <Link href={`/fertility-insights/${post.slug}`} className="mt-auto flex items-center text-santaan-amber text-sm font-bold uppercase tracking-wide group-hover:gap-2 transition-all">
+                                        Read on Santaan
                                         <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
+                                    </Link>
                                 </div>
-                            </motion.a>
+                            </motion.div>
                         ))}
                     </div>
                 )}

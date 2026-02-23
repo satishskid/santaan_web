@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Mail, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
+import { ensureMandatoryUtm, readUtmParams } from '@/lib/utm';
 
 export default function NewsletterSubscribe() {
     const [email, setEmail] = useState('');
@@ -25,15 +26,16 @@ export default function NewsletterSubscribe() {
 
         try {
             // Get UTM data from localStorage
+            const utm = ensureMandatoryUtm(readUtmParams());
             const utmData = {
                 name: name || 'Newsletter Subscriber',
                 email,
                 newsletterSubscribed: true,
                 tags: 'newsletter',
                 leadSource: 'website',
-                utmSource: localStorage.getItem('utm_source') || 'direct',
-                utmMedium: localStorage.getItem('utm_medium') || 'website',
-                utmCampaign: localStorage.getItem('utm_campaign') || 'newsletter',
+                utmSource: utm.utm_source || 'direct',
+                utmMedium: utm.utm_medium || 'website',
+                utmCampaign: utm.utm_campaign || 'newsletter',
                 utmContent: 'footer_newsletter',
                 preferredChannel: 'email'
             };
@@ -94,7 +96,7 @@ export default function NewsletterSubscribe() {
                         type="email"
                         placeholder="your@email.com"
                         value={email}
-                        onChange={(e) => setError('')}
+                        onChange={() => setError('')}
                         onInput={(e: React.FormEvent<HTMLInputElement>) => setEmail((e.target as HTMLInputElement).value)}
                         className="flex-1 bg-white"
                         required

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { Award, Trophy } from 'lucide-react';
+import { Award, Trophy, ShieldCheck, Medal } from 'lucide-react';
 
 const awards = [
     {
@@ -20,13 +20,13 @@ const awards = [
         title: "Top 10 Fertility Centres",
         org: "All India Rankings (East Zone)",
         desc: "Consistently ranked among the best since 2017.",
-        icon: Award
+        icon: ShieldCheck
     },
     {
         title: "Most Awarded Centre",
         org: "Odisha & Eastern India",
         desc: "Honored for passionate service and dedication to families.",
-        icon: Trophy
+        icon: Medal
     }
 ];
 
@@ -43,7 +43,7 @@ export function Awards() {
                         Celebrated for <span className="text-santaan-amber">Excellence</span>
                     </h2>
                     <p className="text-black max-w-2xl mx-auto">
-                        Our commitment to your journey has been recognized by the nation's most prestigious healthcare institutions.
+                        Our commitment to your journey has been recognized by the nation&apos;s most prestigious healthcare institutions.
                     </p>
                 </div>
 

@@ -1,0 +1,20 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#0F2740"/>
+  <rect width="1600" height="900" fill="url(#g2)"/>
+  <rect x="180" y="150" width="520" height="560" rx="28" fill="#EAF3F8" fill-opacity="0.1" stroke="#BBD4E3" stroke-opacity="0.45"/>
+  <path d="M260 250H620" stroke="#D4E7F1" stroke-width="12" stroke-linecap="round"/>
+  <path d="M260 320H620" stroke="#D4E7F1" stroke-width="12" stroke-linecap="round"/>
+  <path d="M260 390H540" stroke="#D4E7F1" stroke-width="12" stroke-linecap="round"/>
+  <path d="M260 520H440" stroke="#8DD3B0" stroke-width="16" stroke-linecap="round"/>
+  <path d="M890 220C970 170 1090 170 1170 220C1250 270 1370 270 1450 220" stroke="#F2A65A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M890 320C970 270 1090 270 1170 320C1250 370 1370 370 1450 320" stroke="#9CCEE3" stroke-width="10" stroke-linecap="round"/>
+  <path d="M890 420C970 370 1090 370 1170 420C1250 470 1370 470 1450 420" stroke="#7BC4A4" stroke-width="10" stroke-linecap="round"/>
+  <text x="860" y="610" fill="#F2F8FB" font-family="Georgia, serif" font-size="62" font-weight="700">Protocol Insight</text>
+  <text x="860" y="675" fill="#CDE1EC" font-family="Arial, sans-serif" font-size="30">Specialist Education Track</text>
+  <defs>
+    <linearGradient id="g2" x1="220" y1="60" x2="1500" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102D47"/>
+      <stop offset="1" stop-color="#0A1F34"/>
+    </linearGradient>
+  </defs>
+</svg>

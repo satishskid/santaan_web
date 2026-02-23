@@ -3,17 +3,14 @@
 import { motion } from 'framer-motion';
 import { Bell, Trophy, Calendar, Megaphone, ExternalLink, Loader2, Newspaper } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-interface MediumPost {
+interface SantaanPost {
+    slug: string;
     title: string;
-    pubDate: string;
-    link: string;
-    guid: string;
-    author: string;
-    thumbnail: string;
-    description: string;
-    content: string;
-    categories: string[];
+    publishedAt: string;
+    excerpt: string;
+    tags: string[];
 }
 
 // Map category keywords to icons and colors
@@ -33,15 +30,6 @@ const getCategoryStyle = (categories: string[]) => {
     return { icon: Newspaper, color: 'bg-blue-500/10 text-blue-600 border-blue-200', type: 'news' };
 };
 
-// Helper to extract text snippet from HTML
-const getSnippet = (htmlContent: string, maxLength: number = 120) => {
-    if (typeof window === 'undefined') return '';
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
-    const text = tempDiv.textContent || tempDiv.innerText || "";
-    return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
-};
-
 // Helper to format date
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -53,29 +41,20 @@ const formatDate = (dateString: string) => {
 };
 
 export function NewsAnnouncements() {
-    const [posts, setPosts] = useState<MediumPost[]>([]);
+    const [posts, setPosts] = useState<SantaanPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const response = await fetch(
-                    'https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@santaanIVF'
-                );
+                const response = await fetch('/api/blogs?type=news&limit=4');
                 const data = await response.json();
 
-                if (data.status === 'ok') {
-                    // Filter posts that have 'santaan-news' or 'announcement' tag
-                    const newsPosts = data.items.filter((post: MediumPost) => 
-                        post.categories.some((cat: string) => 
-                            cat.toLowerCase().includes('santaan-news') || 
-                            cat.toLowerCase().includes('announcement')
-                        )
-                    );
-                    setPosts(newsPosts.slice(0, 4)); // Show max 4 news items
+                if (response.ok && Array.isArray(data.posts)) {
+                    setPosts(data.posts);
                 }
             } catch (error) {
-                console.error('Failed to fetch news from Medium:', error);
+                console.error('Failed to fetch Santaan news updates:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -113,14 +92,11 @@ export function NewsAnnouncements() {
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
                         {posts.map((post, i) => {
-                            const { icon: IconComponent, color, type } = getCategoryStyle(post.categories);
+                            const { icon: IconComponent, color, type } = getCategoryStyle(post.tags);
                             
                             return (
-                                <motion.a
-                                    key={post.guid}
-                                    href={post.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <motion.div
+                                    key={post.slug}
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
@@ -136,7 +112,7 @@ export function NewsAnnouncements() {
                                                 {type}
                                             </span>
                                             <span className="text-xs text-gray-400 ml-2">
-                                                {formatDate(post.pubDate)}
+                                                {formatDate(post.publishedAt)}
                                             </span>
                                         </div>
                                     </div>
@@ -146,14 +122,14 @@ export function NewsAnnouncements() {
                                     </h3>
                                     
                                     <p className="text-gray-500 text-sm line-clamp-2 mb-3">
-                                        {getSnippet(post.description || post.content, 100)}
+                                        {post.excerpt}
                                     </p>
                                     
-                                    <span className="inline-flex items-center gap-1 text-santaan-teal text-sm font-medium group-hover:gap-2 transition-all">
+                                    <Link href={`/fertility-insights/${post.slug}`} className="inline-flex items-center gap-1 text-santaan-teal text-sm font-medium group-hover:gap-2 transition-all">
                                         Read More
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                    </span>
-                                </motion.a>
+                                    </Link>
+                                </motion.div>
                             );
                         })}
                     </div>

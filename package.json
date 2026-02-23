@@ -6,10 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:blogs": "npx tsx src/scripts/migrate-blog-posts.ts",
+    "migrate:spend": "node src/scripts/migrate-spend.mjs",
+    "migrate:ops-inputs": "node src/scripts/migrate-ops-inputs.mjs",
+    "migrate:ops-workboard": "node src/scripts/migrate-ops-workboard.mjs",
+    "seed:ceo-week1-kpis": "npx tsx src/scripts/seed-ceo-week1-kpis.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
+    "@netlify/functions": "^4.2.6",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
     "bcryptjs": "^3.0.3",

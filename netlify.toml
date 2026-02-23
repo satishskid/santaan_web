@@ -5,5 +5,45 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  directory = "netlify/functions"
+
 [build.environment]
   NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/blog"
+  to = "/fertility-insights"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/bengaluru-aecs-layout"
+  to = "/ivf-clinic-bangalore-aecs-layout"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact-centres"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/doctors"
+  to = "/our-doctors"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/at-home-testing"
+  to = "/at-home-fertility-testing"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"

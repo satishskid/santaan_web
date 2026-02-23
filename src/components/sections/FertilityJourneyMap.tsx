@@ -120,7 +120,7 @@ export function FertilityJourneyMap() {
     const [hoveredTreatment, setHoveredTreatment] = useState<string | null>(null);
 
     return (
-        <section className="py-20 md:py-28 bg-linear-to-br from-santaan-cream via-white to-santaan-sage/10 relative overflow-hidden">
+        <section className="py-16 md:py-20 bg-linear-to-br from-santaan-cream via-white to-santaan-sage/10 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-96 h-96 bg-santaan-teal/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-santaan-amber/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
@@ -308,7 +308,7 @@ export function FertilityJourneyMap() {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-center py-16"
+                        className="text-center py-10"
                     >
                         <Users className="w-16 h-16 text-santaan-teal/30 mx-auto mb-4" />
                         <p className="text-xl text-gray-500 font-medium">

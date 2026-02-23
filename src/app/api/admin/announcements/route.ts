@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { announcements } from "@/db/schema";
 import { eq, desc, and, lte, or, isNull, sql } from "drizzle-orm";
+import { auth } from "@/auth";
+import { isAuthorizedAdmin } from "@/lib/auth-helper";
+
+async function requireAdmin() {
+    const session = await auth();
+    return isAuthorizedAdmin(session?.user?.email);
+}
 
 // GET - Fetch announcements (public shows only active, non-expired)
 export async function GET(request: NextRequest) {
@@ -9,6 +16,10 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const includeAll = searchParams.get('all') === 'true';
         const type = searchParams.get('type'); // Filter by type
+
+        if (includeAll && !(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         
         const now = new Date().toISOString();
         
@@ -47,6 +58,10 @@ export async function GET(request: NextRequest) {
 // POST - Create a new announcement
 export async function POST(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { title, content, type, imageUrl, linkUrl, linkText, isPinned, publishDate, expiryDate } = body;
         
@@ -77,6 +92,10 @@ export async function POST(request: NextRequest) {
 // PUT - Update an announcement
 export async function PUT(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { id, title, content, type, imageUrl, linkUrl, linkText, isPinned, isActive, publishDate, expiryDate } = body;
         
@@ -118,6 +137,10 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete an announcement
 export async function DELETE(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         

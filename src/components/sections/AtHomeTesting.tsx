@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ElementType } from 'react';
 import { Phone, Home, TestTube, Video, Clock, Lock, CheckCircle2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AtHomeRegistrationModal } from '@/components/features/AtHomeRegistrationModal';
 
-export default function AtHomeTesting() {
+interface AtHomeTestingProps {
+    headingAs?: Extract<ElementType, 'h1' | 'h2'>;
+}
+
+export default function AtHomeTesting({ headingAs = 'h2' }: AtHomeTestingProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const HeadingTag = headingAs;
 
     const handleBookCall = () => {
         setIsModalOpen(true);
@@ -29,9 +34,9 @@ export default function AtHomeTesting() {
                         <Lock className="w-4 h-4" />
                         Private & Discreet
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <HeadingTag className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                         Fertility Testing at <span className="text-santaan-teal">Your Home</span>
-                    </h2>
+                    </HeadingTag>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                         For busy professionals and privacy-conscious individuals: Comprehensive fertility assessment 
                         without visiting a clinic. Our trained executives come to you.

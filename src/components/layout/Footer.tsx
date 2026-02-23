@@ -3,9 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Facebook, Instagram, Linkedin, Youtube, MapPin } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Twitter, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { readUtmParams } from "@/lib/utm";
+import { CENTER_CONTACTS } from "@/data/centers";
+
+type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
 export function Footer() {
     const [email, setEmail] = useState("");
@@ -35,8 +38,9 @@ export function Footer() {
             setMessage(data?.message || "Subscribed successfully");
             setEmail("");
 
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'sign_up', {
+            const analyticsWindow = window as GtagWindow;
+            if (analyticsWindow.gtag) {
+                analyticsWindow.gtag('event', 'sign_up', {
                     event_category: 'engagement',
                     event_label: 'newsletter_subscription'
                 });
@@ -55,7 +59,7 @@ export function Footer() {
 
                     {/* Brand Column */}
                     <div className="space-y-6">
-                        <Link href="/" className="inline-flex items-center gap-3">
+                        <Link href="/" className="inline-flex items-center">
                             <div className="bg-white rounded-lg p-2">
                                 <Image
                                     src="/assets/santaan-logo.png"
@@ -65,9 +69,6 @@ export function Footer() {
                                     className="h-8 w-auto object-contain"
                                 />
                             </div>
-                            <span className="text-2xl font-playfair font-bold text-white tracking-tight">
-                                Santaan
-                            </span>
                         </Link>
                         <p className="text-gray-300 leading-relaxed">
                             Where Science Meets Hope. <br />
@@ -75,12 +76,19 @@ export function Footer() {
                         </p>
                         <div className="flex gap-4">
                             {[
-                                { icon: Facebook, href: "https://www.facebook.com/santaanfertility" },
-                                { icon: Instagram, href: "https://www.instagram.com/santaanfertility" },
-                                { icon: Linkedin, href: "https://www.linkedin.com/company/santaan-fertility-clinic-and-research-institute" },
-                                { icon: Youtube, href: "https://www.youtube.com/results?search_query=Santana+Seva" }
+                                { icon: Facebook, href: "https://www.facebook.com/santaanfertilityclinic", label: "Facebook" },
+                                { icon: Instagram, href: "https://www.instagram.com/santaan_fertility/", label: "Instagram" },
+                                { icon: Twitter, href: "https://x.com/SantaanIVF", label: "X" },
+                                { icon: Linkedin, href: "https://www.linkedin.com/school/santaan-fertility-center-and-research-institute/", label: "LinkedIn" },
                             ].map((item, i) => (
-                                <a key={i} href={item.href} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-santaan-amber transition-colors">
+                                <a
+                                    key={i}
+                                    href={item.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={item.label}
+                                    className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-santaan-amber transition-colors"
+                                >
                                     <item.icon className="w-5 h-5" />
                                 </a>
                             ))}
@@ -92,34 +100,29 @@ export function Footer() {
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Quick Links</h4>
                         <ul className="space-y-4">
                             <li>
-                                <Link href="#success-stories" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    Our Story
+                                <Link href="/ivf-clinic-bhubaneswar" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    IVF Bhubaneswar
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#doctors" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                <Link href="/our-doctors" className="text-gray-300 hover:text-santaan-amber transition-colors">
                                     Doctors
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#awards" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    Success Rates
+                                <Link href="/contact-centres" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    Contact Centres
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#santaan-lab" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    Treatments
+                                <Link href="/at-home-fertility-testing" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    At-Home Testing
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="https://medium.com/@santaanIVF"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-gray-300 hover:text-santaan-amber transition-colors"
-                                >
+                                <Link href="/fertility-insights" className="text-gray-300 hover:text-santaan-amber transition-colors">
                                     Blog
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -128,15 +131,10 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Our Centers</h4>
                         <ul className="space-y-4">
-                            {[
-                                "Berhampur",
-                                "Bhubaneswar",
-                                "Cuttack",
-                                "Bangalore (R&D)"
-                            ].map((loc) => (
-                                <li key={loc} className="flex gap-3 text-gray-300">
+                            {CENTER_CONTACTS.map((center) => (
+                                <li key={center.name} className="flex gap-3 text-gray-300">
                                     <MapPin className="w-5 h-5 text-santaan-amber shrink-0" />
-                                    <span>{loc}</span>
+                                    <span>{center.name}</span>
                                 </li>
                             ))}
                         </ul>

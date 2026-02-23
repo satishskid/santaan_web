@@ -56,8 +56,8 @@ const stories = [
     },
     {
         image: "/assets/hero-neha-vikram-final.jpg",
-        name: "Neha & Vikram*, 52",
-        type: "Hope After 50 - Comprehensive IVF",
+        name: "Neha 44 & Vikram 52 yrs*",
+        type: "Late Parenthood - Comprehensive IVF",
         quote: "Everyone said we were too old. But Santaan believed in us. Through advanced IVF protocols and donor support, our dream came true at 52.",
         location: "Bhubaneswar"
     }
@@ -73,7 +73,7 @@ export function SuccessStories() {
                         From &quot;Impossible&quot; to <span className="text-santaan-amber">&quot;Parent&quot;</span>
                     </h2>
                     <p className="text-black max-w-2xl mx-auto">
-                        Every family we help create adds a new chapter to our story. Here are just a few of the 7,000+ journeys we've been honored to be part of.
+                        Every family we help create adds a new chapter to our story. Here are just a few of the 7,000+ journeys we&apos;ve been honored to be part of.
                     </p>
                     <p className="text-gray-500 text-sm mt-2">*Names changed for privacy</p>
                 </div>

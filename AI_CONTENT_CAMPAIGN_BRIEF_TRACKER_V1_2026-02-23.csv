@@ -1,0 +1,33 @@
+week_start,week_end,record_type,center,channel,campaign,asset,metric_name,metric_value,target_value,decision,priority,owner,due_date,status,topic,content_type,keyword,cta,funnel_stage,source_signal,notes
+2026-02-23,2026-03-01,KPI,network,all,all,all,attribution_coverage_pct,ENTER,95,ENTER,P1,crm.ops01,ENTER,open,,,,,,,Fill weekly network attribution coverage
+2026-02-23,2026-03-01,KPI,network,all,all,all,pending_gt24h_count,ENTER,3,ENTER,P1,ivr.lead01,ENTER,open,,,,,,,Pending leads older than 24h
+2026-02-23,2026-03-01,KPI,bhubaneswar,all,all,all,weekly_leads,ENTER,24,ENTER,P1,marketing.head,ENTER,open,,,,,,,Bhubaneswar leads actual vs target
+2026-02-23,2026-03-01,KPI,bhubaneswar,all,all,all,weekly_converted,ENTER,3,ENTER,P1,counselor.bbsr01,ENTER,open,,,,,,,Bhubaneswar converted actual vs target
+2026-02-23,2026-03-01,KPI,bhubaneswar,all,all,all,conversion_rate_pct,ENTER,12.5,ENTER,P1,counselor.bbsr01,ENTER,open,,,,,,,Bhubaneswar conversion rate
+2026-02-23,2026-03-01,KPI,berhampur,all,all,all,weekly_leads,ENTER,12,ENTER,P1,marketing.head,ENTER,open,,,,,,,Berhampur leads actual vs target
+2026-02-23,2026-03-01,KPI,berhampur,all,all,all,weekly_converted,ENTER,1,ENTER,P1,counselor.ber01,ENTER,open,,,,,,,Berhampur converted actual vs target
+2026-02-23,2026-03-01,KPI,berhampur,all,all,all,conversion_rate_pct,ENTER,8.0,ENTER,P1,counselor.ber01,ENTER,open,,,,,,,Berhampur conversion rate
+2026-02-23,2026-03-01,KPI,bangalore,all,all,all,weekly_leads,ENTER,16,ENTER,P1,marketing.head,ENTER,open,,,,,,,Bangalore leads actual vs target
+2026-02-23,2026-03-01,KPI,bangalore,all,all,all,weekly_converted,ENTER,2,ENTER,P1,counselor.blr01,ENTER,open,,,,,,,Bangalore converted actual vs target
+2026-02-23,2026-03-01,KPI,bangalore,all,all,all,conversion_rate_pct,ENTER,10.0,ENTER,P1,counselor.blr01,ENTER,open,,,,,,,Bangalore conversion rate
+2026-02-23,2026-03-01,KPI,network,all,all,all,total_spend_inr,ENTER,ENTER,ENTER,P1,agency.gp01,ENTER,open,,,,,,,Total spend for week
+2026-02-23,2026-03-01,KPI,network,all,all,all,cpl_inr,ENTER,ENTER,ENTER,P1,agency.gp01,ENTER,open,,,,,,,Cost per lead
+2026-02-23,2026-03-01,KPI,network,all,all,all,cpp_inr,ENTER,ENTER,ENTER,P1,agency.gp01,ENTER,open,,,,,,,Cost per patient/registration
+2026-02-23,2026-03-01,CAMPAIGN_DECISION,bhubaneswar,meta,fy26q1_bbsr_ivf_leadgen_v1,creative_a,leads,ENTER,ENTER,SCALE/FIX/PAUSE,P1,agency.gp01,ENTER,open,,,,,,,Decide campaign action based on KPI
+2026-02-23,2026-03-01,CAMPAIGN_DECISION,berhampur,google,fy26q1_brp_pcos_search_v1,keyword_set_1,converted,ENTER,ENTER,SCALE/FIX/PAUSE,P1,agency.gp01,ENTER,open,,,,,,,Decide campaign action based on KPI
+2026-02-23,2026-03-01,CAMPAIGN_DECISION,bangalore,youtube,fy26q1_blr_eggfreezing_video_v1,video_15s_a,cpp_inr,ENTER,ENTER,SCALE/FIX/PAUSE,P2,agency.gp01,ENTER,open,,,,,,,Decide campaign action based on KPI
+2026-02-23,2026-03-01,INTENT_CLUSTER,bhubaneswar,all,all,all,top_intent_1,ENTER,ENTER,ENTER,P1,marketing.head,ENTER,open,,,,,,,Intent from CRM notes and lead behavior
+2026-02-23,2026-03-01,INTENT_CLUSTER,berhampur,all,all,all,top_intent_1,ENTER,ENTER,ENTER,P1,marketing.head,ENTER,open,,,,,,,Intent from CRM notes and lead behavior
+2026-02-23,2026-03-01,INTENT_CLUSTER,bangalore,all,all,all,top_intent_1,ENTER,ENTER,ENTER,P1,marketing.head,ENTER,open,,,,,,,Intent from CRM notes and lead behavior
+2026-02-23,2026-03-01,OBJECTION,network,all,all,all,objection_1,ENTER,ENTER,ENTER,P1,ivr.lead01,ENTER,open,,,,,,,Top patient objection from telecaller notes
+2026-02-23,2026-03-01,OBJECTION,network,all,all,all,objection_2,ENTER,ENTER,ENTER,P1,ivr.lead01,ENTER,open,,,,,,,Top patient objection from counselor notes
+2026-02-23,2026-03-01,CONTENT_PLAN,bhubaneswar,organic,blog,website,content_item_1,ENTER,ENTER,ENTER,P1,content.writer,ENTER,planned,ENTER,patient_blog,ENTER,Book Assessment,mofu,objection_1,Patient-facing weekly blog
+2026-02-23,2026-03-01,CONTENT_PLAN,network,organic,reel,instagram,content_item_2,ENTER,ENTER,ENTER,P1,social.lead,ENTER,planned,ENTER,reel_script,ENTER,Call/WhatsApp,tofu,objection_2,Short reel mapped to objection
+2026-02-23,2026-03-01,CONTENT_PLAN,network,organic,clinical-insight,website,content_item_3,ENTER,ENTER,ENTER,P2,clinical.writer,ENTER,planned,ENTER,doctor_blog,ENTER,Clinical Relations,mofu,intent_cluster,Doctor-facing technical article with citation
+2026-02-23,2026-03-01,ACTION_ITEM,network,all,all,all,owner_action_1,ENTER,ENTER,ENTER,P1,marketing.head,ENTER,open,,,,,,,Owner action from CEO review
+2026-02-23,2026-03-01,ACTION_ITEM,network,all,all,all,owner_action_2,ENTER,ENTER,ENTER,P1,ivr.lead01,ENTER,open,,,,,,,Owner action from CEO review
+2026-02-23,2026-03-01,ACTION_ITEM,network,all,all,all,owner_action_3,ENTER,ENTER,ENTER,P1,crm.ops01,ENTER,open,,,,,,,Owner action from CEO review
+2026-02-23,2026-03-01,COMPLIANCE,network,all,all,all,agency_rows_submitted_days,ENTER,7,ENTER,P1,agency.gp01,ENTER,open,,,,,,,Should be 7/7 days
+2026-02-23,2026-03-01,COMPLIANCE,network,all,all,all,field_rows_submitted_days,ENTER,7,ENTER,P1,field.lead,ENTER,open,,,,,,,Should be 7/7 days
+2026-02-23,2026-03-01,COMPLIANCE,network,all,all,all,tv_rows_submitted_days,ENTER,7,ENTER,P2,agency.gp01,ENTER,open,,,,,,,If TV active during week
+2026-02-23,2026-03-01,COMPLIANCE,network,all,all,all,workboard_completion_pct,ENTER,95,ENTER,P1,crm.ops01,ENTER,open,,,,,,,Target daily execution compliance

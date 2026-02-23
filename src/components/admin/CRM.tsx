@@ -1,10 +1,18 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import CampaignAnalytics from './CampaignAnalytics';
 import CeoCommandCenter from './CeoCommandCenter';
-import { Search, Filter, Download, UserPlus, Phone, Mail, Calendar, MoreHorizontal, CheckCircle, Clock, MapPin, Megaphone, Plus, Trash2, Edit, Save, X, BookOpen } from 'lucide-react';
+import TeamManagement from './TeamManagement';
+import SettingsManagement from './SettingsManagement';
+import CentersManagement from './CentersManagement';
+import AnnouncementsManagement from './AnnouncementsManagement';
+import SpendManagement from './SpendManagement';
+import OpsInputsManagement from './OpsInputsManagement';
+import OpsWorkboard from './OpsWorkboard';
+import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -50,16 +58,26 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements';
-
-interface ContactsTableProps {
-    contacts: Contact[];
-    onContactUpdate: (contact: Contact) => void;
-    onContactDelete: (id: number) => void;
-}
+type FilterTab = 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs';
 
 export default function CRM() {
-    const [activeTab, setActiveTab] = useState<FilterTab>('all');
+    const { data: session } = useSession();
+    const currentRole = String((session?.user as { role?: string } | undefined)?.role || '').trim().toLowerCase();
+    const leadershipRoles = new Set(['admin', 'ceo', 'crm_ops_admin']);
+    const opsInputRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'field_exec']);
+    const contactRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager', 'telecaller', 'counselor']);
+    const spendRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer']);
+    const analyticsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'ivr_manager', 'telecaller_manager']);
+
+    const canAccessLeadership = leadershipRoles.has(currentRole);
+    const canAccessOpsInputs = opsInputRoles.has(currentRole) || canAccessLeadership;
+    const canAccessContacts = contactRoles.has(currentRole) || canAccessLeadership;
+    const canDeleteContacts = canAccessLeadership;
+    const canAccessSpend = spendRoles.has(currentRole) || canAccessLeadership;
+    const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
+    const canAccessCeoCommand = canAccessLeadership;
+
+    const [activeTab, setActiveTab] = useState<FilterTab>('workboard');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [contacts, setContacts] = useState<Contact[]>([]);
@@ -72,14 +90,16 @@ export default function CRM() {
     const [tagFilter, setTagFilter] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
     const [newContact, setNewContact] = useState<Partial<Contact>>({});
+    const contactTabs: FilterTab[] = ['all', 'seminar', 'newsletter', 'whatsapp', 'telegram', 'at_home_test', 'hot_leads'];
+    const isContactTab = contactTabs.includes(activeTab);
+    const shouldLoadContacts = isContactTab && canAccessContacts;
 
     useEffect(() => {
-        fetchContacts();
-    }, [activeTab]);
-
-    useEffect(() => {
-        filterContacts();
-    }, [contacts, searchTerm, statusFilter, channelFilter, tagFilter]);
+        if (shouldLoadContacts) {
+            fetchContacts();
+        }
+        setSelectedContacts([]);
+    }, [activeTab, shouldLoadContacts]);
 
     const fetchContacts = async () => {
         setIsLoading(true);
@@ -95,8 +115,22 @@ export default function CRM() {
         }
     };
 
-    const filterContacts = () => {
+    const filterContacts = useCallback(() => {
         let filtered = contacts;
+
+        if (activeTab === 'seminar') {
+            filtered = filtered.filter((contact) => Boolean(contact.seminarRegistered));
+        } else if (activeTab === 'newsletter') {
+            filtered = filtered.filter((contact) => Boolean(contact.newsletterSubscribed));
+        } else if (activeTab === 'whatsapp') {
+            filtered = filtered.filter((contact) => Boolean(contact.whatsappOptIn) || contact.preferredChannel === 'whatsapp');
+        } else if (activeTab === 'telegram') {
+            filtered = filtered.filter((contact) => Boolean(contact.telegramOptIn) || contact.preferredChannel === 'telegram');
+        } else if (activeTab === 'at_home_test') {
+            filtered = filtered.filter((contact) => contact.tags?.includes('at_home_test') || contact.leadSource === 'at_home_page');
+        } else if (activeTab === 'hot_leads') {
+            filtered = filtered.filter((contact) => (contact.leadScore || 0) >= 70 || contact.tags?.includes('hot_lead'));
+        }
 
         if (searchTerm) {
             filtered = filtered.filter(contact =>
@@ -125,7 +159,11 @@ export default function CRM() {
         }
 
         setFilteredContacts(filtered);
-    };
+    }, [contacts, searchTerm, statusFilter, channelFilter, tagFilter, activeTab]);
+
+    useEffect(() => {
+        filterContacts();
+    }, [filterContacts]);
 
     const handleContactUpdate = async (contact: Contact) => {
         try {
@@ -226,21 +264,59 @@ export default function CRM() {
         URL.revokeObjectURL(url);
     };
 
-    const tabs: { id: FilterTab; label: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
-        { id: 'all', label: 'All Contacts', icon: Search },
-        { id: 'seminar', label: 'Seminar', icon: Calendar, count: contacts.filter(c => c.seminarRegistered).length },
-        { id: 'newsletter', label: 'Newsletter', icon: Mail, count: contacts.filter(c => c.newsletterSubscribed).length },
-        { id: 'whatsapp', label: 'WhatsApp', icon: Phone, count: contacts.filter(c => c.whatsappOptIn).length },
-        { id: 'telegram', label: 'Telegram', icon: Phone, count: contacts.filter(c => c.telegramOptIn).length },
-        { id: 'at_home_test', label: 'At-Home Test', icon: CheckCircle },
-        { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone },
-        { id: 'team', label: 'Team', icon: UserPlus },
-        { id: 'analytics', label: 'Analytics', icon: Search },
-        { id: 'ceo_command', label: 'CEO Command', icon: Clock },
-        { id: 'settings', label: 'Settings', icon: Search },
-        { id: 'centers', label: 'Centers', icon: MapPin },
-        { id: 'announcements', label: 'Announcements', icon: Megaphone }
-    ];
+    const tabs = useMemo(() => {
+        const nextTabs: { id: FilterTab; label: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
+            { id: 'workboard', label: 'Workboard', icon: Clock },
+        ];
+
+        if (canAccessContacts) {
+            nextTabs.push(
+                { id: 'all', label: 'All Contacts', icon: Search },
+                { id: 'seminar', label: 'Seminar', icon: Calendar, count: contacts.filter(c => c.seminarRegistered).length },
+                { id: 'newsletter', label: 'Newsletter', icon: Mail, count: contacts.filter(c => c.newsletterSubscribed).length },
+                { id: 'whatsapp', label: 'WhatsApp', icon: Phone, count: contacts.filter(c => c.whatsappOptIn).length },
+                { id: 'telegram', label: 'Telegram', icon: Phone, count: contacts.filter(c => c.telegramOptIn).length },
+                { id: 'at_home_test', label: 'At-Home Test', icon: CheckCircle, count: contacts.filter(c => c.tags?.includes('at_home_test') || c.leadSource === 'at_home_page').length },
+                { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: contacts.filter(c => (c.leadScore || 0) >= 70 || c.tags?.includes('hot_lead')).length }
+            );
+        }
+
+        if (canAccessAnalytics) {
+            nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+        }
+        if (canAccessCeoCommand) {
+            nextTabs.push({ id: 'ceo_command', label: 'CEO Command', icon: Clock });
+        }
+        if (canAccessOpsInputs) {
+            nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Clock });
+        }
+        if (canAccessSpend) {
+            nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
+        }
+        if (canAccessLeadership) {
+            nextTabs.push(
+                { id: 'team', label: 'Team', icon: UserPlus },
+                { id: 'settings', label: 'Settings', icon: Search },
+                { id: 'centers', label: 'Centers', icon: MapPin },
+                { id: 'announcements', label: 'Announcements', icon: Megaphone }
+            );
+        }
+
+        return nextTabs;
+    }, [
+        canAccessAnalytics,
+        canAccessCeoCommand,
+        canAccessContacts,
+        canAccessLeadership,
+        canAccessOpsInputs,
+        canAccessSpend,
+        contacts,
+    ]);
+
+    useEffect(() => {
+        if (tabs.some((tab) => tab.id === activeTab)) return;
+        setActiveTab(tabs[0]?.id || 'workboard');
+    }, [activeTab, tabs]);
 
     const statusOptions = ['all', 'new', 'contacted', 'qualified', 'converted', 'lost'];
     const channelOptions = ['all', 'seminar', 'newsletter', 'whatsapp', 'telegram'];
@@ -249,20 +325,27 @@ export default function CRM() {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">CRM Dashboard</h1>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">CRM Dashboard</h1>
+                    <p className="text-sm text-gray-500 mt-1">Signed in role: {currentRole || 'unknown'}</p>
+                </div>
                 <div className="flex gap-2">
                     <Link href="/admin/marketing-manual">
                         <Button variant="outline" className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50">
                             <BookOpen className="w-4 h-4" /> Manual & SLA
                         </Button>
                     </Link>
-                    <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
-                        <UserPlus className="w-4 h-4" /> Add Contact
-                    </Button>
-                    <Button onClick={exportContacts} variant="outline" className="flex items-center gap-2">
-                        <Download className="w-4 h-4" /> Export
-                    </Button>
-                    {selectedContacts.length > 0 && (
+                    {isContactTab && (
+                        <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
+                            <UserPlus className="w-4 h-4" /> Add Contact
+                        </Button>
+                    )}
+                    {isContactTab && (
+                        <Button onClick={exportContacts} variant="outline" className="flex items-center gap-2">
+                            <Download className="w-4 h-4" /> Export
+                        </Button>
+                    )}
+                    {isContactTab && canDeleteContacts && selectedContacts.length > 0 && (
                         <Button onClick={handleBulkDelete} variant="destructive" className="flex items-center gap-2">
                             <Trash2 className="w-4 h-4" /> Delete Selected ({selectedContacts.length})
                         </Button>
@@ -285,7 +368,8 @@ export default function CRM() {
                 ))}
             </div>
 
-            <div className="flex gap-4 mb-6">
+            {isContactTab && (
+            <div className="flex flex-wrap gap-4 mb-6">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
@@ -314,16 +398,55 @@ export default function CRM() {
                         <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1).replace('_', ' ')}</option>
                     ))}
                 </select>
+                <select
+                    value={tagFilter}
+                    onChange={(e) => setTagFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md"
+                >
+                    <option value="all">All Tags</option>
+                    {allTags.map(tag => (
+                        <option key={tag} value={tag}>{tag}</option>
+                    ))}
+                </select>
             </div>
+            )}
 
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                {activeTab === 'analytics' ? (
+                {activeTab === 'workboard' ? (
+                    <div className="p-6">
+                        <OpsWorkboard />
+                    </div>
+                ) : activeTab === 'analytics' ? (
                     <div className="p-6">
                         <CampaignAnalytics contacts={contacts} />
                     </div>
                 ) : activeTab === 'ceo_command' ? (
                     <div className="p-6">
                         <CeoCommandCenter contacts={contacts} />
+                    </div>
+                ) : activeTab === 'team' ? (
+                    <div className="p-6">
+                        <TeamManagement />
+                    </div>
+                ) : activeTab === 'settings' ? (
+                    <div className="p-6">
+                        <SettingsManagement />
+                    </div>
+                ) : activeTab === 'centers' ? (
+                    <div className="p-6">
+                        <CentersManagement />
+                    </div>
+                ) : activeTab === 'announcements' ? (
+                    <div className="p-6">
+                        <AnnouncementsManagement />
+                    </div>
+                ) : activeTab === 'spend' ? (
+                    <div className="p-6">
+                        <SpendManagement />
+                    </div>
+                ) : activeTab === 'ops_inputs' ? (
+                    <div className="p-6">
+                        <OpsInputsManagement userRole={currentRole} />
                     </div>
                 ) : (
                     <Table>
@@ -359,7 +482,20 @@ export default function CRM() {
                             ) : filteredContacts.length > 0 ? (
                                 filteredContacts.map((contact) => (
                                     <TableRow key={contact.id} className="group hover:bg-gray-50 transition-colors">
-                                        <TableCell><input type="checkbox" className="rounded border-gray-300" /></TableCell>
+                                        <TableCell>
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-gray-300"
+                                                checked={selectedContacts.includes(contact.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedContacts((prev) => [...prev, contact.id]);
+                                                    } else {
+                                                        setSelectedContacts((prev) => prev.filter((id) => id !== contact.id));
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-gray-900">{contact.name}</span>
@@ -407,14 +543,16 @@ export default function CRM() {
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
-                                                <Button
-                                                    onClick={() => handleContactDelete(contact.id)}
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="p-1 text-red-600 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                {canDeleteContacts ? (
+                                                    <Button
+                                                        onClick={() => handleContactDelete(contact.id)}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="p-1 text-red-600 hover:text-red-700"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                ) : null}
                                             </div>
                                         </TableCell>
                                     </TableRow>

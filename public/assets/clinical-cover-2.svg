@@ -1,0 +1,20 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#112B3C"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#g1)"/>
+  <path d="M0 740C260 660 420 590 680 640C940 690 1170 820 1600 680V900H0V740Z" fill="#0D3D58"/>
+  <path d="M0 790C250 710 430 640 700 690C980 740 1210 860 1600 730V900H0V790Z" fill="#17617A"/>
+  <path d="M250 210H680" stroke="#8FD3B4" stroke-width="14" stroke-linecap="round"/>
+  <path d="M250 290H760" stroke="#8FD3B4" stroke-width="14" stroke-linecap="round"/>
+  <path d="M250 370H640" stroke="#8FD3B4" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="1220" cy="320" r="210" fill="#F2A65A" fill-opacity="0.25"/>
+  <circle cx="1220" cy="320" r="130" fill="#F2A65A" fill-opacity="0.3"/>
+  <circle cx="1220" cy="320" r="55" fill="#F2A65A"/>
+  <text x="860" y="510" fill="#F4FAFD" font-family="Georgia, serif" font-size="62" font-weight="700">Journal Brief</text>
+  <text x="860" y="575" fill="#D2E9F3" font-family="Arial, sans-serif" font-size="30">AI and Reproductive Medicine</text>
+  <defs>
+    <linearGradient id="g1" x1="1600" y1="40" x2="80" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A3B55"/>
+      <stop offset="1" stop-color="#0B2135"/>
+    </linearGradient>
+  </defs>
+</svg>

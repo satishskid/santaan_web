@@ -3,7 +3,30 @@ import { db } from '@/lib/db';
 import { contacts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/auth';
-import { isAuthorizedAdmin } from '@/lib/auth-helper';
+import { isAuthorizedOpsUser } from '@/lib/auth-helper';
+
+const UPDATE_ROLES = new Set([
+    'admin',
+    'ceo',
+    'crm_ops_admin',
+    'ivr_manager',
+    'telecaller_manager',
+    'telecaller',
+    'counselor',
+]);
+const DELETE_ROLES = new Set(['admin', 'ceo', 'crm_ops_admin']);
+
+function normalizeRole(role?: string | null) {
+    return String(role || '').trim().toLowerCase();
+}
+
+async function requireOpsAccess() {
+    const session = await auth();
+    const sessionRole = normalizeRole((session?.user as { role?: string } | undefined)?.role);
+    const authorized = await isAuthorizedOpsUser(session?.user?.email, sessionRole);
+    const role = sessionRole || 'admin';
+    return { authorized, role };
+}
 
 function parseId(value: string) {
     const id = Number(value);
@@ -13,8 +36,8 @@ function parseId(value: string) {
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const { authorized, role } = await requireOpsAccess();
+        if (!authorized || !UPDATE_ROLES.has(role)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -96,8 +119,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
 export async function DELETE(_: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const { authorized, role } = await requireOpsAccess();
+        if (!authorized || !DELETE_ROLES.has(role)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

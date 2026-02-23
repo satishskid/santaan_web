@@ -1,71 +1,116 @@
-const BHASH_API_URL = 'http://bhashsms.com/api/sendmsg.php';
-const DEFAULT_USER = 'Santaan_01';
-const DEFAULT_PASS = '123456';
-const DEFAULT_SENDER = 'BUZWAP';
+const BHASH_API_URL = "http://bhashsms.com/api/sendmsg.php";
 
-interface WhatsAppMessage {
-    phone: string;      // Mobile Number without 91
-    template: string;   // Template Name
-    params?: string[];  // Optional parameters for the template
-    imageUrl?: string;  // Optional image URL
-}
+type BaseWhatsAppPayload = {
+  phone: string;
+  imageUrl?: string;
+};
 
-/**
- * Sends a WhatsApp message using the BhashSMS API
- */
-export async function sendWhatsAppMessage(data: WhatsAppMessage) {
-    const user = process.env.BHASH_USER || DEFAULT_USER;
-    const pass = process.env.BHASH_PASS || DEFAULT_PASS;
-    const sender = process.env.BHASH_SENDER || DEFAULT_SENDER;
+type WhatsAppTemplateMessage = BaseWhatsAppPayload & {
+  template: string;
+  params?: string[];
+};
 
-    if (!pass) {
-        console.warn('BHASH_PASS environment variable is not set. Skipping WhatsApp message.');
-        return { success: false, error: 'Configuration missing' };
-    }
-    
-    // ... rest of the function ...
+type WhatsAppTextMessage = BaseWhatsAppPayload & {
+  text: string;
+};
 
+const getBhashCredentials = () => {
+  const user = process.env.BHASH_USER;
+  const pass = process.env.BHASH_PASS;
+  const sender = process.env.BHASH_SENDER || "BUZWAP";
 
-    // Sanitize phone number: remove non-digits, remove leading 91 if length > 10
-    let cleanPhone = data.phone.replace(/\D/g, '');
-    if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
+  if (!user || !pass) {
+    throw new Error("BHASH_USER/BHASH_PASS are required");
+  }
+
+  return { user, pass, sender };
+};
+
+const normalizePhoneList = (phone: string) => {
+  return phone
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((value) => {
+      let cleanPhone = value.replace(/\D/g, "");
+      if (cleanPhone.length > 10 && cleanPhone.startsWith("91")) {
         cleanPhone = cleanPhone.substring(2);
-    }
+      }
+      return cleanPhone;
+    })
+    .filter(Boolean)
+    .join(",");
+};
 
+const sendViaBhash = async (payload: Record<string, string>) => {
+  const { user, pass, sender } = getBhashCredentials();
+  const finalPayload: Record<string, string> = {
+    user,
+    pass,
+    sender,
+    priority: "wa",
+    stype: "normal",
+    ...payload,
+  };
+
+  const fullUrl = `${BHASH_API_URL}?${new URLSearchParams(finalPayload).toString()}`;
+  const response = await fetch(fullUrl);
+  const result = await response.text();
+
+  return {
+    success: response.ok,
+    status: response.status,
+    result,
+  };
+};
+
+// Backward-compatible API for existing routes.
+export async function sendWhatsAppMessage(data: WhatsAppTemplateMessage) {
+  try {
     const payload: Record<string, string> = {
-        user,
-        pass,
-        sender,
-        phone: cleanPhone,
-        text: data.template,
-        priority: 'wa',
-        stype: 'normal',
+      phone: normalizePhoneList(data.phone),
+      text: data.template,
+      htype: "normal",
     };
 
-    if (data.params && data.params.length > 0) {
-        payload['Params'] = data.params.join(',');
+    if (data.params && data.params.length) {
+      payload.Params = data.params.join(",");
     }
 
     if (data.imageUrl) {
-        payload['htype'] = 'image';
-        payload['url'] = data.imageUrl;
+      payload.htype = "image";
+      payload.url = data.imageUrl;
     }
 
-    // Convert to URL parameters
-    const queryParams = new URLSearchParams(payload).toString();
-    const fullUrl = `${BHASH_API_URL}?${queryParams}`;
+    return await sendViaBhash(payload);
+  } catch (error) {
+    return {
+      success: false,
+      status: 500,
+      result: String(error),
+    };
+  }
+}
 
-    try {
-        console.log(`Sending WhatsApp to ${cleanPhone} with template ${data.template}`);
-        const response = await fetch(fullUrl);
-        const result = await response.text();
-        
-        // BhashSMS often returns plain text like "S.No.12345" or error codes
-        console.log('BhashSMS Response:', result);
-        
-        return { success: true, result };
-    } catch (error) {
-        console.error('BhashSMS Error:', error);
-        return { success: false, error: String(error) };
+export async function sendWhatsAppTextMessage(data: WhatsAppTextMessage) {
+  try {
+    const payload: Record<string, string> = {
+      phone: normalizePhoneList(data.phone),
+      text: data.text,
+      htype: "normal",
+    };
+
+    if (data.imageUrl) {
+      payload.htype = "image";
+      payload.url = data.imageUrl;
     }
+
+    return await sendViaBhash(payload);
+  } catch (error) {
+    return {
+      success: false,
+      status: 500,
+      result: String(error),
+    };
+  }
 }

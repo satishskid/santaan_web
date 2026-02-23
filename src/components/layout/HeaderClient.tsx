@@ -2,38 +2,39 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, Phone, Calendar } from 'lucide-react';
+import { Menu, X, Phone, Calendar, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Session } from 'next-auth';
 import Image from 'next/image';
 import { useJourney } from '@/context/JourneyContext';
+import { CENTER_CONTACTS, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+
+type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
 const navigation = [
-    { name: 'Understand Fertility', href: '#myth-busting' },
-    { name: 'Your Path', href: '#assessment' },
-    { name: 'Our Expertise', href: '#doctors' },
-    { name: 'About Us', href: '#footer' },
-];
-
-const centers = [
-    {
-        name: 'Berhampur',
-        phones: ['+91 7008990582', '+91 9777989739'],
-    },
-    {
-        name: 'Bhubaneswar',
-        phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
-    },
-    {
-        name: 'Bangalore (R&D)',
-        phones: ['+91 8105108416'],
-    },
+    { name: 'IVF Centres', href: '/contact-centres' },
+    { name: 'Female Fertility', href: '/female-fertility' },
+    { name: 'Male Fertility', href: '/male-infertility-clinic' },
+    { name: 'Fertility Doctors', href: '/our-doctors' },
+    { name: 'Fertility Insights', href: '/fertility-insights' },
+    { name: 'Clinical Insights', href: '/clinical-insights' },
 ];
 
 interface HeaderClientProps {
     session: Session | null;
+}
+
+function trackHeaderEvent(label: string) {
+    if (typeof window === 'undefined') return;
+    const analyticsWindow = window as GtagWindow;
+    if (!analyticsWindow.gtag) return;
+
+    analyticsWindow.gtag('event', 'click', {
+        event_category: 'engagement',
+        event_label: label,
+    });
 }
 
 export function HeaderClient({ session }: HeaderClientProps) {
@@ -49,11 +50,23 @@ export function HeaderClient({ session }: HeaderClientProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const navLinkClass = cn(
+        'text-xs lg:text-sm font-medium whitespace-nowrap transition-colors',
+        isScrolled ? 'text-gray-700 hover:text-santaan-teal' : 'text-white/90 hover:text-santaan-amber drop-shadow-sm'
+    );
+
+    const actionLinkClass = cn(
+        'inline-flex items-center gap-2 text-xs lg:text-sm font-semibold transition-colors whitespace-nowrap',
+        isScrolled ? 'text-santaan-teal hover:text-santaan-amber' : 'text-white hover:text-santaan-amber drop-shadow-sm'
+    );
+
     return (
         <header
             className={cn(
-                'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent',
-                isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-gray-100 py-2' : 'bg-transparent py-4'
+                'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
+                isScrolled
+                    ? 'bg-white/85 backdrop-blur-md shadow-sm border-gray-100 py-2'
+                    : 'bg-santaan-teal/45 backdrop-blur-md border-white/15 py-3'
             )}
         >
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-100 px-4 py-2 bg-santaan-teal text-white rounded-md">
@@ -62,27 +75,31 @@ export function HeaderClient({ session }: HeaderClientProps) {
             <div className="container mx-auto px-4 md:px-6">
                 <nav className="flex items-center justify-between" aria-label="Global">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <Image
-                            src="/assets/santaan-logo.png"
-                            alt="Santaan Logo"
-                            width={120}
-                            height={67}
-                            className="h-8 w-auto object-contain"
-                            priority
-                        />
-                        <span className="text-xl font-playfair font-bold text-santaan-teal tracking-tight hidden sm:inline">
-                            Santaan
+                    <Link href="/" className="flex items-center group" aria-label="Santaan IVF Home">
+                        <span
+                            className={cn(
+                                'rounded-md px-2 py-1 transition-colors',
+                                isScrolled ? 'bg-white' : 'bg-white/95 shadow-sm'
+                            )}
+                        >
+                            <Image
+                                src="/assets/santaan-logo.png"
+                                alt="Santaan Logo"
+                                width={120}
+                                height={67}
+                                className="h-8 w-auto object-contain"
+                                priority
+                            />
                         </span>
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden md:flex gap-8 items-center">
+                    <div className="hidden lg:flex gap-4 xl:gap-6 items-center">
                         {navigation.map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="text-sm font-medium text-gray-600 hover:text-santaan-teal transition-colors"
+                                className={navLinkClass}
                             >
                                 {item.name}
                             </Link>
@@ -90,46 +107,32 @@ export function HeaderClient({ session }: HeaderClientProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="hidden md:flex items-center gap-4">
-                        <div className="relative group">
-                            <button
-                                type="button"
-                                className="text-gray-500 hover:text-santaan-teal transition-colors inline-flex items-center"
-                            >
-                                <Phone className="w-5 h-5" />
-                                <span className="sr-only">Call a center</span>
-                            </button>
-                            <div className="absolute right-0 mt-3 w-64 rounded-xl border border-gray-100 bg-white shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all">
-                                <div className="p-3 space-y-3">
-                                    {centers.map((center) => (
-                                        <div key={center.name}>
-                                            <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider mb-1">
-                                                {center.name}
-                                            </div>
-                                            <div className="space-y-1">
-                                                {center.phones.map((phone) => (
-                                                    <a
-                                                        key={phone}
-                                                        href={`tel:${phone}`}
-                                                        className="block text-sm text-gray-700 hover:text-santaan-amber"
-                                                        onClick={() => {
-                                                            if (typeof window !== 'undefined' && (window as any).gtag) {
-                                                                (window as any).gtag('event', 'click', {
-                                                                    event_category: 'contact',
-                                                                    event_label: `header_phone_${center.name}_${phone}`
-                                                                });
-                                                            }
-                                                        }}
-                                                    >
-                                                        {phone}
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="hidden lg:flex items-center gap-2 xl:gap-3">
+                        <a
+                            href={`tel:${PRIMARY_CALL_NUMBER}`}
+                            data-cta-kind="call"
+                            data-center="Bhubaneswar"
+                            data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                            className={actionLinkClass}
+                            onClick={() => trackHeaderEvent('header_call_primary')}
+                        >
+                            <Phone className="w-4 h-4" />
+                            <span>Call</span>
+                            <span className="hidden xl:inline">{PRIMARY_CALL_NUMBER}</span>
+                        </a>
+                        <a
+                            href={PRIMARY_WHATSAPP_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            data-cta-kind="whatsapp"
+                            data-center="Bhubaneswar"
+                            data-cta-target={PRIMARY_WHATSAPP_URL}
+                            className={cn(actionLinkClass, isScrolled ? 'text-emerald-700 hover:text-emerald-800' : 'text-emerald-300 hover:text-emerald-200')}
+                            onClick={() => trackHeaderEvent('header_whatsapp_primary')}
+                        >
+                            <MessageCircle className="w-4 h-4" />
+                            WhatsApp
+                        </a>
 
                         {session?.user ? (
                             <Link href="/profile">
@@ -161,50 +164,26 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                 </div>
                             </Link>
                         ) : (
-                            <div className="flex gap-2">
-                                <div className="relative group hidden lg:flex">
-                                    <Button size="sm" onClick={() => {
-                                        if (typeof window !== 'undefined' && (window as any).gtag) {
-                                            (window as any).gtag('event', 'click', {
-                                                event_category: 'engagement',
-                                                event_label: 'header_cta_book_consultation'
-                                            });
-                                        }
-                                        window.location.href = '#assessment';
-                                    }}>
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        Book Consultation
-                                    </Button>
-                                    <div className="absolute right-0 mt-3 w-64 rounded-xl border border-gray-100 bg-white shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all">
-                                        <div className="p-3 space-y-3">
-                                            {centers.map((center) => (
-                                                <div key={center.name}>
-                                                    <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider mb-1">
-                                                        {center.name}
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        {center.phones.map((phone) => (
-                                                            <a
-                                                                key={phone}
-                                                                href={`tel:${phone}`}
-                                                                className="block text-sm text-gray-700 hover:text-santaan-amber"
-                                                            >
-                                                                {phone}
-                                                            </a>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <Button
+                                size="sm"
+                                className="bg-santaan-amber hover:bg-[#E08E45] text-white"
+                                data-cta-kind="book"
+                                data-center="Network"
+                                data-cta-target="/at-home-fertility-testing"
+                                onClick={() => {
+                                    trackHeaderEvent('header_cta_book_assessment');
+                                    window.location.href = '/at-home-fertility-testing';
+                                }}
+                            >
+                                <Calendar className="w-4 h-4 mr-2" />
+                                Book Assessment
+                            </Button>
                         )}
 
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex md:hidden gap-4 items-center">
+                    <div className="flex lg:hidden gap-4 items-center">
                         {session?.user && (
                             <Link href="/profile" className="relative w-8 h-8">
                                 {session.user.image ? (
@@ -244,7 +223,7 @@ export function HeaderClient({ session }: HeaderClientProps) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-white border-t border-gray-100 overflow-hidden"
+                        className="lg:hidden bg-white border-t border-gray-100 overflow-hidden"
                     >
                         <div className="space-y-1 px-4 pb-3 pt-2">
                             {navigation.map((item) => (
@@ -260,13 +239,44 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
                                 {!session?.user ? (
                                     <div className="space-y-4">
-                                        {centers.map((center) => (
+                                        <a
+                                            href={`tel:${PRIMARY_CALL_NUMBER}`}
+                                            className="block"
+                                            data-cta-kind="call"
+                                            data-center="Bhubaneswar"
+                                            data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                                        >
+                                            <Button variant="outline" className="w-full justify-center">
+                                                Call {PRIMARY_CALL_NUMBER}
+                                            </Button>
+                                        </a>
+                                        <a
+                                            href={PRIMARY_WHATSAPP_URL}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block"
+                                            data-cta-kind="whatsapp"
+                                            data-center="Bhubaneswar"
+                                            data-cta-target={PRIMARY_WHATSAPP_URL}
+                                        >
+                                            <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
+                                                WhatsApp a Fertility Advisor
+                                            </Button>
+                                        </a>
+                                        {CENTER_CONTACTS.map((center) => (
                                             <div key={center.name} className="space-y-2">
                                                 <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider">
                                                     {center.name}
                                                 </div>
                                                 {center.phones.map((phone) => (
-                                                    <Link key={phone} href={`tel:${phone}`} className="block">
+                                                    <Link
+                                                        key={phone}
+                                                        href={`tel:${phone}`}
+                                                        className="block"
+                                                        data-cta-kind="call"
+                                                        data-center={center.city}
+                                                        data-cta-target={`tel:${phone}`}
+                                                    >
                                                         <Button variant="outline" className="w-full justify-center">
                                                             Call {phone}
                                                         </Button>

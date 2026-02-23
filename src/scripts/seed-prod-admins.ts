@@ -22,11 +22,11 @@ const db = drizzle(client, { schema: { users } });
 // Admin accounts with secure passwords
 // IMPORTANT: Change these passwords after first login!
 const ADMINS = [
-    { email: "raghab.panda@santaan.in", name: "Raghab Panda", password: "Santaan@2026!" },
-    { email: "satish.rath@santaan.in", name: "Satish Rath", password: "Santaan@2026!" },
-    { email: "satish@skids.health", name: "Satish Rath (Skids)", password: "Santaan@2026!" },
-    { email: "satish.rath@gmail.com", name: "Satish Rath (Gmail)", password: "Santaan@2026!" },
-    { email: "demo@santaan.com", name: "Demo Admin", password: "Demo@2026!" }
+    { email: "raghab.panda@santaan.in", name: "Raghab Panda", password: "sant_growth26" },
+    { email: "satish.rath@santaan.in", name: "Satish Rath", password: "sant_growth26" },
+    { email: "satish@skids.health", name: "Satish Rath (Skids)", password: "sant_growth26" },
+    { email: "satish.rath@gmail.com", name: "Satish Rath (Gmail)", password: "sant_growth26" },
+    { email: "demo@santaan.com", name: "Demo Admin", password: "sant_growth26" }
 ];
 
 async function seedAdmins() {

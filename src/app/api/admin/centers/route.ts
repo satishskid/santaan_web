@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { centers } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
+import { auth } from "@/auth";
+import { isAuthorizedAdmin } from "@/lib/auth-helper";
+
+async function requireAdmin() {
+    const session = await auth();
+    return isAuthorizedAdmin(session?.user?.email);
+}
 
 // GET - Fetch all centers (public) or all for admin
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const includeInactive = searchParams.get('all') === 'true';
+
+        if (includeInactive && !(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         
         let result;
         if (includeInactive) {
@@ -36,6 +47,10 @@ export async function GET(request: NextRequest) {
 // POST - Create a new center (admin only)
 export async function POST(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { city, title, address, description, email, phones, mapUrl, sortOrder } = body;
         
@@ -76,6 +91,10 @@ export async function POST(request: NextRequest) {
 // PUT - Update a center
 export async function PUT(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { id, city, title, address, description, email, phones, mapUrl, sortOrder, isActive } = body;
         
@@ -124,6 +143,10 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete a center
 export async function DELETE(request: NextRequest) {
     try {
+        if (!(await requireAdmin())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         
