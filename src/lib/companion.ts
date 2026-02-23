@@ -155,20 +155,12 @@ const responseContainsDisallowedClaims = (text: string) => {
 };
 
 const policyRedirectReply = (channel: CompanionChannel) => {
-  const webReply = [
-    "For treatment cost and success-rate questions, Santaan Companion does not provide numbers on chat.",
+  const guidedReply = [
     "These depend on personalized clinical factors like age, diagnosis, ovarian reserve, sperm parameters, and treatment history.",
     `Please connect with a Santaan Fertility Executive for a personalized plan and transparent counseling. Call ${PRIMARY_CALL_NUMBER}.`,
   ].join(" ");
 
-  const whatsappReply = [
-    "For cost/success-rate queries, I cannot share numbers on chat.",
-    "They depend on personalized clinical factors.",
-    `Please speak to a Santaan Fertility Executive on ${PRIMARY_CALL_NUMBER}.`,
-    "For callback support, reply 9.",
-  ].join(" ");
-
-  return channel === "whatsapp" ? whatsappReply : webReply;
+  return channel === "whatsapp" ? guidedReply : guidedReply;
 };
 
 export async function generateCompanionReply(input: {
