@@ -40,6 +40,16 @@ const SUCCESS_RATE_KEYWORDS = [
   "guaranteed",
 ];
 
+const EGG_FREEZING_KEYWORDS = [
+  "egg freezing",
+  "freeze my eggs",
+  "freeze eggs",
+  "egg freeze",
+  "oocyte freezing",
+  "fertility preservation",
+  "freezew my eggs",
+];
+
 const GROQ_MODELS = (
   process.env.GROQ_MODEL?.split(",").map((m) => m.trim()).filter(Boolean) ?? []
 ).length
@@ -120,6 +130,14 @@ const localFallback = (message: string, channel: CompanionChannel) => {
   const lower = message.toLowerCase();
   if (isCostOrSuccessRateQuery(lower)) {
     return policyRedirectReply(channel);
+  }
+  if (hasAnyKeyword(lower, EGG_FREEZING_KEYWORDS)) {
+    const eggFreezingReply = [
+      "Yes, egg freezing can be a suitable fertility-preservation option for many women.",
+      "The plan is usually personalized after ovarian reserve assessment, cycle planning, stimulation, egg retrieval, and vitrification.",
+      `The right approach depends on your age, ovarian reserve, diagnosis, and treatment history. Please share your city (Bhubaneswar, Berhampur, or Bangalore), and our Santaan Fertility Executive will guide you. Call ${PRIMARY_CALL_NUMBER}.`,
+    ].join(" ");
+    return channel === "whatsapp" ? compactForWhatsapp(eggFreezingReply) : eggFreezingReply;
   }
   if (lower.includes("appointment") || lower.includes("book")) {
     return "We can help you book quickly. Please share your city (Bhubaneswar, Berhampur, or Bangalore) and preferred time slot.";
