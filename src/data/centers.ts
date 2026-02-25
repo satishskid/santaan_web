@@ -16,6 +16,11 @@ export const CENTER_CONTACTS: CenterContact[] = [
     phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
   },
   {
+    name: 'Angul',
+    city: 'Angul',
+    phones: ['+91 7008990586'],
+  },
+  {
     name: 'Bangalore (R&D)',
     city: 'Bangalore',
     phones: ['+91 8105108416'],

@@ -44,6 +44,8 @@ export function buildOrganizationSchema() {
 
 export function buildLocalClinicSchemas() {
   return CENTER_CONTACTS.map((center) => ({
+    // Use service-page canonicals for cities with dedicated pages.
+    // Fallback to contact centres page for other active locations.
     '@context': 'https://schema.org',
     '@type': 'MedicalClinic',
     name: `Santaan IVF - ${center.name}`,
@@ -52,7 +54,9 @@ export function buildLocalClinicSchemas() {
         ? 'https://santaan.in/ivf-clinic-bhubaneswar'
         : center.city === 'Berhampur'
           ? 'https://santaan.in/ivf-clinic-berhampur'
-          : 'https://santaan.in/ivf-clinic-bangalore-aecs-layout',
+          : center.city === 'Bangalore'
+            ? 'https://santaan.in/ivf-clinic-bangalore-aecs-layout'
+            : 'https://santaan.in/contact-centres',
     telephone: center.phones[0],
     areaServed: center.city,
     address: {
