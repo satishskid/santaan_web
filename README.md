@@ -38,6 +38,12 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
     NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_key
     NEXT_PUBLIC_GROQ_API_KEY=your_key
     BLOG_SYNC_SECRET=choose_a_strong_secret
+    META_AD_ACCOUNT_IDS=act_1234567890,act_0987654321
+    META_ACCESS_TOKEN=your_meta_long_lived_ads_read_token
+    META_APP_SECRET=your_meta_app_secret
+    META_GRAPH_API_VERSION=v21.0
+    META_REPORTING_TIMEZONE=Asia/Kolkata
+    META_SPEND_SYNC_SECRET=choose_a_strong_secret
     ```
 
 4.  **Database Setup (Local):**
@@ -69,11 +75,22 @@ This project is configured for deployment on Netlify.
     -   `TURSO_DATABASE_URL`
     -   `TURSO_AUTH_TOKEN`
     -   `BLOG_SYNC_SECRET`
+    -   `META_AD_ACCOUNT_ID` or `META_AD_ACCOUNT_IDS`
+    -   `META_ACCESS_TOKEN`
+    -   `META_APP_SECRET`
+    -   `META_SPEND_SYNC_SECRET`
     -   `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
     -   `NEXT_PUBLIC_GROQ_API_KEY`
 
 ### ⚠️ Critical Architecture Constraints
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for essential rules regarding Database (Turso/LibSQL) and Authentication to prevent production errors.
+
+### Meta Spend Auto-Sync
+
+- UI: Admin `Spend` tab now has `Sync Meta`.
+- API: `POST /api/admin/spend/sync-meta?date=YYYY-MM-DD`
+  - Auth: admin session OR `x-sync-token: META_SPEND_SYNC_SECRET`
+- You can call this endpoint from an external cron/scheduler for daily auto-sync.
 
 ## Database Migration (Production)
 

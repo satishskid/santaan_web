@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { IndianRupee, Plus, Save, Trash2 } from "lucide-react";
+import { IndianRupee, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -145,6 +145,7 @@ export default function SpendManagement() {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [syncingMeta, setSyncingMeta] = useState(false);
 
   const isEditing = Boolean(form.id);
 
@@ -296,6 +297,31 @@ export default function SpendManagement() {
     }
   }
 
+  async function syncMetaSpend() {
+    setSyncingMeta(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/spend/sync-meta?date=${encodeURIComponent(form.spendDate)}`, {
+        method: "POST",
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Meta sync failed");
+      }
+
+      const total = formatCurrency(Number(payload?.totalSpend || 0));
+      setNotice(
+        `Meta sync completed for ${payload?.reportDate || form.spendDate}. Rows: ${payload?.syncedRows || 0}, campaigns: ${payload?.campaigns || 0}, spend: ${total}.`
+      );
+      await fetchSpend();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Meta sync failed");
+    } finally {
+      setSyncingMeta(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -377,6 +403,15 @@ export default function SpendManagement() {
           </label>
           <Button type="button" variant="outline" onClick={downloadSpendTemplate} disabled={saving || importing}>
             Download Template
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={syncMetaSpend}
+            disabled={saving || importing || syncingMeta}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${syncingMeta ? "animate-spin" : ""}`} />
+            {syncingMeta ? "Syncing Meta..." : "Sync Meta"}
           </Button>
           {isEditing ? (
             <Button variant="outline" onClick={resetForm} disabled={saving}>
