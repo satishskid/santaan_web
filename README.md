@@ -44,6 +44,9 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
     META_GRAPH_API_VERSION=v21.0
     META_REPORTING_TIMEZONE=Asia/Kolkata
     META_SPEND_SYNC_SECRET=choose_a_strong_secret
+    GA4_PROPERTY_ID=123456789
+    GOOGLE_SERVICE_ACCOUNT_EMAIL=santaan-analytics-reader@project-id.iam.gserviceaccount.com
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
     ```
 
 4.  **Database Setup (Local):**
@@ -79,6 +82,9 @@ This project is configured for deployment on Netlify.
     -   `META_ACCESS_TOKEN`
     -   `META_APP_SECRET`
     -   `META_SPEND_SYNC_SECRET`
+    -   `GA4_PROPERTY_ID`
+    -   `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+    -   `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
     -   `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
     -   `NEXT_PUBLIC_GROQ_API_KEY`
 
@@ -108,9 +114,16 @@ npx tsx src/scripts/seed-prod.ts
 
 ---
 
-## Future Enhancement: Google Analytics API Integration
+## Google Analytics API Integration (Live)
 
-To display **live GA data** in the admin dashboard (instead of just external links), follow these steps:
+The CRM Analytics tab now supports **live GA4 API pull** via:
+
+- `GET /api/admin/analytics/ga4?days=7`
+- UI section: `Admin Dashboard → Analytics → Website Demand Signals (GA4 · 7 days)`
+
+If credentials are missing, the widget safely shows a "not configured" notice.
+
+To activate it in production:
 
 ### Prerequisites
 - Access to the Google account that owns the GA4 property

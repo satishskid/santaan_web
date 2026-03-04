@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BarChart3,
   Clock3,
+  Globe2,
   IndianRupee,
   Megaphone,
   Target,
@@ -35,6 +36,30 @@ interface SpendEntry {
 
 interface CampaignAnalyticsProps {
   contacts: Contact[];
+}
+
+interface Ga4Snapshot {
+  configured: boolean;
+  message?: string;
+  windowDays: number;
+  overview: {
+    activeUsers: number;
+    sessions: number;
+    newUsers: number;
+    pageViews: number;
+    eventCount: number;
+  };
+  topSources: Array<{
+    sourceMedium: string;
+    sessions: number;
+    activeUsers: number;
+    eventCount: number;
+  }>;
+  topLandingPages: Array<{
+    path: string;
+    sessions: number;
+    activeUsers: number;
+  }>;
 }
 
 interface StatCardProps {
@@ -77,6 +102,10 @@ function formatCurrency(value: number) {
   }).format(Number.isFinite(value) ? value : 0);
 }
 
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-IN").format(Number.isFinite(value) ? value : 0);
+}
+
 function normalizeToken(value?: string | null, fallback = "unknown") {
   const token = String(value || "")
     .trim()
@@ -86,6 +115,9 @@ function normalizeToken(value?: string | null, fallback = "unknown") {
 
 export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) {
   const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
+  const [ga4Snapshot, setGa4Snapshot] = useState<Ga4Snapshot | null>(null);
+  const [ga4Loading, setGa4Loading] = useState(true);
+  const [ga4Error, setGa4Error] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -102,6 +134,34 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
 
     loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadGa4() {
+      setGa4Loading(true);
+      setGa4Error(null);
+      try {
+        const response = await fetch("/api/admin/analytics/ga4?days=7");
+        const payload = (await response.json()) as Ga4Snapshot & { error?: string; message?: string };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.message || payload?.error || "Failed to fetch GA4 metrics");
+        }
+        setGa4Snapshot(payload);
+      } catch (error) {
+        if (!active) return;
+        setGa4Error(error instanceof Error ? error.message : "Failed to fetch GA4 metrics");
+      } finally {
+        if (active) setGa4Loading(false);
+      }
+    }
+
+    loadGa4();
     return () => {
       active = false;
     };
@@ -262,6 +322,89 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Globe2 className="w-4 h-4 text-gray-500" />
+            Website Demand Signals (GA4 · 7 days)
+          </h3>
+        </div>
+        {ga4Loading ? (
+          <div className="p-6 text-sm text-gray-500">Loading GA4 metrics...</div>
+        ) : ga4Error ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{ga4Error}</div>
+        ) : ga4Snapshot?.configured ? (
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Sessions</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(ga4Snapshot.overview.sessions)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Active Users</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(ga4Snapshot.overview.activeUsers)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">New Users</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(ga4Snapshot.overview.newUsers)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Page Views</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(ga4Snapshot.overview.pageViews)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Events</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(ga4Snapshot.overview.eventCount)}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-2">Top Source / Medium</p>
+                <div className="space-y-2">
+                  {ga4Snapshot.topSources.length > 0 ? (
+                    ga4Snapshot.topSources.map((source) => (
+                      <div key={source.sourceMedium} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm font-medium text-gray-800">{source.sourceMedium}</p>
+                          <p className="text-xs text-gray-500">
+                            sessions: <span className="font-semibold text-gray-700">{formatNumber(source.sessions)}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No source data available from GA4.</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-2">Top Landing Pages</p>
+                <div className="space-y-2">
+                  {ga4Snapshot.topLandingPages.length > 0 ? (
+                    ga4Snapshot.topLandingPages.map((page) => (
+                      <div key={page.path} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm font-medium text-gray-800 truncate">{page.path}</p>
+                          <p className="text-xs text-gray-500">
+                            sessions: <span className="font-semibold text-gray-700">{formatNumber(page.sessions)}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No landing page data available from GA4.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 text-sm text-amber-700 bg-amber-50 border-t border-amber-100">
+            {ga4Snapshot?.message || "GA4 credentials are not configured for this environment yet."}
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
         <StatCard title="Total Leads" value={metrics.totalLeads} subtext="Across all channels" icon={Users} color="bg-blue-50" />
         <StatCard title="Total Conversions" value={metrics.totalConversions} subtext="Status = converted" icon={Target} color="bg-green-50" />
