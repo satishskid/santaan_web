@@ -12,7 +12,8 @@ import AnnouncementsManagement from './AnnouncementsManagement';
 import SpendManagement from './SpendManagement';
 import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
-import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee } from 'lucide-react';
+import DailyCommandCenter from './DailyCommandCenter';
+import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -58,7 +59,7 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs';
+type FilterTab = 'daily_command' | 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs';
 
 export default function CRM() {
     const { data: session } = useSession();
@@ -77,7 +78,7 @@ export default function CRM() {
     const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
     const canAccessCeoCommand = canAccessLeadership;
 
-    const [activeTab, setActiveTab] = useState<FilterTab>('workboard');
+    const [activeTab, setActiveTab] = useState<FilterTab>('daily_command');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [contacts, setContacts] = useState<Contact[]>([]);
@@ -266,6 +267,7 @@ export default function CRM() {
 
     const tabs = useMemo(() => {
         const nextTabs: { id: FilterTab; label: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
+            { id: 'daily_command', label: 'Daily Command', icon: Target },
             { id: 'workboard', label: 'Workboard', icon: Clock },
         ];
 
@@ -415,6 +417,10 @@ export default function CRM() {
                 {activeTab === 'workboard' ? (
                     <div className="p-6">
                         <OpsWorkboard />
+                    </div>
+                ) : activeTab === 'daily_command' ? (
+                    <div className="p-6">
+                        <DailyCommandCenter />
                     </div>
                 ) : activeTab === 'analytics' ? (
                     <div className="p-6">

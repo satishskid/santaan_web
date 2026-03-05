@@ -42,6 +42,15 @@ interface SpendEntry {
   amount: number;
 }
 
+interface OpsWorkboardSummary {
+  total: number;
+  done: number;
+  inProgress: number;
+  blocked: number;
+  pending: number;
+  completionRate: number;
+}
+
 interface CeoCommandCenterProps {
   contacts: Contact[];
 }
@@ -154,6 +163,21 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     fieldToday: 0,
     tvToday: 0,
   });
+  const [dailyCommandCompliance, setDailyCommandCompliance] = useState<{
+    loading: boolean;
+    total: number;
+    done: number;
+    blocked: number;
+    pending: number;
+    completionRate: number;
+  }>({
+    loading: true,
+    total: 0,
+    done: 0,
+    blocked: 0,
+    pending: 0,
+    completionRate: 0,
+  });
 
   useEffect(() => {
     let active = true;
@@ -231,6 +255,48 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     }
 
     loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const today = new Date().toISOString().slice(0, 10);
+
+    async function loadDailyCommandCompliance() {
+      try {
+        const response = await fetch(`/api/admin/ops-workboard?date=${today}`);
+        const payload = await response.json();
+        if (!active || !response.ok) {
+          if (active) {
+            setDailyCommandCompliance((prev) => ({ ...prev, loading: false }));
+          }
+          return;
+        }
+
+        const summaryRows: OpsWorkboardSummary[] = Array.isArray(payload?.summary) ? payload.summary : [];
+        const total = summaryRows.reduce((sum, row) => sum + Number(row.total || 0), 0);
+        const done = summaryRows.reduce((sum, row) => sum + Number(row.done || 0), 0);
+        const blocked = summaryRows.reduce((sum, row) => sum + Number(row.blocked || 0), 0);
+        const pending = summaryRows.reduce((sum, row) => sum + Number(row.pending || 0), 0);
+        const completionRate = total > 0 ? (done / total) * 100 : 0;
+
+        setDailyCommandCompliance({
+          loading: false,
+          total,
+          done,
+          blocked,
+          pending,
+          completionRate,
+        });
+      } catch {
+        if (!active) return;
+        setDailyCommandCompliance((prev) => ({ ...prev, loading: false }));
+      }
+    }
+
+    loadDailyCommandCompliance();
     return () => {
       active = false;
     };
@@ -702,6 +768,73 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
           subtitle="Spend / converted"
           icon={IndianRupee}
         />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900">Daily Command Compliance (Today)</h3>
+        <p className="text-xs text-gray-500 mt-1">
+          Live completion from role-wise execution checklist. This is the daily accountability pulse.
+        </p>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Completion</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {dailyCommandCompliance.loading ? "..." : formatPercent(dailyCommandCompliance.completionRate)}
+            </p>
+            <p
+              className={`text-xs mt-1 ${
+                dailyCommandCompliance.loading
+                  ? "text-gray-500"
+                  : dailyCommandCompliance.completionRate >= 85
+                    ? "text-emerald-700"
+                    : "text-amber-700"
+              }`}
+            >
+              {dailyCommandCompliance.loading
+                ? "Checking..."
+                : dailyCommandCompliance.completionRate >= 85
+                  ? "Healthy"
+                  : "Needs owner follow-up"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Done / Total</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {dailyCommandCompliance.loading
+                ? "..."
+                : `${formatNumber(dailyCommandCompliance.done)} / ${formatNumber(dailyCommandCompliance.total)}`}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">Role checklists closed</p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Blocked</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {dailyCommandCompliance.loading ? "..." : formatNumber(dailyCommandCompliance.blocked)}
+            </p>
+            <p
+              className={`text-xs mt-1 ${
+                dailyCommandCompliance.loading
+                  ? "text-gray-500"
+                  : dailyCommandCompliance.blocked > 0
+                    ? "text-rose-700"
+                    : "text-emerald-700"
+              }`}
+            >
+              {dailyCommandCompliance.loading
+                ? "Checking..."
+                : dailyCommandCompliance.blocked > 0
+                  ? "Escalate today"
+                  : "No blockers"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Pending</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {dailyCommandCompliance.loading ? "..." : formatNumber(dailyCommandCompliance.pending)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">Tasks not yet closed</p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
