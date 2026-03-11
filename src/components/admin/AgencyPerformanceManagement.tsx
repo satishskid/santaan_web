@@ -5,6 +5,7 @@ import { Download, IndianRupee, Megaphone, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface AgencyRow {
   id: number;
@@ -200,91 +201,122 @@ export default function AgencyPerformanceManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input type="date" value={form.reportDate} onChange={(e) => setForm((p) => ({ ...p, reportDate: e.target.value }))} />
+          <FieldWithHelp label="Report Date" required help="Date for this campaign row. One row per campaign per day.">
+            <Input type="date" value={form.reportDate} onChange={(e) => setForm((p) => ({ ...p, reportDate: e.target.value }))} />
+          </FieldWithHelp>
 
-          <select
-            value={form.platform}
-            onChange={(e) =>
-              setForm((p) => ({
-                ...p,
-                platform: e.target.value as AgencyForm["platform"],
-                utmSource: e.target.value as AgencyForm["utmSource"],
-                utmMedium: e.target.value === "google" ? "cpc" : e.target.value === "youtube" ? "video" : "paid_social",
-              }))
-            }
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="meta">meta</option>
-            <option value="google">google</option>
-            <option value="youtube">youtube</option>
-          </select>
+          <FieldWithHelp label="Platform" required help="Select the ad platform exactly: meta, google, or youtube.">
+            <select
+              value={form.platform}
+              onChange={(e) =>
+                setForm((p) => ({
+                  ...p,
+                  platform: e.target.value as AgencyForm["platform"],
+                  utmSource: e.target.value as AgencyForm["utmSource"],
+                  utmMedium: e.target.value === "google" ? "cpc" : e.target.value === "youtube" ? "video" : "paid_social",
+                }))
+              }
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="meta">meta</option>
+              <option value="google">google</option>
+              <option value="youtube">youtube</option>
+            </select>
+          </FieldWithHelp>
 
-          <select
-            value={form.center}
-            onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as AgencyForm["center"] }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="bhubaneswar">bhubaneswar</option>
-            <option value="berhampur">berhampur</option>
-            <option value="bangalore">bangalore</option>
-          </select>
+          <FieldWithHelp label="Center" required help="Center-level mapping used for ROI visibility in CEO view.">
+            <select
+              value={form.center}
+              onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as AgencyForm["center"] }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="bhubaneswar">bhubaneswar</option>
+              <option value="berhampur">berhampur</option>
+              <option value="bangalore">bangalore</option>
+            </select>
+          </FieldWithHelp>
 
-          <Input placeholder="campaign_id" value={form.campaignId} onChange={(e) => setForm((p) => ({ ...p, campaignId: e.target.value }))} />
-          <Input
-            placeholder="campaign_name"
-            value={form.campaignName}
-            onChange={(e) => setForm((p) => ({ ...p, campaignName: e.target.value }))}
-          />
-          <Input
-            placeholder="utm_campaign"
-            value={form.utmCampaign}
-            onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))}
-          />
+          <FieldWithHelp label="Campaign ID" required help="Exact platform campaign ID so sync/debug is traceable.">
+            <Input placeholder="campaign_id" value={form.campaignId} onChange={(e) => setForm((p) => ({ ...p, campaignId: e.target.value }))} />
+          </FieldWithHelp>
 
-          <select
-            value={form.utmMedium}
-            onChange={(e) => setForm((p) => ({ ...p, utmMedium: e.target.value as AgencyForm["utmMedium"] }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="paid_social">paid_social</option>
-            <option value="cpc">cpc</option>
-            <option value="video">video</option>
-          </select>
+          <FieldWithHelp label="Campaign Name" required help="Human-readable campaign name visible to operations and CEO.">
+            <Input
+              placeholder="campaign_name"
+              value={form.campaignName}
+              onChange={(e) => setForm((p) => ({ ...p, campaignName: e.target.value }))}
+            />
+          </FieldWithHelp>
 
-          <Input
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="spend (INR)"
-            value={form.spend}
-            onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))}
-          />
-          <Input type="number" min="0" placeholder="impressions" value={form.impressions} onChange={(e) => setForm((p) => ({ ...p, impressions: e.target.value }))} />
-          <Input type="number" min="0" placeholder="clicks" value={form.clicks} onChange={(e) => setForm((p) => ({ ...p, clicks: e.target.value }))} />
-          <Input type="number" min="0" placeholder="leads" value={form.leads} onChange={(e) => setForm((p) => ({ ...p, leads: e.target.value }))} />
-          <Input
-            type="number"
-            min="0"
-            placeholder="qualified_leads"
-            value={form.qualifiedLeads}
-            onChange={(e) => setForm((p) => ({ ...p, qualifiedLeads: e.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            placeholder="registrations"
-            value={form.registrations}
-            onChange={(e) => setForm((p) => ({ ...p, registrations: e.target.value }))}
-          />
+          <FieldWithHelp label="UTM Campaign" required help="Must match actual landing URL UTM campaign parameter.">
+            <Input
+              placeholder="utm_campaign"
+              value={form.utmCampaign}
+              onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))}
+            />
+          </FieldWithHelp>
+
+          <FieldWithHelp label="UTM Medium" required help="Keep standardized values: paid_social, cpc, or video.">
+            <select
+              value={form.utmMedium}
+              onChange={(e) => setForm((p) => ({ ...p, utmMedium: e.target.value as AgencyForm["utmMedium"] }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="paid_social">paid_social</option>
+              <option value="cpc">cpc</option>
+              <option value="video">video</option>
+            </select>
+          </FieldWithHelp>
+
+          <FieldWithHelp label="Spend (INR)" required help="Daily spend for this campaign row in INR.">
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="spend (INR)"
+              value={form.spend}
+              onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))}
+            />
+          </FieldWithHelp>
+
+          <FieldWithHelp label="Impressions" help="Total impressions for the same day and same campaign.">
+            <Input type="number" min="0" placeholder="impressions" value={form.impressions} onChange={(e) => setForm((p) => ({ ...p, impressions: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Clicks" help="Total clicks for the same day and same campaign.">
+            <Input type="number" min="0" placeholder="clicks" value={form.clicks} onChange={(e) => setForm((p) => ({ ...p, clicks: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Leads" help="Leads reported by platform/CRM for this campaign row.">
+            <Input type="number" min="0" placeholder="leads" value={form.leads} onChange={(e) => setForm((p) => ({ ...p, leads: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Qualified Leads" help="Leads meeting call qualification criteria.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="qualified_leads"
+              value={form.qualifiedLeads}
+              onChange={(e) => setForm((p) => ({ ...p, qualifiedLeads: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Registrations" help="Final registrations attributed to this campaign row.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="registrations"
+              value={form.registrations}
+              onChange={(e) => setForm((p) => ({ ...p, registrations: e.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <textarea
-            className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="notes (optional)"
-            value={form.notes}
-            onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-          />
+          <FieldWithHelp label="Notes" help="Use for optimization action or anomaly context. Keep it short and factual.">
+            <textarea
+              className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="notes (optional)"
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">

@@ -5,6 +5,7 @@ import { Building2, Download, MapPin, Plus, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface FieldActivityRow {
   id: number;
@@ -206,83 +207,119 @@ export default function FieldActivityManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input type="date" value={form.activityDate} onChange={(e) => setForm((p) => ({ ...p, activityDate: e.target.value }))} />
-          <select
-            value={form.center}
-            onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as FieldForm["center"] }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="bhubaneswar">bhubaneswar</option>
-            <option value="berhampur">berhampur</option>
-            <option value="bangalore">bangalore</option>
-          </select>
-          <select
-            value={form.activityType}
-            onChange={(e) => setForm((p) => ({ ...p, activityType: e.target.value as FieldForm["activityType"] }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="doctor_visit">doctor_visit</option>
-            <option value="hoarding">hoarding</option>
-            <option value="camp">camp</option>
-            <option value="event">event</option>
-          </select>
-          <Input placeholder="asset_code" value={form.assetCode} onChange={(e) => setForm((p) => ({ ...p, assetCode: e.target.value }))} />
-          <Input placeholder="location" value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
-          <Input placeholder="owner_name" value={form.ownerName} onChange={(e) => setForm((p) => ({ ...p, ownerName: e.target.value }))} />
-          <Input placeholder="utm_campaign" value={form.utmCampaign} onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))} />
-          <Input type="number" min="0" placeholder="spend" value={form.spend} onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))} />
-          <Input
-            type="number"
-            min="0"
-            placeholder="estimated_reach"
-            value={form.estimatedReach}
-            onChange={(e) => setForm((p) => ({ ...p, estimatedReach: e.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            placeholder="actual_footfall"
-            value={form.actualFootfall}
-            onChange={(e) => setForm((p) => ({ ...p, actualFootfall: e.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            placeholder="leads_collected"
-            value={form.leadsCollected}
-            onChange={(e) => setForm((p) => ({ ...p, leadsCollected: e.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            placeholder="qualified_leads"
-            value={form.qualifiedLeads}
-            onChange={(e) => setForm((p) => ({ ...p, qualifiedLeads: e.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            placeholder="registrations"
-            value={form.registrations}
-            onChange={(e) => setForm((p) => ({ ...p, registrations: e.target.value }))}
-          />
-          <Input placeholder="qr_code_id (recommended)" value={form.qrCodeId} onChange={(e) => setForm((p) => ({ ...p, qrCodeId: e.target.value }))} />
-          <Input placeholder="call_number" value={form.callNumber} onChange={(e) => setForm((p) => ({ ...p, callNumber: e.target.value }))} />
-          <Input
-            placeholder="whatsapp_number"
-            value={form.whatsappNumber}
-            onChange={(e) => setForm((p) => ({ ...p, whatsappNumber: e.target.value }))}
-          />
-          <Input placeholder="proof_url (optional)" value={form.proofUrl} onChange={(e) => setForm((p) => ({ ...p, proofUrl: e.target.value }))} />
+          <FieldWithHelp label="Activity Date" required help="Date on which field activity happened.">
+            <Input type="date" value={form.activityDate} onChange={(e) => setForm((p) => ({ ...p, activityDate: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Center" required help="Center where this activity belongs (BBSR/BAM/BLR).">
+            <select
+              value={form.center}
+              onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as FieldForm["center"] }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="bhubaneswar">bhubaneswar</option>
+              <option value="berhampur">berhampur</option>
+              <option value="bangalore">bangalore</option>
+            </select>
+          </FieldWithHelp>
+          <FieldWithHelp label="Activity Type" required help="Standardized type keeps reports comparable across centers.">
+            <select
+              value={form.activityType}
+              onChange={(e) => setForm((p) => ({ ...p, activityType: e.target.value as FieldForm["activityType"] }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="doctor_visit">doctor_visit</option>
+              <option value="hoarding">hoarding</option>
+              <option value="camp">camp</option>
+              <option value="event">event</option>
+            </select>
+          </FieldWithHelp>
+          <FieldWithHelp label="Asset Code" required help="Unique code for poster/standee/camp/visit bundle.">
+            <Input placeholder="asset_code" value={form.assetCode} onChange={(e) => setForm((p) => ({ ...p, assetCode: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Location" required help="Exact locality or clinic area for traceability.">
+            <Input placeholder="location" value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Owner Name" required help="Person accountable for this field activity.">
+            <Input placeholder="owner_name" value={form.ownerName} onChange={(e) => setForm((p) => ({ ...p, ownerName: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="UTM Campaign" required help="Campaign slug used on QR links and landing pages.">
+            <Input placeholder="utm_campaign" value={form.utmCampaign} onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Spend" help="Cost spent for this activity instance (INR).">
+            <Input type="number" min="0" placeholder="spend" value={form.spend} onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Estimated Reach" help="Approximate audience exposed to this activity.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="estimated_reach"
+              value={form.estimatedReach}
+              onChange={(e) => setForm((p) => ({ ...p, estimatedReach: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Actual Footfall" help="People who physically visited/interacted on ground.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="actual_footfall"
+              value={form.actualFootfall}
+              onChange={(e) => setForm((p) => ({ ...p, actualFootfall: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Leads Collected" help="Count of leads captured for this activity.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="leads_collected"
+              value={form.leadsCollected}
+              onChange={(e) => setForm((p) => ({ ...p, leadsCollected: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Qualified Leads" help="Leads judged valid/high intent by telecalling or field criteria.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="qualified_leads"
+              value={form.qualifiedLeads}
+              onChange={(e) => setForm((p) => ({ ...p, qualifiedLeads: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Registrations" help="Final patient registrations linked to this activity.">
+            <Input
+              type="number"
+              min="0"
+              placeholder="registrations"
+              value={form.registrations}
+              onChange={(e) => setForm((p) => ({ ...p, registrations: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="QR Code ID" help="Preferred tracking handle. At least one handle is mandatory.">
+            <Input placeholder="qr_code_id (recommended)" value={form.qrCodeId} onChange={(e) => setForm((p) => ({ ...p, qrCodeId: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Call Number" help="Phone number shown on this activity asset.">
+            <Input placeholder="call_number" value={form.callNumber} onChange={(e) => setForm((p) => ({ ...p, callNumber: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="WhatsApp Number" help="WhatsApp number shown for this activity.">
+            <Input
+              placeholder="whatsapp_number"
+              value={form.whatsappNumber}
+              onChange={(e) => setForm((p) => ({ ...p, whatsappNumber: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Proof URL" help="Optional photo/proof link for audit evidence.">
+            <Input placeholder="proof_url (optional)" value={form.proofUrl} onChange={(e) => setForm((p) => ({ ...p, proofUrl: e.target.value }))} />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <textarea
-            className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="notes (optional)"
-            value={form.notes}
-            onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-          />
+          <FieldWithHelp label="Notes" help="Use for context: doctor feedback, camp conditions, location issues, or anomalies.">
+            <textarea
+              className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="notes (optional)"
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">

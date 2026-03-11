@@ -21,6 +21,8 @@ export type OpsTaskTemplate = {
 export const OPS_PROFILE_LIST: OpsProfile[] = [
   { key: "ceo_crm_admin", label: "CEO / CRM Ops Admin", role: "admin", center: "network" },
   { key: "agency_ops", label: "Agency Ops", role: "agency_ops", center: "network" },
+  { key: "content_writer_network", label: "Content Writer", role: "content_writer", center: "network" },
+  { key: "social_media_exec_network", label: "Social Media Executive", role: "social_media_exec", center: "network" },
   { key: "field_exec_bhubaneswar", label: "Field Exec - Bhubaneswar", role: "field_exec", center: "bhubaneswar" },
   { key: "field_exec_berhampur", label: "Field Exec - Berhampur", role: "field_exec", center: "berhampur" },
   { key: "field_exec_bangalore", label: "Field Exec - Bangalore", role: "field_exec", center: "bangalore" },
@@ -37,6 +39,8 @@ export const OPS_ROLE_TO_PROFILE: Record<string, string> = {
   marketing_manager: "agency_ops",
   agency_ops: "agency_ops",
   performance_marketer: "agency_ops",
+  content_writer: "content_writer_network",
+  social_media_exec: "social_media_exec_network",
   field_exec: "field_exec_bhubaneswar",
   ivr_manager: "ivr_telecalling_lead",
   telecaller_manager: "ivr_telecalling_lead",
@@ -66,6 +70,46 @@ export const OPS_TASK_TEMPLATES: OpsTaskTemplate[] = [
     inputTarget: "Ops Inputs -> Agency (notes)",
     sla: "All underperformers flagged within 24h",
     ownerHint: "Agency Ops",
+  },
+  {
+    code: "content_writer_backlog_review",
+    profileKey: "content_writer_network",
+    slot: "morning",
+    timeLabel: "10:00 AM",
+    title: "Review content backlog and convert demand signals into approved topics",
+    inputTarget: "Content Intelligence -> Feedback Queue",
+    sla: "New high-priority items triaged before 11:00 AM",
+    ownerHint: "Content Writer",
+  },
+  {
+    code: "content_writer_asset_update",
+    profileKey: "content_writer_network",
+    slot: "afternoon",
+    timeLabel: "03:30 PM",
+    title: "Register new blogs, FAQs, and refresh notes in the asset registry",
+    inputTarget: "Content Intelligence -> Asset Registry",
+    sla: "Every published or drafted asset registered same day",
+    ownerHint: "Content Writer",
+  },
+  {
+    code: "social_media_exec_signal_review",
+    profileKey: "social_media_exec_network",
+    slot: "midday",
+    timeLabel: "01:00 PM",
+    title: "Review campaign hooks, comments, and WhatsApp questions for social signals",
+    inputTarget: "Content Intelligence -> Feedback Queue",
+    sla: "High-intent social signals logged by 2:00 PM",
+    ownerHint: "Social Media Exec",
+  },
+  {
+    code: "social_media_exec_asset_register",
+    profileKey: "social_media_exec_network",
+    slot: "evening",
+    timeLabel: "06:30 PM",
+    title: "Register reels, posts, and CTA performance notes for published social assets",
+    inputTarget: "Content Intelligence -> Asset Registry",
+    sla: "All published social assets logged before day-end",
+    ownerHint: "Social Media Exec",
   },
   {
     code: "field_bhubaneswar_activity_log",
@@ -218,6 +262,14 @@ export function getVisibleProfilesForRole(role?: string | null): OpsProfile[] {
 
   if (normalizedRole === "agency_ops" || normalizedRole === "marketing_manager" || normalizedRole === "performance_marketer") {
     return OPS_PROFILE_LIST.filter((profile) => profile.key === "agency_ops");
+  }
+
+  if (normalizedRole === "content_writer") {
+    return OPS_PROFILE_LIST.filter((profile) => profile.key === "content_writer_network");
+  }
+
+  if (normalizedRole === "social_media_exec") {
+    return OPS_PROFILE_LIST.filter((profile) => profile.key === "social_media_exec_network");
   }
 
   if (normalizedRole === "ivr_manager" || normalizedRole === "telecaller_manager" || normalizedRole === "telecaller") {

@@ -5,6 +5,7 @@ import { Megaphone, Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 type AnnouncementType = "news" | "award" | "campaign" | "event";
 
@@ -206,51 +207,67 @@ export default function AnnouncementsManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Input placeholder="Title" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
-          <select
-            value={form.type}
-            onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value as AnnouncementType }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="news">News</option>
-            <option value="award">Award</option>
-            <option value="campaign">Campaign</option>
-            <option value="event">Event</option>
-          </select>
-          <Input
-            placeholder="Image URL (optional)"
-            value={form.imageUrl}
-            onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
-          />
-          <Input
-            placeholder="Link URL (optional)"
-            value={form.linkUrl}
-            onChange={(event) => setForm((prev) => ({ ...prev, linkUrl: event.target.value }))}
-          />
-          <Input
-            placeholder="Link text (optional)"
-            value={form.linkText}
-            onChange={(event) => setForm((prev) => ({ ...prev, linkText: event.target.value }))}
-          />
-          <Input
-            type="datetime-local"
-            value={form.publishDate}
-            onChange={(event) => setForm((prev) => ({ ...prev, publishDate: event.target.value }))}
-          />
-          <Input
-            type="datetime-local"
-            value={form.expiryDate}
-            onChange={(event) => setForm((prev) => ({ ...prev, expiryDate: event.target.value }))}
-          />
+          <FieldWithHelp label="Title" required help="Short headline shown in dashboard and public announcement card.">
+            <Input placeholder="Title" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Type" required help="Choose type to control grouping and visibility in UI.">
+            <select
+              value={form.type}
+              onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value as AnnouncementType }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="news">News</option>
+              <option value="award">Award</option>
+              <option value="campaign">Campaign</option>
+              <option value="event">Event</option>
+            </select>
+          </FieldWithHelp>
+          <FieldWithHelp label="Image URL" help="Optional cover image URL for richer announcement cards.">
+            <Input
+              placeholder="Image URL (optional)"
+              value={form.imageUrl}
+              onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Link URL" help="Optional target URL for CTA click from announcement card.">
+            <Input
+              placeholder="Link URL (optional)"
+              value={form.linkUrl}
+              onChange={(event) => setForm((prev) => ({ ...prev, linkUrl: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Link Text" help="Optional CTA label (example: Learn more, Book now).">
+            <Input
+              placeholder="Link text (optional)"
+              value={form.linkText}
+              onChange={(event) => setForm((prev) => ({ ...prev, linkText: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Publish Date" help="When announcement becomes visible. Leave blank for immediate publish.">
+            <Input
+              type="datetime-local"
+              value={form.publishDate}
+              onChange={(event) => setForm((prev) => ({ ...prev, publishDate: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Expiry Date" help="Optional end date after which card should expire.">
+            <Input
+              type="datetime-local"
+              value={form.expiryDate}
+              onChange={(event) => setForm((prev) => ({ ...prev, expiryDate: event.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <textarea
-            value={form.content}
-            onChange={(event) => setForm((prev) => ({ ...prev, content: event.target.value }))}
-            placeholder="Announcement content"
-            className="w-full min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          />
+          <FieldWithHelp label="Content" help="Main body text. Keep concise, factual, and actionable.">
+            <textarea
+              value={form.content}
+              onChange={(event) => setForm((prev) => ({ ...prev, content: event.target.value }))}
+              placeholder="Announcement content"
+              className="w-full min-h-24 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-700">

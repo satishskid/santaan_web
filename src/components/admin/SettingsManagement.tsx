@@ -5,6 +5,7 @@ import { Plus, Save, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface SettingEntry {
   key: string;
@@ -133,8 +134,20 @@ export default function SettingsManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Input value={newKey} onChange={(event) => setNewKey(event.target.value)} placeholder="setting_key" />
-          <Input value={newValue} onChange={(event) => setNewValue(event.target.value)} placeholder="Setting value" />
+          <FieldWithHelp
+            label="Setting Key"
+            required
+            help="Use lowercase snake_case keys. Avoid spaces and keep names stable once used."
+          >
+            <Input value={newKey} onChange={(event) => setNewKey(event.target.value)} placeholder="setting_key" />
+          </FieldWithHelp>
+          <FieldWithHelp
+            label="Setting Value"
+            required
+            help="Stored as text. Keep values explicit and avoid temporary notes here."
+          >
+            <Input value={newValue} onChange={(event) => setNewValue(event.target.value)} placeholder="setting_value" />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -179,7 +192,11 @@ export default function SettingsManagement() {
                 <TableRow key={item.key}>
                   <TableCell className="font-mono text-xs text-gray-800">{item.key}</TableCell>
                   <TableCell>
-                    <Input value={item.value} onChange={(event) => updateValue(item.key, event.target.value)} />
+                    <Input
+                      title={`Update value for ${item.key}. Click Save Changes to persist.`}
+                      value={item.value}
+                      onChange={(event) => updateValue(item.key, event.target.value)}
+                    />
                   </TableCell>
                   <TableCell>
                     <span

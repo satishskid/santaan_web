@@ -11,6 +11,7 @@ import {
   Crosshair,
   IndianRupee,
   Megaphone,
+  MessageSquareQuote,
   MessageCircle,
   Phone,
   Target,
@@ -69,6 +70,16 @@ interface WeekTarget {
   conversionRateMin: number | null;
   attributionMin: number | null;
   pending24hMax: number | null;
+}
+
+interface ReviewsSummary {
+  total: number;
+  averageRating: number;
+  lowRatedPending: number;
+  responded: number;
+  featured: number;
+  new30d: number;
+  topThemes: Array<{ theme: string; count: number }>;
 }
 
 const pendingStatuses = new Set(["new", "contacted", "qualified"]);
@@ -178,6 +189,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     pending: 0,
     completionRate: 0,
   });
+  const [reviewsSummary, setReviewsSummary] = useState<ReviewsSummary | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -198,6 +210,27 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     }
 
     loadSettings();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReviewsSummary() {
+      try {
+        const response = await fetch("/api/admin/reviews");
+        const payload = await response.json();
+        if (!active || !response.ok) return;
+        setReviewsSummary(payload.summary || null);
+      } catch {
+        if (!active) return;
+        setReviewsSummary(null);
+      }
+    }
+
+    loadReviewsSummary();
     return () => {
       active = false;
     };
@@ -869,6 +902,70 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
             <p className={`text-xs mt-1 ${opsSubmission.loading ? "text-gray-500" : opsSubmission.tvToday > 0 ? "text-emerald-700" : "text-rose-700"}`}>
               {opsSubmission.loading ? "Checking..." : opsSubmission.tvToday > 0 ? "Submitted" : "Missing"}
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <MessageSquareQuote className="w-4 h-4 text-amber-600" />
+              Reputation / Review Health
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Google reviews should be treated as a local SEO and trust signal, not only as testimonials.
+            </p>
+          </div>
+          <div className="text-xs text-slate-500">
+            {reviewsSummary?.total ? `${reviewsSummary.total} tracked reviews` : "No reviews logged yet"}
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Average Rating</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {reviewsSummary ? `${reviewsSummary.averageRating.toFixed(1)} / 5` : "0.0 / 5"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">New 30 Days</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.new30d || 0)}</p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Pending Low-rated</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.lowRatedPending || 0)}</p>
+            <p className={`text-xs mt-1 ${(reviewsSummary?.lowRatedPending || 0) > 0 ? "text-rose-700" : "text-emerald-700"}`}>
+              {(reviewsSummary?.lowRatedPending || 0) > 0 ? "Needs same-day response review" : "No urgent review risk"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Featured Ready</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.featured || 0)}</p>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-4">
+            <p className="text-sm font-semibold text-slate-900">CEO use</p>
+            <ul className="mt-2 list-disc pl-5 text-sm text-slate-700 space-y-1">
+              <li>Check low-rated pending reviews before scaling media.</li>
+              <li>Use strong positive themes as proof points in city landing pages and ad creatives.</li>
+              <li>Use recurring complaints to fix center operations, not just to draft replies.</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border border-amber-100 bg-amber-50/60 p-4">
+            <p className="text-sm font-semibold text-slate-900">Top themes this period</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(reviewsSummary?.topThemes || []).length > 0 ? (
+                reviewsSummary!.topThemes.map((item) => (
+                  <span key={item.theme} className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-900">
+                    {item.theme.replaceAll("_", " ")} · {item.count}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No review themes captured yet.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

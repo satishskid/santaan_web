@@ -5,6 +5,7 @@ import { IndianRupee, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface SpendEntry {
   id: number;
@@ -28,6 +29,46 @@ interface SpendForm {
   notes: string;
 }
 
+interface GoogleDebugCustomerRow {
+  customerId: string;
+  rows: number;
+  campaigns: number;
+  spend: number;
+}
+
+interface GoogleDebugPayload {
+  reportDate: string;
+  customersQueried: string[];
+  perCustomer: GoogleDebugCustomerRow[];
+  summary: {
+    rows: number;
+    campaigns: number;
+    customers: number;
+    totalSpend: number;
+  };
+  checkedAt?: string;
+}
+
+interface AutoSyncStatusPayload {
+  success: boolean;
+  schedule: {
+    cron: string;
+    timezone: string;
+    label: string;
+  };
+  google: {
+    status: "success" | "failed";
+    lastAttemptAt: string;
+    lastSuccessAt: string | null;
+    reportDate: string;
+    syncedRows: number;
+    totalSpend: number;
+    customers: number;
+    error: string | null;
+  } | null;
+  updatedAt: string | null;
+}
+
 const initialForm: SpendForm = {
   spendDate: new Date().toISOString().slice(0, 10),
   channel: "meta",
@@ -42,7 +83,8 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value || 0);
 }
 
@@ -146,6 +188,12 @@ export default function SpendManagement() {
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [syncingMeta, setSyncingMeta] = useState(false);
+  const [syncingGoogle, setSyncingGoogle] = useState(false);
+  const [googleDebugLoading, setGoogleDebugLoading] = useState(false);
+  const [googleDebug, setGoogleDebug] = useState<GoogleDebugPayload | null>(null);
+  const [autoSyncStatusLoading, setAutoSyncStatusLoading] = useState(false);
+  const [autoSyncStatus, setAutoSyncStatus] = useState<AutoSyncStatusPayload | null>(null);
+  const [autoSyncStatusError, setAutoSyncStatusError] = useState<string | null>(null);
 
   const isEditing = Boolean(form.id);
 
@@ -168,6 +216,7 @@ export default function SpendManagement() {
 
   useEffect(() => {
     fetchSpend();
+    fetchAutoSyncStatus();
   }, []);
 
   const totalSpend = useMemo(
@@ -177,6 +226,32 @@ export default function SpendManagement() {
 
   function resetForm() {
     setForm(initialForm);
+  }
+
+  function formatDateTime(value?: string | null) {
+    if (!value) return "Not available";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "Not available";
+    return d.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  }
+
+  async function fetchAutoSyncStatus() {
+    setAutoSyncStatusLoading(true);
+    setAutoSyncStatusError(null);
+    try {
+      const response = await fetch("/api/admin/spend/auto-sync-status");
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to fetch auto-sync status");
+      }
+      setAutoSyncStatus(payload as AutoSyncStatusPayload);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch auto-sync status";
+      setAutoSyncStatus(null);
+      setAutoSyncStatusError(message);
+    } finally {
+      setAutoSyncStatusLoading(false);
+    }
   }
 
   function editEntry(entry: SpendEntry) {
@@ -311,14 +386,66 @@ export default function SpendManagement() {
       }
 
       const total = formatCurrency(Number(payload?.totalSpend || 0));
+      const accountCount = Array.isArray(payload?.accountsQueried) ? payload.accountsQueried.length : 0;
+      const accountText = accountCount > 0 ? `, accounts: ${accountCount}` : "";
       setNotice(
-        `Meta sync completed for ${payload?.reportDate || form.spendDate}. Rows: ${payload?.syncedRows || 0}, campaigns: ${payload?.campaigns || 0}, spend: ${total}.`
+        `Meta sync completed for ${payload?.reportDate || form.spendDate}. Rows: ${payload?.syncedRows || 0}, campaigns: ${payload?.campaigns || 0}${accountText}, spend: ${total}.`
       );
       await fetchSpend();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Meta sync failed");
     } finally {
       setSyncingMeta(false);
+    }
+  }
+
+  async function syncGoogleSpend() {
+    setSyncingGoogle(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/spend/sync-google?date=${encodeURIComponent(form.spendDate)}`, {
+        method: "POST",
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Google sync failed");
+      }
+
+      const total = formatCurrency(Number(payload?.totalSpend || 0));
+      setNotice(
+        `Google sync completed for ${payload?.reportDate || form.spendDate}. Rows: ${payload?.syncedRows || 0}, campaigns: ${payload?.campaigns || 0}, customers: ${payload?.customers || 0}, spend: ${total}.`
+      );
+      await fetchSpend();
+      await fetchAutoSyncStatus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sync failed");
+    } finally {
+      setSyncingGoogle(false);
+    }
+  }
+
+  async function runGoogleDebug() {
+    setGoogleDebugLoading(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/spend/google-debug?date=${encodeURIComponent(form.spendDate)}`, {
+        method: "GET",
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Google debug failed");
+      }
+      setGoogleDebug(payload as GoogleDebugPayload);
+      const total = formatCurrency(Number(payload?.summary?.totalSpend || 0));
+      setNotice(
+        `Google debug checked for ${payload?.reportDate || form.spendDate}. Customers: ${payload?.summary?.customers || 0}, campaigns: ${payload?.summary?.campaigns || 0}, rows: ${payload?.summary?.rows || 0}, spend: ${total}.`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google debug failed");
+    } finally {
+      setGoogleDebugLoading(false);
     }
   }
 
@@ -333,49 +460,113 @@ export default function SpendManagement() {
           Log channel spend by campaign. This powers CPL and CPP in Analytics and CEO Command.
         </p>
 
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-sm font-semibold text-gray-900">Google Auto Sync Health</h4>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={fetchAutoSyncStatus}
+              disabled={autoSyncStatusLoading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${autoSyncStatusLoading ? "animate-spin" : ""}`} />
+              {autoSyncStatusLoading ? "Refreshing..." : "Refresh Status"}
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-gray-600">
+            Schedule: {autoSyncStatus?.schedule?.label || "Daily 09:15 AM IST"}
+          </p>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+            <div className="rounded border border-gray-200 bg-white p-2">
+              <div className="text-gray-500">Status</div>
+              <div className={`font-semibold ${autoSyncStatus?.google?.status === "success" ? "text-emerald-700" : "text-rose-700"}`}>
+                {autoSyncStatus?.google?.status ? autoSyncStatus.google.status.toUpperCase() : "NOT RUN YET"}
+              </div>
+            </div>
+            <div className="rounded border border-gray-200 bg-white p-2">
+              <div className="text-gray-500">Last Attempt</div>
+              <div className="font-semibold text-gray-900">{formatDateTime(autoSyncStatus?.google?.lastAttemptAt)}</div>
+            </div>
+            <div className="rounded border border-gray-200 bg-white p-2">
+              <div className="text-gray-500">Last Success</div>
+              <div className="font-semibold text-gray-900">{formatDateTime(autoSyncStatus?.google?.lastSuccessAt)}</div>
+            </div>
+            <div className="rounded border border-gray-200 bg-white p-2">
+              <div className="text-gray-500">Last Synced Spend</div>
+              <div className="font-semibold text-gray-900">
+                {formatCurrency(Number(autoSyncStatus?.google?.totalSpend || 0))}
+              </div>
+            </div>
+          </div>
+          {autoSyncStatus?.google?.error ? (
+            <p className="mt-2 text-xs text-rose-700">
+              Last error: {autoSyncStatus.google.error}
+            </p>
+          ) : null}
+          {autoSyncStatusError ? (
+            <p className="mt-2 text-xs text-rose-700">
+              Status fetch warning: {autoSyncStatusError}
+            </p>
+          ) : null}
+        </div>
+
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Input
-            type="date"
-            value={form.spendDate}
-            onChange={(event) => setForm((prev) => ({ ...prev, spendDate: event.target.value }))}
-          />
-          <Input
-            placeholder="channel (meta/google/offline)"
-            value={form.channel}
-            onChange={(event) => setForm((prev) => ({ ...prev, channel: event.target.value }))}
-          />
-          <Input
-            placeholder="utm_campaign"
-            value={form.utmCampaign}
-            onChange={(event) => setForm((prev) => ({ ...prev, utmCampaign: event.target.value }))}
-          />
-          <Input
-            placeholder="center (bhubaneswar/berhampur/bangalore/network)"
-            value={form.center}
-            onChange={(event) => setForm((prev) => ({ ...prev, center: event.target.value }))}
-          />
-          <Input
-            placeholder="asset (optional)"
-            value={form.asset}
-            onChange={(event) => setForm((prev) => ({ ...prev, asset: event.target.value }))}
-          />
-          <Input
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="amount (INR)"
-            value={form.amount}
-            onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
-          />
+          <FieldWithHelp label="Spend Date" required help="Date to map this spend row in daily dashboards.">
+            <Input
+              type="date"
+              value={form.spendDate}
+              onChange={(event) => setForm((prev) => ({ ...prev, spendDate: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Channel" required help="Use standard channel values: meta, google, youtube, offline, or neodove.">
+            <Input
+              placeholder="channel (meta/google/offline)"
+              value={form.channel}
+              onChange={(event) => setForm((prev) => ({ ...prev, channel: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="UTM Campaign" required help="Must match campaign slug from landing URLs.">
+            <Input
+              placeholder="utm_campaign"
+              value={form.utmCampaign}
+              onChange={(event) => setForm((prev) => ({ ...prev, utmCampaign: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Center" help="Set to bhubaneswar, berhampur, bangalore, or network.">
+            <Input
+              placeholder="center (bhubaneswar/berhampur/bangalore/network)"
+              value={form.center}
+              onChange={(event) => setForm((prev) => ({ ...prev, center: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Asset" help="Optional creative/adset/asset name for deeper ROI tracing.">
+            <Input
+              placeholder="asset (optional)"
+              value={form.asset}
+              onChange={(event) => setForm((prev) => ({ ...prev, asset: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Amount (INR)" required help="Spend value in INR for this date + campaign row.">
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="amount (INR)"
+              value={form.amount}
+              onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <textarea
-            className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="Notes (optional)"
-            value={form.notes}
-            onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-          />
+          <FieldWithHelp label="Notes" help="Optional notes for anomalies, pacing changes, or accounting remarks.">
+            <textarea
+              className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="Notes (optional)"
+              value={form.notes}
+              onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -408,10 +599,28 @@ export default function SpendManagement() {
             type="button"
             variant="outline"
             onClick={syncMetaSpend}
-            disabled={saving || importing || syncingMeta}
+            disabled={saving || importing || syncingMeta || syncingGoogle}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${syncingMeta ? "animate-spin" : ""}`} />
             {syncingMeta ? "Syncing Meta..." : "Sync Meta"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={syncGoogleSpend}
+            disabled={saving || importing || syncingMeta || syncingGoogle}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${syncingGoogle ? "animate-spin" : ""}`} />
+            {syncingGoogle ? "Syncing Google..." : "Sync Google"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={runGoogleDebug}
+            disabled={saving || importing || syncingMeta || syncingGoogle || googleDebugLoading}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${googleDebugLoading ? "animate-spin" : ""}`} />
+            {googleDebugLoading ? "Checking Google..." : "Google Debug"}
           </Button>
           {isEditing ? (
             <Button variant="outline" onClick={resetForm} disabled={saving}>
@@ -425,6 +634,58 @@ export default function SpendManagement() {
 
         {notice ? <p className="text-sm text-emerald-700 mt-3">{notice}</p> : null}
         {error ? <p className="text-sm text-rose-700 mt-3">{error}</p> : null}
+
+        {googleDebug ? (
+          <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <h4 className="text-sm font-semibold text-gray-900">Google Ads Debug Snapshot</h4>
+            <p className="mt-1 text-xs text-gray-600">
+              Date: {googleDebug.reportDate} | Checked: {googleDebug.checkedAt ? new Date(googleDebug.checkedAt).toLocaleString() : "now"}
+            </p>
+            <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div className="rounded border border-gray-200 bg-white p-2">
+                <div className="text-gray-500">Customers Queried</div>
+                <div className="font-semibold text-gray-900">{googleDebug.summary.customers}</div>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-2">
+                <div className="text-gray-500">Campaigns Found</div>
+                <div className="font-semibold text-gray-900">{googleDebug.summary.campaigns}</div>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-2">
+                <div className="text-gray-500">Rows Imported Candidate</div>
+                <div className="font-semibold text-gray-900">{googleDebug.summary.rows}</div>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-2">
+                <div className="text-gray-500">Spend</div>
+                <div className="font-semibold text-gray-900">{formatCurrency(googleDebug.summary.totalSpend)}</div>
+              </div>
+            </div>
+
+            {googleDebug.perCustomer?.length ? (
+              <div className="mt-3 overflow-x-auto rounded border border-gray-200 bg-white">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-gray-100 text-gray-600">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Customer ID</th>
+                      <th className="px-3 py-2 text-right">Rows</th>
+                      <th className="px-3 py-2 text-right">Campaigns</th>
+                      <th className="px-3 py-2 text-right">Spend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {googleDebug.perCustomer.map((row) => (
+                      <tr key={row.customerId} className="border-t border-gray-100">
+                        <td className="px-3 py-2 text-gray-800">{row.customerId}</td>
+                        <td className="px-3 py-2 text-right text-gray-800">{row.rows}</td>
+                        <td className="px-3 py-2 text-right text-gray-800">{row.campaigns}</td>
+                        <td className="px-3 py-2 text-right text-gray-800">{formatCurrency(row.spend)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">

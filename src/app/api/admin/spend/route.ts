@@ -3,11 +3,36 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
-import { isAuthorizedAdmin } from "@/lib/auth-helper";
+import { isAuthorizedAdmin, isAuthorizedOpsUser } from "@/lib/auth-helper";
 
-async function requireAdmin() {
+const READ_ROLES = new Set([
+  "admin",
+  "ceo",
+  "crm_ops_admin",
+  "agency_ops",
+  "marketing_manager",
+  "performance_marketer",
+]);
+
+const WRITE_ROLES = new Set([
+  "admin",
+  "ceo",
+  "crm_ops_admin",
+  "agency_ops",
+  "marketing_manager",
+  "performance_marketer",
+]);
+
+function normalizeRole(value?: string | null) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function requireSpendAccess() {
   const session = await auth();
-  return isAuthorizedAdmin(session?.user?.email);
+  const role = normalizeRole((session?.user as { role?: string } | undefined)?.role);
+  const authorizedOps = await isAuthorizedOpsUser(session?.user?.email, role || null);
+  const authorized = authorizedOps || (await isAuthorizedAdmin(session?.user?.email));
+  return { authorized, role: role || "admin" };
 }
 
 function normalizeToken(value?: string | null, fallback = "") {
@@ -36,7 +61,8 @@ function parseDate(value?: string | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized, role } = await requireSpendAccess();
+    if (!authorized || !READ_ROLES.has(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -80,7 +106,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized, role } = await requireSpendAccess();
+    if (!authorized || !WRITE_ROLES.has(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -121,7 +148,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized, role } = await requireSpendAccess();
+    if (!authorized || !WRITE_ROLES.has(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -184,7 +212,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized, role } = await requireSpendAccess();
+    if (!authorized || !WRITE_ROLES.has(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

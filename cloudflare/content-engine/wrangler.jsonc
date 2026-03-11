@@ -1,0 +1,40 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "santaan-content-engine",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-11",
+  "account_id": "9f4998a66a5d7bd7a230d0222544fbe6",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "APP_ENV": "development",
+    "VECTOR_INDEX_NAME": "santaan-content-index",
+    "DRAFTS_BUCKET_NAME": "santaan-content-drafts",
+    "ASSETS_BUCKET_NAME": "santaan-content-assets",
+    "MEDIA_BUCKET_NAME": "santaan-content-media"
+  },
+  "r2_buckets": [
+    {
+      "binding": "CONTENT_DRAFTS",
+      "bucket_name": "santaan-content-drafts"
+    },
+    {
+      "binding": "CONTENT_ASSETS",
+      "bucket_name": "santaan-content-assets"
+    },
+    {
+      "binding": "CONTENT_MEDIA",
+      "bucket_name": "santaan-content-media"
+    }
+  ],
+  "vectorize": [
+    {
+      "binding": "CONTENT_VECTORIZE",
+      "index_name": "santaan-content-index"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  }
+}

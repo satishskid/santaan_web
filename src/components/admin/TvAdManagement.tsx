@@ -5,6 +5,7 @@ import { Download, MonitorPlay, Plus, Radio, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface TvAdRow {
   id: number;
@@ -201,51 +202,81 @@ export default function TvAdManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input type="date" value={form.airingDate} onChange={(e) => setForm((p) => ({ ...p, airingDate: e.target.value }))} />
-          <select
-            value={form.center}
-            onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as TvForm["center"] }))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="bhubaneswar">bhubaneswar</option>
-            <option value="berhampur">berhampur</option>
-            <option value="bangalore">bangalore</option>
-          </select>
-          <Input placeholder="channel_name" value={form.channelName} onChange={(e) => setForm((p) => ({ ...p, channelName: e.target.value }))} />
-          <Input placeholder="program_name" value={form.programName} onChange={(e) => setForm((p) => ({ ...p, programName: e.target.value }))} />
-          <Input placeholder="time_slot (e.g. 20:30)" value={form.timeSlot} onChange={(e) => setForm((p) => ({ ...p, timeSlot: e.target.value }))} />
-          <Input
-            type="number"
-            min="1"
-            placeholder="spot_duration_sec"
-            value={form.spotDurationSec}
-            onChange={(e) => setForm((p) => ({ ...p, spotDurationSec: e.target.value }))}
-          />
-          <Input type="number" min="1" placeholder="spots_count" value={form.spotsCount} onChange={(e) => setForm((p) => ({ ...p, spotsCount: e.target.value }))} />
-          <Input type="number" min="0" placeholder="spend" value={form.spend} onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))} />
-          <Input placeholder="creative_code" value={form.creativeCode} onChange={(e) => setForm((p) => ({ ...p, creativeCode: e.target.value }))} />
-          <Input
-            placeholder="tv_campaign_code"
-            value={form.tvCampaignCode}
-            onChange={(e) => setForm((p) => ({ ...p, tvCampaignCode: e.target.value }))}
-          />
-          <Input placeholder="utm_campaign" value={form.utmCampaign} onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))} />
-          <Input placeholder="qr_code_id" value={form.qrCodeId} onChange={(e) => setForm((p) => ({ ...p, qrCodeId: e.target.value }))} />
-          <Input placeholder="ivr_number" value={form.ivrNumber} onChange={(e) => setForm((p) => ({ ...p, ivrNumber: e.target.value }))} />
-          <Input
-            placeholder="whatsapp_keyword"
-            value={form.whatsappKeyword}
-            onChange={(e) => setForm((p) => ({ ...p, whatsappKeyword: e.target.value }))}
-          />
+          <FieldWithHelp label="Airing Date" required help="Date when TV spots were aired.">
+            <Input type="date" value={form.airingDate} onChange={(e) => setForm((p) => ({ ...p, airingDate: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Center" required help="Center attribution for this TV activity (BBSR/BAM/BLR).">
+            <select
+              value={form.center}
+              onChange={(e) => setForm((p) => ({ ...p, center: e.target.value as TvForm["center"] }))}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
+            >
+              <option value="bhubaneswar">bhubaneswar</option>
+              <option value="berhampur">berhampur</option>
+              <option value="bangalore">bangalore</option>
+            </select>
+          </FieldWithHelp>
+          <FieldWithHelp label="Channel Name" required help="TV channel carrying this spot burst.">
+            <Input placeholder="channel_name" value={form.channelName} onChange={(e) => setForm((p) => ({ ...p, channelName: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Program Name" required help="Program/show where the ad was aired.">
+            <Input placeholder="program_name" value={form.programName} onChange={(e) => setForm((p) => ({ ...p, programName: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Time Slot" required help="Time in HH:MM format (example: 20:30).">
+            <Input placeholder="time_slot (e.g. 20:30)" value={form.timeSlot} onChange={(e) => setForm((p) => ({ ...p, timeSlot: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Spot Duration (sec)" help="Length of one ad spot in seconds.">
+            <Input
+              type="number"
+              min="1"
+              placeholder="spot_duration_sec"
+              value={form.spotDurationSec}
+              onChange={(e) => setForm((p) => ({ ...p, spotDurationSec: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Spots Count" help="Number of times ad aired in this entry.">
+            <Input type="number" min="1" placeholder="spots_count" value={form.spotsCount} onChange={(e) => setForm((p) => ({ ...p, spotsCount: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Spend" help="Total TV cost for this row (INR).">
+            <Input type="number" min="0" placeholder="spend" value={form.spend} onChange={(e) => setForm((p) => ({ ...p, spend: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Creative Code" required help="Creative identifier to map performance by ad variant.">
+            <Input placeholder="creative_code" value={form.creativeCode} onChange={(e) => setForm((p) => ({ ...p, creativeCode: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="TV Campaign Code" required help="Internal TV campaign code for operational tracking.">
+            <Input
+              placeholder="tv_campaign_code"
+              value={form.tvCampaignCode}
+              onChange={(e) => setForm((p) => ({ ...p, tvCampaignCode: e.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="UTM Campaign" required help="UTM campaign slug used in QR/landing URLs for attribution.">
+            <Input placeholder="utm_campaign" value={form.utmCampaign} onChange={(e) => setForm((p) => ({ ...p, utmCampaign: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="QR Code ID" help="Preferred tracking handle for TV conversion attribution.">
+            <Input placeholder="qr_code_id" value={form.qrCodeId} onChange={(e) => setForm((p) => ({ ...p, qrCodeId: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="IVR Number" help="IVR number announced in the ad.">
+            <Input placeholder="ivr_number" value={form.ivrNumber} onChange={(e) => setForm((p) => ({ ...p, ivrNumber: e.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="WhatsApp Keyword" help="Keyword viewers send on WhatsApp for this TV campaign.">
+            <Input
+              placeholder="whatsapp_keyword"
+              value={form.whatsappKeyword}
+              onChange={(e) => setForm((p) => ({ ...p, whatsappKeyword: e.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <textarea
-            className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="notes (optional)"
-            value={form.notes}
-            onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-          />
+          <FieldWithHelp label="Notes" help="Optional context: burst details, special placement, or quality remark.">
+            <textarea
+              className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="notes (optional)"
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">

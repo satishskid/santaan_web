@@ -13,7 +13,9 @@ import SpendManagement from './SpendManagement';
 import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
 import DailyCommandCenter from './DailyCommandCenter';
-import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target } from 'lucide-react';
+import ReviewsManagement from './ReviewsManagement';
+import ContentIntelligenceManagement from './ContentIntelligenceManagement';
+import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, AlertTriangle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -59,7 +61,154 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'daily_command' | 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs';
+type FilterTab = 'daily_command' | 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs' | 'reviews' | 'content_intelligence';
+
+interface RoleGuide {
+    heading: string;
+    why: string;
+    sla: string;
+    mustUpdate: string[];
+    quickTabs: FilterTab[];
+}
+
+const ROLE_LABELS: Record<string, string> = {
+    admin: 'CEO / CRM Admin',
+    ceo: 'CEO',
+    crm_ops_admin: 'CRM Ops Admin',
+    agency_ops: 'Agency Ops',
+    marketing_manager: 'Marketing Manager',
+    performance_marketer: 'Performance Marketer',
+    content_writer: 'Content Writer',
+    social_media_exec: 'Social Media Executive',
+    field_exec: 'Field Executive',
+    ivr_manager: 'IVR Manager',
+    telecaller_manager: 'Telecalling Lead',
+    telecaller: 'Telecaller',
+    counselor: 'Counselor',
+};
+
+const TAB_LABELS: Record<FilterTab, string> = {
+    daily_command: 'Daily Command',
+    workboard: 'Workboard',
+    all: 'All Contacts',
+    seminar: 'Seminar',
+    newsletter: 'Newsletter',
+    whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
+    at_home_test: 'At-Home Test',
+    hot_leads: 'Hot Leads',
+    team: 'Team',
+    analytics: 'Analytics',
+    ceo_command: 'CEO Command',
+    settings: 'Settings',
+    centers: 'Centers',
+    announcements: 'Announcements',
+    spend: 'Spend',
+    ops_inputs: 'Ops Inputs',
+    reviews: 'Reviews',
+    content_intelligence: 'Content Intelligence',
+};
+
+function roleGuideFor(role: string): RoleGuide {
+    if (role === 'admin' || role === 'ceo' || role === 'crm_ops_admin') {
+        return {
+            heading: 'Network command and owner accountability',
+            why: 'Run a short weekly control loop: quality of leads, speed to action, ROI, leakage, and owner assignments.',
+            sla: 'Weekly review complete with named owners and deadlines.',
+            mustUpdate: [
+                'Confirm Daily Command completion and blocked tasks.',
+                'Review CEO Command and assign fix owners for each leakage.',
+                'Ensure Spend entries are updated and CPL/CPA are visible.',
+                'Review low-rated pending reviews and assign response owners.',
+            ],
+            quickTabs: ['daily_command', 'ceo_command', 'spend', 'reviews', 'content_intelligence', 'analytics'],
+        };
+    }
+
+    if (role === 'agency_ops' || role === 'marketing_manager' || role === 'performance_marketer') {
+        return {
+            heading: 'Campaign quality and spend discipline',
+            why: 'Agency data should enter once, in standard fields, so ROI is clear to CEO without manual reconciliation.',
+            sla: 'Daily spend + campaign performance updates completed by 11:00 AM.',
+            mustUpdate: [
+                'Enter/verify Meta and Google campaign spend.',
+                'Update Agency input rows in Ops Inputs with attribution fields.',
+                'Flag underperforming campaigns within 24 hours.',
+                'Track new Google/Meta reviews and mark featured trust signals.',
+                'Register new reels/pages and convert feedback into next-topic recommendations.',
+            ],
+            quickTabs: ['spend', 'ops_inputs', 'reviews', 'content_intelligence', 'analytics', 'daily_command'],
+        };
+    }
+
+    if (role === 'content_writer' || role === 'social_media_exec') {
+        return {
+            heading: 'Publish adaptive content from real demand signals',
+            why: 'Use reviews, telecalling objections, and search demand to decide what Santaan publishes next instead of guessing topics.',
+            sla: 'Register every new asset and close high-priority feedback items on the same day.',
+            mustUpdate: [
+                'Register every new blog, reel, social post, or FAQ in Content Intelligence.',
+                'Review patient questions, review themes, and campaign comments before planning the next asset.',
+                'Mark refresh targets and next recommended action clearly for agency and leadership.',
+            ],
+            quickTabs: ['content_intelligence', 'reviews', 'analytics', 'daily_command', 'workboard'],
+        };
+    }
+
+    if (role === 'field_exec') {
+        return {
+            heading: 'Offline activity to digital attribution',
+            why: 'Doctor visits, camps, and hoardings must be logged fast, otherwise lead source attribution breaks.',
+            sla: 'All field activities logged within 24 hours with map/asset proof.',
+            mustUpdate: [
+                'Add field activity rows in Ops Inputs (location + asset + UTM/QR).',
+                'Check Daily Command and clear pending action items.',
+                'Escalate missing center-level QR/source tags to CRM Ops.',
+            ],
+            quickTabs: ['ops_inputs', 'daily_command', 'workboard'],
+        };
+    }
+
+    if (role === 'ivr_manager' || role === 'telecaller_manager' || role === 'telecaller') {
+        return {
+            heading: 'Speed-to-lead and clean handoff',
+            why: 'Fast first response and consistent disposition logging drives conversion quality for counselors.',
+            sla: 'Hot leads in 10 min, all new leads within 2 hours.',
+            mustUpdate: [
+                'Work Hot Leads first; update status and next follow-up time.',
+                'For qualified leads, add clear handoff notes for counselor.',
+                'For lost leads, select standardized reason code.',
+            ],
+            quickTabs: ['hot_leads', 'all', 'daily_command', 'workboard'],
+        };
+    }
+
+    if (role === 'counselor') {
+        return {
+            heading: 'Lead-to-registration closure',
+            why: 'Counselor updates are the final truth for registration and conversion reporting.',
+            sla: 'Qualified leads actioned same day with outcome updated.',
+            mustUpdate: [
+                'Update consult outcome and registration status on every touched lead.',
+                'Capture loss/deferral reason for non-converted cases.',
+                'Close Daily Command tasks before day-end.',
+            ],
+            quickTabs: ['all', 'hot_leads', 'daily_command', 'workboard'],
+        };
+    }
+
+    return {
+        heading: 'Complete your role-aligned daily updates',
+        why: 'Use only standardized fields so reporting remains consistent across centers.',
+        sla: 'Finish assigned daily updates before day-end.',
+        mustUpdate: [
+            'Open Daily Command and complete pending tasks.',
+            'Update records only via standard forms and status picklists.',
+            'Escalate missing fields/data blockers to CRM Ops.',
+        ],
+        quickTabs: ['daily_command', 'workboard'],
+    };
+}
 
 export default function CRM() {
     const { data: session } = useSession();
@@ -68,7 +217,7 @@ export default function CRM() {
     const opsInputRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'field_exec']);
     const contactRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager', 'telecaller', 'counselor']);
     const spendRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer']);
-    const analyticsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'ivr_manager', 'telecaller_manager']);
+    const analyticsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'content_writer', 'social_media_exec', 'ivr_manager', 'telecaller_manager']);
 
     const canAccessLeadership = leadershipRoles.has(currentRole);
     const canAccessOpsInputs = opsInputRoles.has(currentRole) || canAccessLeadership;
@@ -77,6 +226,8 @@ export default function CRM() {
     const canAccessSpend = spendRoles.has(currentRole) || canAccessLeadership;
     const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
     const canAccessCeoCommand = canAccessLeadership;
+    const canAccessReviews = canAccessLeadership || new Set(['agency_ops', 'marketing_manager', 'performance_marketer', 'content_writer', 'social_media_exec', 'counselor']).has(currentRole);
+    const canAccessContentIntelligence = canAccessLeadership || new Set(['agency_ops', 'marketing_manager', 'performance_marketer', 'content_writer', 'social_media_exec', 'telecaller_manager', 'ivr_manager', 'counselor', 'field_exec']).has(currentRole);
 
     const [activeTab, setActiveTab] = useState<FilterTab>('daily_command');
     const [searchTerm, setSearchTerm] = useState('');
@@ -295,6 +446,12 @@ export default function CRM() {
         if (canAccessSpend) {
             nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
         }
+        if (canAccessReviews) {
+            nextTabs.push({ id: 'reviews', label: 'Reviews', icon: BookOpen });
+        }
+        if (canAccessContentIntelligence) {
+            nextTabs.push({ id: 'content_intelligence', label: 'Content Intelligence', icon: Sparkles });
+        }
         if (canAccessLeadership) {
             nextTabs.push(
                 { id: 'team', label: 'Team', icon: UserPlus },
@@ -311,6 +468,8 @@ export default function CRM() {
         canAccessContacts,
         canAccessLeadership,
         canAccessOpsInputs,
+        canAccessContentIntelligence,
+        canAccessReviews,
         canAccessSpend,
         contacts,
     ]);
@@ -323,6 +482,9 @@ export default function CRM() {
     const statusOptions = ['all', 'new', 'contacted', 'qualified', 'converted', 'lost'];
     const channelOptions = ['all', 'seminar', 'newsletter', 'whatsapp', 'telegram'];
     const allTags = Array.from(new Set(contacts.flatMap(contact => contact.tags?.split(',').map(tag => tag.trim()).filter(Boolean) || [])));
+    const roleLabel = ROLE_LABELS[currentRole] || currentRole || 'Team user';
+    const guide = roleGuideFor(currentRole);
+    const availableQuickTabs = guide.quickTabs.filter((tabId) => tabs.some((tab) => tab.id === tabId));
 
     return (
         <div className="p-6">
@@ -332,9 +494,19 @@ export default function CRM() {
                     <p className="text-sm text-gray-500 mt-1">Signed in role: {currentRole || 'unknown'}</p>
                 </div>
                 <div className="flex gap-2">
+                    <Link href="/admin/manual-screenshots">
+                        <Button variant="outline" className="flex items-center gap-2 border-slate-200 text-slate-700 hover:bg-slate-50">
+                            <BookOpen className="w-4 h-4" /> Screenshot Guide
+                        </Button>
+                    </Link>
                     <Link href="/admin/marketing-manual">
                         <Button variant="outline" className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50">
-                            <BookOpen className="w-4 h-4" /> Manual & SLA
+                            <BookOpen className="w-4 h-4" /> Training Manual
+                        </Button>
+                    </Link>
+                    <Link href="/admin/training-deck">
+                        <Button variant="outline" className="flex items-center gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                            <Target className="w-4 h-4" /> Training Deck
                         </Button>
                     </Link>
                     {isContactTab && (
@@ -368,6 +540,50 @@ export default function CRM() {
                         {tab.count && <span className="bg-white text-gray-600 px-2 py-1 rounded-full text-xs">{tab.count}</span>}
                     </Button>
                 ))}
+            </div>
+
+            <div className="mb-6 border border-emerald-100 bg-emerald-50/40 rounded-xl p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">{roleLabel}</p>
+                        <h2 className="text-lg font-semibold text-gray-900 mt-1">{guide.heading}</h2>
+                        <p className="text-sm text-gray-700 mt-1">{guide.why}</p>
+                        <p className="text-sm text-emerald-800 mt-2 font-medium">SLA: {guide.sla}</p>
+                    </div>
+                    <div className="inline-flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Use only dropdown/select fields. No free-form tracking outside CRM.
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Today you must update</h3>
+                        <div className="space-y-2">
+                            {guide.mustUpdate.map((item) => (
+                                <div key={item} className="text-sm text-gray-700 flex items-start gap-2">
+                                    <CheckCircle className="w-4 h-4 mt-0.5 text-emerald-600" />
+                                    <span>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-3">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick actions</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {availableQuickTabs.map((tabId) => (
+                                <Button
+                                    key={tabId}
+                                    size="sm"
+                                    variant={activeTab === tabId ? 'default' : 'outline'}
+                                    onClick={() => setActiveTab(tabId)}
+                                >
+                                    {TAB_LABELS[tabId]}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {isContactTab && (
@@ -453,6 +669,14 @@ export default function CRM() {
                 ) : activeTab === 'ops_inputs' ? (
                     <div className="p-6">
                         <OpsInputsManagement userRole={currentRole} />
+                    </div>
+                ) : activeTab === 'reviews' ? (
+                    <div className="p-6">
+                        <ReviewsManagement />
+                    </div>
+                ) : activeTab === 'content_intelligence' ? (
+                    <div className="p-6">
+                        <ContentIntelligenceManagement />
                     </div>
                 ) : (
                     <Table>

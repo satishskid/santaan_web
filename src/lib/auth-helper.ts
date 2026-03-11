@@ -10,6 +10,8 @@ const OPS_ROLES = new Set([
     'marketing_manager',
     'agency_ops',
     'performance_marketer',
+    'content_writer',
+    'social_media_exec',
     'field_exec',
     'ivr_manager',
     'telecaller_manager',

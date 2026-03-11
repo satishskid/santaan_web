@@ -80,6 +80,10 @@ export default function AdminLoginPage() {
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 leading-5">
+                            Use your assigned role email. After login, open <strong>Daily Command</strong> first.
+                            If access looks wrong, contact CRM Ops Admin.
+                        </div>
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                                 Email Address
@@ -134,9 +138,20 @@ export default function AdminLoginPage() {
                     </form>
 
                     {/* Footer */}
-                    <p className="text-center text-xs text-gray-400 mt-6">
-                        Authorized personnel only. All access is logged.
-                    </p>
+                    <div className="mt-6 text-center space-y-2">
+                        <p className="text-xs text-gray-400">
+                            Authorized personnel only. All access is logged.
+                        </p>
+                        <div className="flex items-center justify-center gap-3 text-xs">
+                            <Link href="/admin/marketing-manual" className="text-santaan-teal hover:underline">
+                                Open Training Manual
+                            </Link>
+                            <span className="text-gray-300">|</span>
+                            <Link href="/admin/training-deck" className="text-santaan-teal hover:underline">
+                                Open Training Deck
+                            </Link>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Copyright */}

@@ -6,6 +6,7 @@ import {
   Globe2,
   IndianRupee,
   Megaphone,
+  MessageSquareQuote,
   Target,
   TrendingUp,
   Users,
@@ -36,6 +37,16 @@ interface SpendEntry {
 
 interface CampaignAnalyticsProps {
   contacts: Contact[];
+}
+
+interface ReviewsSummary {
+  total: number;
+  averageRating: number;
+  lowRatedPending: number;
+  responded: number;
+  featured: number;
+  new30d: number;
+  topThemes: Array<{ theme: string; count: number }>;
 }
 
 interface Ga4Snapshot {
@@ -118,6 +129,8 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
   const [ga4Snapshot, setGa4Snapshot] = useState<Ga4Snapshot | null>(null);
   const [ga4Loading, setGa4Loading] = useState(true);
   const [ga4Error, setGa4Error] = useState<string | null>(null);
+  const [reviewsSummary, setReviewsSummary] = useState<ReviewsSummary | null>(null);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -134,6 +147,27 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
 
     loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReviewsSummary() {
+      try {
+        const response = await fetch("/api/admin/reviews");
+        const payload = await response.json();
+        if (!active || !response.ok) return;
+        setReviewsSummary(payload.summary || null);
+      } catch (error) {
+        if (!active) return;
+        setReviewsError(error instanceof Error ? error.message : "Failed to fetch review summary");
+      }
+    }
+
+    loadReviewsSummary();
     return () => {
       active = false;
     };
@@ -412,6 +446,67 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         <StatCard title="Pending Follow-up" value={metrics.staleLeadCount} subtext="Older than 24h" icon={Clock3} color="bg-amber-50" />
         <StatCard title="Total Spend" value={formatCurrency(metrics.totalSpend)} subtext="Logged in Spend tab" icon={IndianRupee} color="bg-teal-50" />
         <StatCard title="Cost / Patient" value={formatCurrency(metrics.cpp)} subtext="Spend / converted" icon={IndianRupee} color="bg-rose-50" />
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <MessageSquareQuote className="w-4 h-4 text-gray-500" />
+            Trust Signals (Reviews)
+          </h3>
+        </div>
+        {reviewsError ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{reviewsError}</div>
+        ) : (
+          <div className="p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Average Rating</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{reviewsSummary ? `${reviewsSummary.averageRating.toFixed(1)} / 5` : "0.0 / 5"}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Total Reviews</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.total || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">New 30 Days</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.new30d || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Pending Low-rated</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.lowRatedPending || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                <p className="text-xs text-gray-500">Featured Ready</p>
+                <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(reviewsSummary?.featured || 0)}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-4 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">How marketing should use this</p>
+                <ul className="mt-2 list-disc pl-5 space-y-1">
+                  <li>Promote featured 4-5 star reviews in landing page trust sections.</li>
+                  <li>Use recurring praise themes in ad copy, FAQs, and reel messaging.</li>
+                  <li>Track low-rated themes for service correction before scaling media.</li>
+                </ul>
+              </div>
+              <div className="rounded-lg border border-amber-100 bg-amber-50/60 p-4 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Top current themes</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(reviewsSummary?.topThemes || []).length > 0 ? (
+                    reviewsSummary!.topThemes.map((item) => (
+                      <span key={item.theme} className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-900">
+                        {item.theme.replaceAll("_", " ")} · {item.count}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No review themes captured yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

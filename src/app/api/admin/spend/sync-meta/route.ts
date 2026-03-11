@@ -3,7 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
-import { isAuthorizedAdmin } from "@/lib/auth-helper";
+import { isAuthorizedAdmin, isAuthorizedOpsUser } from "@/lib/auth-helper";
 import { fetchMetaCampaignInsights, inferCenterFromCampaignName } from "@/lib/meta-ads";
 import { normalizeToken, parseDate } from "@/lib/ops-inputs";
 
@@ -33,8 +33,27 @@ function resolveDate(request: NextRequest, bodyDate?: string | null): string {
   return queryDate || bodyParsedDate || resolveDefaultDate();
 }
 
-async function isAdminUser() {
+const WRITE_ROLES = new Set([
+  "admin",
+  "ceo",
+  "crm_ops_admin",
+  "agency_ops",
+  "marketing_manager",
+  "performance_marketer",
+]);
+
+function normalizeRole(value?: string | null) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function canTriggerSync() {
   const session = await auth();
+  const role = normalizeRole((session?.user as { role?: string } | undefined)?.role);
+  if (role && WRITE_ROLES.has(role)) return true;
+
+  const opsAccess = await isAuthorizedOpsUser(session?.user?.email, role || null);
+  if (opsAccess && (!role || WRITE_ROLES.has(role))) return true;
+
   return isAuthorizedAdmin(session?.user?.email);
 }
 
@@ -52,8 +71,8 @@ function hasValidSyncToken(request: NextRequest): boolean {
   return token.trim() === secret;
 }
 
-async function runMetaSync(reportDate: string) {
-  const insights = await fetchMetaCampaignInsights({ date: reportDate });
+async function runMetaSync(reportDate: string, explicitAccountIds?: string[]) {
+  const insights = await fetchMetaCampaignInsights({ date: reportDate, accountIds: explicitAccountIds });
 
   await db
     .delete(campaignSpend)
@@ -90,18 +109,30 @@ async function runMetaSync(reportDate: string) {
 
   const totalSpend = rows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const campaignCount = new Set(rows.map((row) => row.asset || row.utmCampaign)).size;
+  const perAccountMap = new Map<string, number>();
+  for (const item of insights) {
+    const current = perAccountMap.get(item.accountId) || 0;
+    perAccountMap.set(item.accountId, current + Number(item.spend || 0));
+  }
+  const accountsQueried = Array.from(perAccountMap.keys());
+  const perAccount = Array.from(perAccountMap.entries()).map(([accountId, spend]) => ({
+    accountId,
+    spend: Math.round(spend * 100) / 100,
+  }));
 
   return {
     reportDate,
     syncedRows: rows.length,
     campaigns: campaignCount,
+    accountsQueried,
+    perAccount,
     totalSpend: Math.round(totalSpend * 100) / 100,
   };
 }
 
 async function handle(request: NextRequest) {
   const tokenAuth = hasValidSyncToken(request);
-  const adminAuth = tokenAuth ? true : await isAdminUser();
+  const adminAuth = tokenAuth ? true : await canTriggerSync();
   if (!adminAuth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -117,9 +148,16 @@ async function handle(request: NextRequest) {
   }
 
   const reportDate = resolveDate(request, bodyDate);
+  const accountParam = new URL(request.url).searchParams.get("account");
+  const explicitAccountIds = accountParam
+    ? accountParam
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : undefined;
 
   try {
-    const result = await runMetaSync(reportDate);
+    const result = await runMetaSync(reportDate, explicitAccountIds);
     return NextResponse.json({
       success: true,
       source: "meta_graph_api",

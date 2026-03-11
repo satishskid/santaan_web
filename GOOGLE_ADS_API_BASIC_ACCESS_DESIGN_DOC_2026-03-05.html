@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>GOOGLE_ADS_API_BASIC_ACCESS_DESIGN_DOC_2026-03-05</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1
+id="santaan-crm---google-ads-api-design-documentation-basic-access">Santaan
+CRM - Google Ads API Design Documentation (Basic Access)</h1>
+<p><strong>Version:</strong> 1.0<br />
+<strong>Date:</strong> March 5, 2026<br />
+<strong>Owner:</strong> Santaan Fertility Clinic<br />
+<strong>Primary Contact:</strong> santaan.social@gmail.com<br />
+<strong>Website:</strong> https://santaan.in</p>
+<h2 id="purpose">1. Purpose</h2>
+<p>Santaan operates a centralized Growth OS and CRM for fertility
+patient acquisition and conversion management across multiple centers
+(Bhubaneswar, Berhampur, Bangalore, Angul).</p>
+<p>This Google Ads API integration is required to: 1. Pull daily
+campaign performance and spend from Santaan-owned Google Ads accounts.
+2. Standardize campaign-level ROI reporting inside Santaan CRM. 3. Give
+CEO and operations teams one source of truth for channel performance and
+action decisions.</p>
+<h2 id="business-use-case">2. Business Use Case</h2>
+<p>Current execution uses multiple tools (Google Ads UI, Meta Ads,
+NeoDove telecalling CRM, field inputs). This causes fragmented
+decision-making.</p>
+<p>Google Ads API data will be used in Santaan CRM to answer: 1. Which
+campaigns generate qualified leads and registrations? 2. What is
+CPL/CPA/Cost per Registration per campaign, center, and day? 3. Which
+campaigns should be scaled, paused, or fixed weekly?</p>
+<h2 id="scope-of-api-usage">3. Scope of API Usage</h2>
+<h3 id="in-scope">3.1 In Scope</h3>
+<ol type="1">
+<li>Read campaign/ad-group/ad level performance data.</li>
+<li>Read cost/spend and engagement metrics by date.</li>
+<li>Read account-level metadata for mapping to Santaan center and
+campaign taxonomy.</li>
+</ol>
+<h3 id="out-of-scope-current-phase">3.2 Out of Scope (Current
+Phase)</h3>
+<ol type="1">
+<li>No third-party resale or redistribution of Google Ads data.</li>
+<li>No customer list uploads.</li>
+<li>No external-client account management.</li>
+<li>No app conversion tracking or remarketing API workflows in this
+phase.</li>
+</ol>
+<h2 id="users-and-access-model">4. Users and Access Model</h2>
+<h3 id="users">4.1 Users</h3>
+<ol type="1">
+<li>Internal Santaan leadership (CEO, CRM Ops Admin).</li>
+<li>Internal marketing operations.</li>
+<li>Internal telecalling/counseling leadership via dashboard
+outputs.</li>
+<li>Authorized agency partner (restricted operational role, no secret
+ownership).</li>
+</ol>
+<h3 id="access-principle">4.2 Access Principle</h3>
+<ol type="1">
+<li>Santaan owns credentials and tokens.</li>
+<li>Least-privilege access for all users.</li>
+<li>Agency operates campaigns via granted account access; core API
+credentials remain with Santaan.</li>
+</ol>
+<h2 id="technical-architecture">5. Technical Architecture</h2>
+<h3 id="components">5.1 Components</h3>
+<ol type="1">
+<li><strong>Frontend:</strong> Next.js admin dashboard
+(<code>/admin/dashboard</code>) on Netlify.</li>
+<li><strong>Backend APIs:</strong> Next.js server routes (Node
+runtime).</li>
+<li><strong>Database:</strong> Turso (LibSQL).</li>
+<li><strong>CRM Modules:</strong> Contacts, Spend, Ops Inputs, CEO
+Command, Channel/Campaign ROI.</li>
+</ol>
+<h3 id="data-pipeline">5.2 Data Pipeline</h3>
+<ol type="1">
+<li>Scheduled/triggered backend job calls Google Ads API.</li>
+<li>Response normalized into Santaan campaign schema
+(<code>utm_campaign</code>, center, date).</li>
+<li>Stored in CRM spend/performance tables.</li>
+<li>KPI engine computes CPL/CPA/Cost per Registration.</li>
+<li>CEO dashboard surfaces actionable alerts and owner assignments.</li>
+</ol>
+<h2 id="data-fields-consumed">6. Data Fields Consumed</h2>
+<p>Typical fields consumed per campaign/day: 1. <code>customer.id</code>
+2. <code>campaign.id</code>, <code>campaign.name</code>,
+<code>campaign.status</code> 3. <code>segments.date</code> 4.
+<code>metrics.impressions</code> 5. <code>metrics.clicks</code> 6.
+<code>metrics.cost_micros</code> 7. <code>metrics.conversions</code>
+(where configured) 8. Optional: <code>metrics.conversions_value</code>,
+<code>metrics.ctr</code></p>
+<h2 id="frequency-and-volume">7. Frequency and Volume</h2>
+<ol type="1">
+<li>Daily pull for prior-day finalized reporting.</li>
+<li>Optional intra-day refresh for monitoring.</li>
+<li>Expected scale: low to moderate volume (single organization use, not
+bulk multi-tenant SaaS).</li>
+</ol>
+<h2 id="security-and-compliance">8. Security and Compliance</h2>
+<ol type="1">
+<li>Credentials stored as encrypted environment variables in
+Netlify.</li>
+<li>No secrets hardcoded in source code.</li>
+<li>Internal role-based access control (RBAC) on CRM admin APIs.</li>
+<li>API usage restricted to Santaan-owned accounts and authorized
+operations.</li>
+<li>Auditability through CRM logs and campaign-level traceability.</li>
+</ol>
+<h2 id="privacy-and-data-handling">9. Privacy and Data Handling</h2>
+<ol type="1">
+<li>Only campaign performance and operational attribution data are
+consumed.</li>
+<li>Data is used exclusively for Santaan’s internal
+decision-making.</li>
+<li>No unauthorized sharing of Google Ads data with external
+parties.</li>
+<li>Retention and access follow internal operational governance.</li>
+</ol>
+<h2 id="operational-controls">10. Operational Controls</h2>
+<ol type="1">
+<li>UTM enforcement in all paid links for clean attribution.</li>
+<li>Daily spend and campaign checks by marketing operations.</li>
+<li>Weekly executive review of ROI and leak points.</li>
+<li>SLA-driven action tracking per owner (marketing, IVR, counseling,
+field).</li>
+</ol>
+<h2 id="why-basic-access-is-needed">11. Why Basic Access Is Needed</h2>
+<p>Explorer access is insufficient for production-grade automated
+reporting required by Santaan Growth OS.</p>
+<p>Basic access is required to: 1. Reliably pull campaign metrics at
+operational scale. 2. Reduce manual reporting errors and delays. 3.
+Enable consistent daily CEO-level ROI monitoring and weekly action
+plans.</p>
+<h2 id="deployment-and-rollout-plan">12. Deployment and Rollout
+Plan</h2>
+<h3 id="phase-1-completed">Phase 1 (Completed)</h3>
+<ol type="1">
+<li>CRM architecture and ROI modules deployed.</li>
+<li>Meta sync + GA4 API integration completed.</li>
+<li>Input pipelines for field/TV/agency established.</li>
+</ol>
+<h3 id="phase-2-current">Phase 2 (Current)</h3>
+<ol type="1">
+<li>Enable Google Ads API production integration with Basic access.</li>
+<li>Automate Google spend and campaign import.</li>
+<li>Validate KPI parity with Google Ads UI reports.</li>
+</ol>
+<h3 id="phase-3">Phase 3</h3>
+<ol type="1">
+<li>Full cross-channel ROI automation (Meta + Google + offline).</li>
+<li>Weekly predictive alerting and executive action queues.</li>
+</ol>
+<h2 id="responsible-use-statement">13. Responsible Use Statement</h2>
+<p>Santaan confirms this API usage is for first-party internal
+operations and reporting for its own advertising accounts. Santaan will
+comply with Google Ads API Terms and applicable data protection
+requirements.</p>
+<hr />
+<h2 id="appendix-a---suggested-form-responses-copypaste">Appendix A -
+Suggested Form Responses (Copy/Paste)</h2>
+<h3 id="what-are-you-trying-to-build">“What are you trying to
+build?”</h3>
+<p>We are building an internal Growth OS and CRM dashboard for Santaan
+Fertility Clinic to automate Google Ads campaign performance reporting,
+spend attribution, and ROI analytics (CPL/CPA/Cost per Registration)
+across our own centers.</p>
+<h3 id="how-will-the-api-be-used">“How will the API be used?”</h3>
+<p>The API will be used in read/reporting mode to pull campaign metrics
+(impressions, clicks, spend, conversions) by date and campaign, then map
+this to internal CRM lead and registration data for executive
+decision-making.</p>
+<h3 id="who-will-access-this-tool">“Who will access this tool?”</h3>
+<p>Internal Santaan users (CEO, CRM Ops, marketing team) and a
+restricted authorized agency operator. Santaan owns credentials and
+controls access.</p>
+<h3
+id="will-you-use-this-token-for-app-conversion-tracking-and-remarketing-api">“Will
+you use this token for App Conversion Tracking and Remarketing
+API?”</h3>
+<p>No, not in the current phase.</p>
+<h3
+id="will-you-use-your-token-with-a-tool-developed-by-someone-else">“Will
+you use your token with a tool developed by someone else?”</h3>
+<p>No. The tool is internally developed and operated by Santaan.</p>
+</body>
+</html>

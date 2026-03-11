@@ -5,6 +5,7 @@ import { Building2, MapPin, Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FieldWithHelp from "@/components/admin/FieldWithHelp";
 
 interface CenterRecord {
   id: number;
@@ -183,37 +184,53 @@ export default function CentersManagement() {
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Input placeholder="City" value={form.city} onChange={(event) => setForm((prev) => ({ ...prev, city: event.target.value }))} />
-          <Input placeholder="Center title" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
-          <Input placeholder="Center email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} />
-          <Input
-            placeholder="Phones (comma separated)"
-            value={form.phonesInput}
-            onChange={(event) => setForm((prev) => ({ ...prev, phonesInput: event.target.value }))}
-          />
-          <Input
-            placeholder="Sort order"
-            type="number"
-            value={form.sortOrder}
-            onChange={(event) => setForm((prev) => ({ ...prev, sortOrder: Number(event.target.value || 0) }))}
-          />
-          <Input
-            placeholder="Google Maps URL (optional)"
-            value={form.mapUrl}
-            onChange={(event) => setForm((prev) => ({ ...prev, mapUrl: event.target.value }))}
-          />
+          <FieldWithHelp label="City" required help="Canonical city name used in URL and content mapping.">
+            <Input placeholder="City" value={form.city} onChange={(event) => setForm((prev) => ({ ...prev, city: event.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Center Title" required help="Display title shown on website and contact cards.">
+            <Input placeholder="Center title" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Center Email" required help="Official center inbox for patient communication.">
+            <Input placeholder="Center email" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} />
+          </FieldWithHelp>
+          <FieldWithHelp label="Phones" required help="Comma-separated numbers. At least one valid phone is mandatory.">
+            <Input
+              placeholder="Phones (comma separated)"
+              value={form.phonesInput}
+              onChange={(event) => setForm((prev) => ({ ...prev, phonesInput: event.target.value }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Sort Order" help="Lower number shows first on contact pages.">
+            <Input
+              placeholder="Sort order"
+              type="number"
+              value={form.sortOrder}
+              onChange={(event) => setForm((prev) => ({ ...prev, sortOrder: Number(event.target.value || 0) }))}
+            />
+          </FieldWithHelp>
+          <FieldWithHelp label="Google Maps URL" help="Paste direct map link for this center card.">
+            <Input
+              placeholder="Google Maps URL (optional)"
+              value={form.mapUrl}
+              onChange={(event) => setForm((prev) => ({ ...prev, mapUrl: event.target.value }))}
+            />
+          </FieldWithHelp>
         </div>
 
         <div className="mt-3">
-          <Input placeholder="Address" value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
+          <FieldWithHelp label="Address" required help="Full postal/location address shown to patients and maps.">
+            <Input placeholder="Address" value={form.address} onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))} />
+          </FieldWithHelp>
         </div>
         <div className="mt-3">
-          <textarea
-            value={form.description}
-            onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-            placeholder="Description (optional)"
-            className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          />
+          <FieldWithHelp label="Description" help="Short center description for website cards and local trust context.">
+            <textarea
+              value={form.description}
+              onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+              placeholder="Description (optional)"
+              className="w-full min-h-20 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </FieldWithHelp>
         </div>
 
         <label className="mt-3 inline-flex items-center gap-2 text-sm text-gray-700">

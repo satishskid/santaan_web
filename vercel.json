@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-google-spend",
+      "schedule": "45 3 * * *"
+    }
+  ]
+}
+

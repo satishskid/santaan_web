@@ -209,6 +209,80 @@ export const opsTaskUpdates = sqliteTable(
     })
 );
 
+export const reputationReviews = sqliteTable(
+    'reputation_reviews',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        source: text('source').notNull(), // google | meta | manual
+        center: text('center').notNull(), // bhubaneswar | berhampur | bangalore | angul | network
+        externalReviewId: text('external_review_id'),
+        sourceLocation: text('source_location'),
+        reviewerName: text('reviewer_name'),
+        rating: integer('rating').notNull(),
+        reviewDate: text('review_date').notNull(), // YYYY-MM-DD
+        headline: text('headline'),
+        reviewText: text('review_text').notNull(),
+        publicUrl: text('public_url'),
+        sentiment: text('sentiment').default('neutral'), // positive | neutral | negative
+        themes: text('themes').default('[]'), // JSON array of theme codes
+        responseStatus: text('response_status').default('pending'), // pending | responded | escalated | not_needed
+        responseOwner: text('response_owner'),
+        responseText: text('response_text'),
+        respondedAt: text('responded_at'),
+        isFeatured: integer('is_featured', { mode: 'boolean' }).default(false),
+        isActive: integer('is_active', { mode: 'boolean' }).default(true),
+        notes: text('notes'),
+        createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+        updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    },
+    (table) => ({
+        uniqueExternalReview: uniqueIndex('reputation_reviews_source_external_review_unique').on(
+            table.source,
+            table.externalReviewId
+        ),
+    })
+);
+
+export const contentAssets = sqliteTable('content_assets', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    assetType: text('asset_type').notNull(), // blog | clinical_brief | reel | social_post | landing_page | faq | email | ad_copy
+    title: text('title').notNull(),
+    url: text('url'),
+    center: text('center').default('network'),
+    audience: text('audience').default('patient'),
+    funnelStage: text('funnel_stage').default('awareness'),
+    primaryKeyword: text('primary_keyword'),
+    secondaryKeywords: text('secondary_keywords').default('[]'), // JSON array
+    tags: text('tags').default('[]'), // JSON array
+    sourcePlatform: text('source_platform').default('manual'), // instagram | facebook | linkedin | website | youtube | whatsapp | manual
+    status: text('status').default('published'),
+    owner: text('owner'),
+    notes: text('notes'),
+    publishedAt: text('published_at'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const contentFeedback = sqliteTable('content_feedback', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    feedbackDate: text('feedback_date').notNull(), // YYYY-MM-DD
+    source: text('source').notNull(), // telecaller | counselor | review | agency | search | social | whatsapp | field | manual
+    center: text('center').default('network'),
+    topic: text('topic').notNull(),
+    suggestedKeyword: text('suggested_keyword'),
+    patientQuestion: text('patient_question'),
+    audience: text('audience').default('patient'),
+    funnelStage: text('funnel_stage').default('awareness'),
+    priority: text('priority').default('medium'),
+    occurrenceCount: integer('occurrence_count').default(1),
+    recommendedAction: text('recommended_action').default('write_blog'),
+    owner: text('owner'),
+    status: text('status').default('open'),
+    notes: text('notes'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Blog posts synced from Medium and served on Santaan domain
 export const blogPosts = sqliteTable('blog_posts', {
     id: integer('id').primaryKey({ autoIncrement: true }),
