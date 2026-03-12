@@ -139,6 +139,25 @@ interface ContentEngineSignals {
   recommendationMessage?: string | null;
 }
 
+interface ContentEngineRecommendation {
+  theme?: string;
+  signalCount?: number;
+  status?: string;
+  action?: string;
+  coverageCount?: number;
+  sources?: string[];
+  example?: string | null;
+  relatedAssets?: Array<{
+    assetId?: string;
+    title?: string;
+    url?: string | null;
+    type?: string | null;
+    center?: string | null;
+    primaryKeyword?: string | null;
+    score?: number | null;
+  }>;
+}
+
 interface DashboardPayload {
   summary: ContentSummary;
   opportunities: OpportunityRow[];
@@ -242,6 +261,35 @@ function parseCsvArray(raw?: string | null) {
     // fall through
   }
   return raw.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function parseContentEngineRecommendations(rows?: Array<Record<string, unknown>>) {
+  return (rows || []).map((row) => {
+    const record = row as Record<string, unknown>;
+    return {
+      theme: typeof record.theme === "string" ? record.theme : undefined,
+      signalCount: typeof record.signalCount === "number" ? record.signalCount : undefined,
+      status: typeof record.status === "string" ? record.status : undefined,
+      action: typeof record.action === "string" ? record.action : undefined,
+      coverageCount: typeof record.coverageCount === "number" ? record.coverageCount : undefined,
+      sources: Array.isArray(record.sources) ? record.sources.map((item) => String(item)) : [],
+      example: typeof record.example === "string" ? record.example : null,
+      relatedAssets: Array.isArray(record.relatedAssets)
+        ? record.relatedAssets.map((asset) => {
+            const next = asset as Record<string, unknown>;
+            return {
+              assetId: typeof next.assetId === "string" ? next.assetId : undefined,
+              title: typeof next.title === "string" ? next.title : undefined,
+              url: typeof next.url === "string" ? next.url : null,
+              type: typeof next.type === "string" ? next.type : null,
+              center: typeof next.center === "string" ? next.center : null,
+              primaryKeyword: typeof next.primaryKeyword === "string" ? next.primaryKeyword : null,
+              score: typeof next.score === "number" ? next.score : null,
+            };
+          })
+        : [],
+    } satisfies ContentEngineRecommendation;
+  });
 }
 
 export default function ContentIntelligenceManagement() {
@@ -362,6 +410,10 @@ export default function ContentIntelligenceManagement() {
   }
 
   const summary = payload?.summary;
+  const contentEngineRecommendations = useMemo(
+    () => parseContentEngineRecommendations(payload?.contentEngine?.recommendations),
+    [payload?.contentEngine?.recommendations]
+  );
 
   return (
     <div className="space-y-8">
@@ -495,6 +547,36 @@ export default function ContentIntelligenceManagement() {
                       </p>
                     </div>
                   </div>
+
+                  {contentEngineRecommendations.length > 0 ? (
+                    <div className="space-y-3">
+                      {contentEngineRecommendations.slice(0, 4).map((item, index) => (
+                        <div key={`${item.theme || "theme"}-${index}`} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold text-slate-900">{item.theme || "Untitled theme"}</p>
+                            {item.status ? (
+                              <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${classForOpportunity((item.status as OpportunityRow["status"]) || "covered")}`}>
+                                {item.status}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm text-slate-600">
+                            Signals: <span className="font-semibold text-slate-900">{item.signalCount ?? 0}</span> · Coverage: <span className="font-semibold text-slate-900">{item.coverageCount ?? 0}</span> · Next move: <span className="font-semibold text-slate-900">{labelForAction(item.action || "write_blog")}</span>
+                          </p>
+                          {item.example ? <p className="mt-2 text-sm text-slate-500">Example: {item.example}</p> : null}
+                          {item.relatedAssets && item.relatedAssets.length > 0 ? (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {item.relatedAssets.map((asset, assetIndex) => (
+                                <span key={`${asset.assetId || asset.title || "asset"}-${assetIndex}`} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700">
+                                  {asset.title || asset.assetId}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 

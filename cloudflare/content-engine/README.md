@@ -4,13 +4,13 @@ Parallel Cloudflare Worker service for Santaan CRM 2.0.
 
 Purpose:
 - content ingestion
-- chunking + embedding pipeline foundation
+- chunking + embedding pipeline
 - recommendation APIs
 - future grounded blog chat
 
 This service is intentionally separate from the live Vercel CRM.
 
-## Phase 1 endpoints
+## Endpoints
 - `GET /health`
 - `POST /ingest/article`
 - `POST /ingest/feedback`
@@ -27,6 +27,8 @@ or
 `GET /health` is public for infrastructure checks.
 
 ## Notes
-- R2 and Vectorize bindings are scaffolded, not fully activated.
-- Recommendation endpoints are currently safe stubs until indexing is wired.
+- Article ingest stores payloads in R2 and writes chunk embeddings into Vectorize.
+- Internal-link recommendations now query the indexed Santaan corpus.
+- Topic recommendations now rank feedback themes against current corpus coverage.
+- Blog chat remains a grounded preview endpoint, not final reader chat.
 - This foundation is additive and does not modify the live CRM runtime.

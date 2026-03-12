@@ -188,6 +188,9 @@ export async function ingestFeedbackToCFContentEngine(row: {
   id: number | string;
   source: string;
   center?: string | null;
+  audience?: string | null;
+  funnelStage?: string | null;
+  recommendedAction?: string | null;
   topic: string;
   priority?: string | null;
   patientQuestion?: string | null;
@@ -205,6 +208,9 @@ export async function ingestFeedbackToCFContentEngine(row: {
       source: row.source,
       priority: row.priority || "medium",
       center: row.center || "network",
+      audience: row.audience || "patient",
+      funnelStage: row.funnelStage || "consideration",
+      recommendedAction: row.recommendedAction || undefined,
       theme: row.suggestedKeyword || row.topic,
       summary: row.patientQuestion || row.notes || row.topic,
       linkedAssetId: null,
