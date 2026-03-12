@@ -15,7 +15,8 @@ import OpsWorkboard from './OpsWorkboard';
 import DailyCommandCenter from './DailyCommandCenter';
 import ReviewsManagement from './ReviewsManagement';
 import ContentIntelligenceManagement from './ContentIntelligenceManagement';
-import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, AlertTriangle, Sparkles } from 'lucide-react';
+import NeoDoveShadowManagement from './NeoDoveShadowManagement';
+import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, AlertTriangle, Sparkles, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -61,7 +62,7 @@ interface Contact {
     createdAt?: string;
 }
 
-type FilterTab = 'daily_command' | 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs' | 'reviews' | 'content_intelligence';
+type FilterTab = 'daily_command' | 'workboard' | 'all' | 'seminar' | 'newsletter' | 'whatsapp' | 'telegram' | 'at_home_test' | 'hot_leads' | 'team' | 'analytics' | 'ceo_command' | 'settings' | 'centers' | 'announcements' | 'spend' | 'ops_inputs' | 'reviews' | 'content_intelligence' | 'neodove_shadow';
 
 interface RoleGuide {
     heading: string;
@@ -107,6 +108,7 @@ const TAB_LABELS: Record<FilterTab, string> = {
     ops_inputs: 'Ops Inputs',
     reviews: 'Reviews',
     content_intelligence: 'Content Intelligence',
+    neodove_shadow: 'NeoDove Shadow',
 };
 
 function roleGuideFor(role: string): RoleGuide {
@@ -119,9 +121,10 @@ function roleGuideFor(role: string): RoleGuide {
                 'Confirm Daily Command completion and blocked tasks.',
                 'Review CEO Command and assign fix owners for each leakage.',
                 'Ensure Spend entries are updated and CPL/CPA are visible.',
+                'Review NeoDove Shadow mapping coverage before trusting call attribution.',
                 'Review low-rated pending reviews and assign response owners.',
             ],
-            quickTabs: ['daily_command', 'ceo_command', 'spend', 'reviews', 'content_intelligence', 'analytics'],
+            quickTabs: ['daily_command', 'ceo_command', 'spend', 'neodove_shadow', 'reviews', 'content_intelligence', 'analytics'],
         };
     }
 
@@ -133,11 +136,12 @@ function roleGuideFor(role: string): RoleGuide {
             mustUpdate: [
                 'Enter/verify Meta and Google campaign spend.',
                 'Update Agency input rows in Ops Inputs with attribution fields.',
+                'Review NeoDove Shadow daily and close unmapped campaigns before claiming lead attribution.',
                 'Flag underperforming campaigns within 24 hours.',
                 'Track new Google/Meta reviews and mark featured trust signals.',
                 'Register new reels/pages and convert feedback into next-topic recommendations.',
             ],
-            quickTabs: ['spend', 'ops_inputs', 'reviews', 'content_intelligence', 'analytics', 'daily_command'],
+            quickTabs: ['spend', 'ops_inputs', 'neodove_shadow', 'reviews', 'content_intelligence', 'analytics', 'daily_command'],
         };
     }
 
@@ -178,8 +182,9 @@ function roleGuideFor(role: string): RoleGuide {
                 'Work Hot Leads first; update status and next follow-up time.',
                 'For qualified leads, add clear handoff notes for counselor.',
                 'For lost leads, select standardized reason code.',
+                'Escalate unmapped NeoDove campaigns or routing issues to the telecalling lead the same day.',
             ],
-            quickTabs: ['hot_leads', 'all', 'daily_command', 'workboard'],
+            quickTabs: ['hot_leads', 'all', 'neodove_shadow', 'daily_command', 'workboard'],
         };
     }
 
@@ -228,6 +233,7 @@ export default function CRM() {
     const canAccessCeoCommand = canAccessLeadership;
     const canAccessReviews = canAccessLeadership || new Set(['agency_ops', 'marketing_manager', 'performance_marketer', 'content_writer', 'social_media_exec', 'counselor']).has(currentRole);
     const canAccessContentIntelligence = canAccessLeadership || new Set(['agency_ops', 'marketing_manager', 'performance_marketer', 'content_writer', 'social_media_exec', 'telecaller_manager', 'ivr_manager', 'counselor', 'field_exec']).has(currentRole);
+    const canAccessNeoDoveShadow = canAccessLeadership || new Set(['agency_ops', 'marketing_manager', 'performance_marketer', 'ivr_manager', 'telecaller_manager']).has(currentRole);
 
     const [activeTab, setActiveTab] = useState<FilterTab>('daily_command');
     const [searchTerm, setSearchTerm] = useState('');
@@ -452,6 +458,9 @@ export default function CRM() {
         if (canAccessContentIntelligence) {
             nextTabs.push({ id: 'content_intelligence', label: 'Content Intelligence', icon: Sparkles });
         }
+        if (canAccessNeoDoveShadow) {
+            nextTabs.push({ id: 'neodove_shadow', label: 'NeoDove Shadow', icon: Activity });
+        }
         if (canAccessLeadership) {
             nextTabs.push(
                 { id: 'team', label: 'Team', icon: UserPlus },
@@ -467,6 +476,7 @@ export default function CRM() {
         canAccessCeoCommand,
         canAccessContacts,
         canAccessLeadership,
+        canAccessNeoDoveShadow,
         canAccessOpsInputs,
         canAccessContentIntelligence,
         canAccessReviews,
@@ -677,6 +687,10 @@ export default function CRM() {
                 ) : activeTab === 'content_intelligence' ? (
                     <div className="p-6">
                         <ContentIntelligenceManagement />
+                    </div>
+                ) : activeTab === 'neodove_shadow' ? (
+                    <div className="p-6">
+                        <NeoDoveShadowManagement />
                     </div>
                 ) : (
                     <Table>

@@ -301,3 +301,54 @@ export const blogPosts = sqliteTable('blog_posts', {
     syncedAt: text('synced_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const neodoveCampaignMappings = sqliteTable(
+    'neodove_campaign_mappings',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        neodoveCampaignId: text('neodove_campaign_id').notNull(),
+        neodoveCampaignName: text('neodove_campaign_name').notNull(),
+        sourceBucket: text('source_bucket').notNull(), // meta_bbsr_call | google_bam_call | direct_website_call
+        center: text('center').default('network'),
+        utmCampaign: text('utm_campaign').notNull(),
+        owner: text('owner'),
+        isActive: integer('is_active', { mode: 'boolean' }).default(true),
+        notes: text('notes'),
+        createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+        updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    },
+    (table) => ({
+        uniqueNeoDoveCampaignId: uniqueIndex('neodove_campaign_mappings_campaign_id_unique').on(table.neodoveCampaignId),
+    })
+);
+
+export const neodoveEventLogs = sqliteTable('neodove_event_logs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    eventName: text('event_name').notNull(),
+    eventTimestamp: text('event_timestamp').notNull(),
+    leadId: text('lead_id'),
+    mobile: text('mobile'),
+    email: text('email'),
+    name: text('name'),
+    campaignId: text('campaign_id'),
+    campaignName: text('campaign_name'),
+    stageName: text('stage_name'),
+    statusCode: text('status_code'),
+    disposition: text('disposition'),
+    disposeReason: text('dispose_reason'),
+    pipeline: text('pipeline'),
+    center: text('center'),
+    assignedToId: text('assigned_to_id'),
+    assignedTo: text('assigned_to'),
+    callConnected: integer('call_connected', { mode: 'boolean' }),
+    callDurationSec: integer('call_duration_sec'),
+    followUpAt: text('follow_up_at'),
+    matchedMappingId: integer('matched_mapping_id'),
+    derivedSourceBucket: text('derived_source_bucket'),
+    derivedCenter: text('derived_center'),
+    derivedUtmCampaign: text('derived_utm_campaign'),
+    processingStatus: text('processing_status').default('shadow_logged'), // shadow_logged | mapped | unmapped | ignored | error
+    processingNote: text('processing_note'),
+    rawPayload: text('raw_payload').notNull(),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});

@@ -10,6 +10,7 @@ import {
   parseNeoDoveWebhookLead,
   toNeoDoveCampaignTag,
 } from "@/lib/neodove";
+import { logNeoDoveShadowEvent, resolveNeoDoveMapping } from "@/lib/neodove-shadow";
 
 const MAX_MESSAGE_LENGTH = 1800;
 
@@ -80,6 +81,11 @@ export async function POST(req: NextRequest) {
     if (!webhookLead) {
       return NextResponse.json({ success: true, message: "Ignored non-lead payload" });
     }
+
+    const shadowMapping = await resolveNeoDoveMapping(webhookLead).catch((error) => {
+      console.error("NeoDove shadow mapping lookup failed:", error);
+      return null;
+    });
 
     const center = resolveCenter({
       center: webhookLead.center,
@@ -196,11 +202,25 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    try {
+      await logNeoDoveShadowEvent({
+        webhookLead,
+        rawPayload: body,
+        mapping: shadowMapping,
+        processingNote: shadowMapping
+          ? `Shadow-mode mapped to ${shadowMapping.sourceBucket} / ${shadowMapping.utmCampaign}`
+          : "Shadow-mode captured without NeoDove campaign mapping.",
+      });
+    } catch (shadowError) {
+      console.error("NeoDove shadow log write failed:", shadowError);
+    }
+
     return NextResponse.json({
       success: true,
       event: webhookLead.event,
       center,
       status: mappedStatus,
+      shadowMapped: Boolean(shadowMapping),
     });
   } catch (error) {
     console.error("NeoDove webhook error:", error);

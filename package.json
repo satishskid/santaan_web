@@ -14,6 +14,7 @@
     "seed:ceo-week1-kpis": "npx tsx src/scripts/seed-ceo-week1-kpis.ts",
     "migrate:reviews": "node src/scripts/migrate-reviews.mjs",
     "migrate:content-intelligence": "node src/scripts/migrate-content-intelligence.mjs",
+    "migrate:neodove-shadow": "node src/scripts/migrate-neodove-shadow.mjs",
     "content:backfill:cloudflare": "node src/scripts/backfill-cloudflare-content-engine.mjs",
     "cf:content:dev": "cd 'cloudflare/content-engine' && wrangler dev",
     "cf:content:deploy": "cd 'cloudflare/content-engine' && wrangler deploy",
