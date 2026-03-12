@@ -48,6 +48,22 @@ export interface ContentFeedbackLike {
   status?: string | null;
 }
 
+export interface ContentDemandPageSignal {
+  path: string;
+  sessions?: number;
+  activeUsers?: number;
+  clicks?: number;
+  impressions?: number;
+}
+
+export interface ContentDemandQuerySignal {
+  query: string;
+  clicks?: number;
+  impressions?: number;
+  ctr?: number;
+  position?: number;
+}
+
 export function normalizeContentToken(value?: unknown) {
   return String(value ?? "")
     .trim()
@@ -136,10 +152,14 @@ export function computeContentOpportunityBoard(args: {
   assets: ContentAssetLike[];
   feedback: ContentFeedbackLike[];
   reviewThemes?: Array<{ theme: string; count: number }>;
+  pageSignals?: ContentDemandPageSignal[];
+  querySignals?: ContentDemandQuerySignal[];
 }) {
   const assets = args.assets || [];
   const feedback = args.feedback || [];
   const reviewThemes = args.reviewThemes || [];
+  const pageSignals = args.pageSignals || [];
+  const querySignals = args.querySignals || [];
 
   const assetCorpus = assets.map((asset) => ({
     text: textForAsset(asset),
@@ -159,6 +179,8 @@ export function computeContentOpportunityBoard(args: {
       funnelStages: Set<string>;
       recommendedActions: string[];
       questionSnippets: string[];
+      demandScore: number;
+      demandReasons: string[];
     }
   >();
 
@@ -176,6 +198,8 @@ export function computeContentOpportunityBoard(args: {
         funnelStages: new Set<string>(),
         recommendedActions: [],
         questionSnippets: [],
+        demandScore: 0,
+        demandReasons: [],
       });
     }
     const signal = signalMap.get(key)!;
@@ -201,11 +225,44 @@ export function computeContentOpportunityBoard(args: {
         funnelStages: new Set<string>(["consideration"]),
         recommendedActions: [],
         questionSnippets: [],
+        demandScore: 0,
+        demandReasons: [],
       });
     }
     const signal = signalMap.get(key)!;
     signal.count += Math.max(1, Number(theme.count || 1));
     signal.sources.add("review");
+  }
+
+  for (const page of pageSignals) {
+    const text = normalizeContentToken(page.path);
+    if (!text) continue;
+    for (const [key, signal] of signalMap.entries()) {
+      if (!text.includes(key)) continue;
+      const pageWeight = Number(page.sessions || 0) + Number(page.activeUsers || 0) + Number(page.clicks || 0);
+      if (pageWeight <= 0) continue;
+      signal.demandScore += pageWeight;
+      signal.demandReasons.push(`page:${page.path}`);
+    }
+  }
+
+  for (const query of querySignals) {
+    const text = normalizeContentToken(query.query);
+    if (!text) continue;
+    for (const [key, signal] of signalMap.entries()) {
+      const queryMatches =
+        text.includes(key) ||
+        key.includes(text) ||
+        text.split(/\s+/).some((token) => token.length > 2 && key.includes(token));
+      if (!queryMatches) continue;
+      const queryWeight =
+        Number(query.clicks || 0) * 4 +
+        Number(query.impressions || 0) * 0.1 +
+        (Number(query.position || 0) > 0 ? Math.max(0, 20 - Number(query.position || 0)) : 0);
+      if (queryWeight <= 0) continue;
+      signal.demandScore += queryWeight;
+      signal.demandReasons.push(`query:${query.query}`);
+    }
   }
 
   return Array.from(signalMap.entries())
@@ -230,6 +287,8 @@ export function computeContentOpportunityBoard(args: {
         label: signal.label,
         count: signal.count,
         coverageCount: coveredCount,
+        demandScore: Number(signal.demandScore.toFixed(2)),
+        demandReasons: uniqueStrings(signal.demandReasons).slice(0, 4),
         status,
         action,
         sources: Array.from(signal.sources),
@@ -241,7 +300,7 @@ export function computeContentOpportunityBoard(args: {
     })
     .sort((a, b) => {
       const statusRank = { gap: 0, refresh: 1, covered: 2 } as Record<string, number>;
-      return statusRank[a.status] - statusRank[b.status] || b.count - a.count;
+      return statusRank[a.status] - statusRank[b.status] || b.demandScore - a.demandScore || b.count - a.count;
     })
     .slice(0, 18);
 }

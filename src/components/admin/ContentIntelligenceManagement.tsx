@@ -104,6 +104,8 @@ interface OpportunityRow {
   label: string;
   count: number;
   coverageCount: number;
+  demandScore: number;
+  demandReasons?: string[];
   status: "gap" | "refresh" | "covered";
   action: ContentRecommendedAction;
   sources: string[];
@@ -121,6 +123,13 @@ interface Ga4ContentSignals {
   configured: boolean;
   message?: string;
   topContentPages: Array<{ path: string; sessions: number; activeUsers: number }>;
+}
+
+interface SearchConsoleSignals {
+  configured: boolean;
+  message?: string;
+  topQueries: Array<{ query: string; clicks: number; impressions: number; ctr: number; position: number }>;
+  topPages: Array<{ page: string; clicks: number; impressions: number; ctr: number; position: number }>;
 }
 
 interface ContentEngineSignals {
@@ -165,6 +174,7 @@ interface DashboardPayload {
   manualAssets: ManualAssetRow[];
   recentAssets: RecentAssetRow[];
   ga4Content: Ga4ContentSignals;
+  searchConsoleContent: SearchConsoleSignals;
   reviewSignals: ReviewSignals;
   contentEngine: ContentEngineSignals;
 }
@@ -494,11 +504,17 @@ export default function ContentIntelligenceManagement() {
                           <p className="mt-2 text-sm text-slate-600">
                             Signal count: <span className="font-semibold text-slate-900">{item.count}</span> · Coverage: <span className="font-semibold text-slate-900">{item.coverageCount}</span> assets · Next move: <span className="font-semibold text-slate-900">{labelForAction(item.action)}</span>
                           </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            Demand score: <span className="font-semibold text-slate-900">{item.demandScore.toFixed(1)}</span>
+                          </p>
                           {item.questionExample ? <p className="mt-2 text-sm text-slate-500">Example: {item.questionExample}</p> : null}
                         </div>
                         <div className="text-xs text-slate-500">
                           <p>Sources: {item.sources.join(", ")}</p>
                           <p className="mt-1">Centers: {item.centers.join(", ")}</p>
+                          {item.demandReasons && item.demandReasons.length > 0 ? (
+                            <p className="mt-1">Demand: {item.demandReasons.join(" · ")}</p>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -597,6 +613,29 @@ export default function ContentIntelligenceManagement() {
                     </div>
                   ) : (
                     <p className="text-sm text-amber-700">{payload?.ga4Content.message || "GA4 content signals are not ready yet."}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="text-lg font-semibold text-slate-900">Search demand signals</h3>
+                  <p className="mt-1 text-sm text-slate-500">These queries help us decide what patients are actively searching before they land on Santaan content.</p>
+                </div>
+                <div className="p-6">
+                  {payload?.searchConsoleContent.configured ? (
+                    <div className="space-y-3">
+                      {payload.searchConsoleContent.topQueries.length > 0 ? payload.searchConsoleContent.topQueries.slice(0, 8).map((query) => (
+                        <div key={query.query} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                          <p className="text-sm font-medium text-slate-900">{query.query}</p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Clicks: {query.clicks} · Impressions: {query.impressions} · CTR: {(query.ctr * 100).toFixed(1)}% · Position: {query.position.toFixed(1)}
+                          </p>
+                        </div>
+                      )) : <p className="text-sm text-slate-500">No Search Console query rows were returned for the current window.</p>}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-amber-700">{payload?.searchConsoleContent.message || "Search Console signals are not ready yet."}</p>
                   )}
                 </div>
               </div>

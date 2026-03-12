@@ -22,6 +22,7 @@ import {
 } from "@/lib/content-intelligence";
 import { computeReviewSummary } from "@/lib/reviews";
 import { fetchGa4DashboardSnapshot, readGa4Config } from "@/lib/ga4";
+import { fetchSearchConsoleSnapshot, readSearchConsoleConfig } from "@/lib/search-console";
 import {
   fetchCFContentEngineHealth,
   fetchTopicRecommendationsFromCFContentEngine,
@@ -128,19 +129,6 @@ async function buildDashboardPayload() {
     return (Number.isNaN(right) ? 0 : right) - (Number.isNaN(left) ? 0 : left);
   });
 
-  const reviewsSummary = computeReviewSummary(reviewRows);
-  const opportunities = computeContentOpportunityBoard({
-    assets: combinedAssets,
-    feedback: feedbackRows,
-    reviewThemes: reviewsSummary.topThemes,
-  });
-  const summary = computeContentSummary({
-    combinedAssets,
-    manualAssets: manualAssetRows,
-    feedback: feedbackRows,
-    opportunities,
-  });
-
   const ga4Config = readGa4Config();
   let ga4Content: {
     configured: boolean;
@@ -172,6 +160,67 @@ async function buildDashboardPayload() {
     }
   }
 
+  let searchConsoleContent: {
+    configured: boolean;
+    message?: string;
+    topQueries: Array<{ query: string; clicks: number; impressions: number; ctr: number; position: number }>;
+    topPages: Array<{ page: string; clicks: number; impressions: number; ctr: number; position: number }>;
+  } = {
+    configured: false,
+    message: "Search Console signals not configured yet.",
+    topQueries: [],
+    topPages: [],
+  };
+
+  const searchConsoleConfig = readSearchConsoleConfig();
+  if (searchConsoleConfig) {
+    try {
+      const snapshot = await fetchSearchConsoleSnapshot(searchConsoleConfig, 30);
+      searchConsoleContent = {
+        configured: true,
+        message: undefined,
+        topQueries: snapshot.topQueries,
+        topPages: (snapshot.topPages || []).filter((page) => {
+          const path = String(page.page || "");
+          return path.includes("/fertility") || path.includes("/clinical") || path.includes("/ivf") || path.includes("/blog");
+        }),
+      };
+    } catch (error) {
+      searchConsoleContent = {
+        configured: false,
+        message: error instanceof Error ? error.message : "Failed to fetch Search Console signals.",
+        topQueries: [],
+        topPages: [],
+      };
+    }
+  }
+
+  const reviewsSummary = computeReviewSummary(reviewRows);
+  const opportunities = computeContentOpportunityBoard({
+    assets: combinedAssets,
+    feedback: feedbackRows,
+    reviewThemes: reviewsSummary.topThemes,
+    pageSignals: [
+      ...(ga4Content.topContentPages || []).map((page) => ({
+        path: page.path,
+        sessions: page.sessions,
+        activeUsers: page.activeUsers,
+      })),
+      ...(searchConsoleContent.topPages || []).map((page) => ({
+        path: page.page,
+        clicks: page.clicks,
+        impressions: page.impressions,
+      })),
+    ],
+    querySignals: searchConsoleContent.topQueries || [],
+  });
+  const summary = computeContentSummary({
+    combinedAssets,
+    manualAssets: manualAssetRows,
+    feedback: feedbackRows,
+    opportunities,
+  });
+
   const [engineHealth, engineRecommendations] = await Promise.all([
     fetchCFContentEngineHealth(),
     fetchTopicRecommendationsFromCFContentEngine({ center: "network", audience: "patient", lookbackDays: 30 }),
@@ -184,6 +233,7 @@ async function buildDashboardPayload() {
     manualAssets: manualAssetRows,
     recentAssets: combinedAssets.slice(0, 24),
     ga4Content,
+    searchConsoleContent,
     reviewSignals: reviewsSummary,
     contentEngine: {
       configured: engineHealth.configured,
