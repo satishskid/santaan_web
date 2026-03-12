@@ -7,6 +7,7 @@ import {
   IndianRupee,
   Megaphone,
   MessageSquareQuote,
+  PhoneCall,
   Target,
   TrendingUp,
   Users,
@@ -73,6 +74,18 @@ interface Ga4Snapshot {
   }>;
 }
 
+interface NeoDoveShadowSnapshot {
+  summary: {
+    totalEvents: number;
+    mappedEvents: number;
+    unmappedEvents: number;
+    connectedCalls: number;
+    qualifiedSignals: number;
+    activeMappings: number;
+    uniqueCampaignsSeen: number;
+  };
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -131,6 +144,8 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
   const [ga4Error, setGa4Error] = useState<string | null>(null);
   const [reviewsSummary, setReviewsSummary] = useState<ReviewsSummary | null>(null);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [neodoveShadow, setNeoDoveShadow] = useState<NeoDoveShadowSnapshot | null>(null);
+  const [neodoveShadowError, setNeoDoveShadowError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -147,6 +162,27 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
 
     loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadNeoDoveShadow() {
+      try {
+        const response = await fetch("/api/admin/neodove-shadow");
+        const payload = await response.json();
+        if (!active || !response.ok) return;
+        setNeoDoveShadow(payload);
+      } catch (error) {
+        if (!active) return;
+        setNeoDoveShadowError(error instanceof Error ? error.message : "Failed to fetch NeoDove shadow snapshot");
+      }
+    }
+
+    loadNeoDoveShadow();
     return () => {
       active = false;
     };
@@ -299,6 +335,15 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       });
     }
 
+    const unmappedNeoDoveEvents = neodoveShadow?.summary.unmappedEvents || 0;
+    if (unmappedNeoDoveEvents > 0) {
+      actionItems.push({
+        title: `${unmappedNeoDoveEvents} NeoDove events are still unmapped`,
+        description: "Campaign-to-UTM mapping is incomplete. Agency and telecalling lead should close these mappings before relying on call-campaign lead attribution.",
+        priority: "high",
+      });
+    }
+
     if (actionItems.length === 0) {
       actionItems.push({
         title: "Funnel hygiene looks healthy",
@@ -352,7 +397,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         .sort((a, b) => b.leads - a.leads)
         .slice(0, 8),
     };
-  }, [contacts, spendEntries]);
+  }, [contacts, spendEntries, neodoveShadow]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -446,6 +491,41 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         <StatCard title="Pending Follow-up" value={metrics.staleLeadCount} subtext="Older than 24h" icon={Clock3} color="bg-amber-50" />
         <StatCard title="Total Spend" value={formatCurrency(metrics.totalSpend)} subtext="Logged in Spend tab" icon={IndianRupee} color="bg-teal-50" />
         <StatCard title="Cost / Patient" value={formatCurrency(metrics.cpp)} subtext="Spend / converted" icon={IndianRupee} color="bg-rose-50" />
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <PhoneCall className="w-4 h-4 text-gray-500" />
+            NeoDove Shadow Readiness
+          </h3>
+        </div>
+        {neodoveShadowError ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{neodoveShadowError}</div>
+        ) : (
+          <div className="p-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <p className="text-xs text-gray-500">Events (7d)</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(neodoveShadow?.summary.totalEvents || 0)}</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <p className="text-xs text-gray-500">Mapped</p>
+              <p className="mt-1 text-xl font-semibold text-emerald-700">{formatNumber(neodoveShadow?.summary.mappedEvents || 0)}</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <p className="text-xs text-gray-500">Unmapped</p>
+              <p className="mt-1 text-xl font-semibold text-amber-700">{formatNumber(neodoveShadow?.summary.unmappedEvents || 0)}</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <p className="text-xs text-gray-500">Connected Calls</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(neodoveShadow?.summary.connectedCalls || 0)}</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <p className="text-xs text-gray-500">Qualified Signals</p>
+              <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(neodoveShadow?.summary.qualifiedSignals || 0)}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

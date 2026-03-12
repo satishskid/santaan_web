@@ -24,6 +24,18 @@ interface AgencyRow {
   qualifiedLeads: number;
   registrations: number;
   notes?: string | null;
+  shadow?: ShadowRollup | null;
+}
+
+interface ShadowRollup {
+  reportDate: string;
+  utmCampaign: string;
+  center: string;
+  sourceBucket: string;
+  leadCount: number;
+  qualifiedLeadCount: number;
+  connectedLeadCount: number;
+  eventCount: number;
 }
 
 interface AgencyForm {
@@ -89,6 +101,7 @@ function downloadAgencyTemplate() {
 
 export default function AgencyPerformanceManagement() {
   const [rows, setRows] = useState<AgencyRow[]>([]);
+  const [shadowRollups, setShadowRollups] = useState<ShadowRollup[]>([]);
   const [form, setForm] = useState<AgencyForm>(initialForm);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -103,6 +116,7 @@ export default function AgencyPerformanceManagement() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to fetch agency rows");
       setRows(payload.rows || []);
+      setShadowRollups(payload.shadowRollups || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch agency rows");
     } finally {
@@ -122,6 +136,45 @@ export default function AgencyPerformanceManagement() {
     const cpr = registrations > 0 ? spend / registrations : 0;
     return { spend, leads, registrations, cpl, cpr };
   }, [rows]);
+
+  const shadowRollupMap = useMemo(() => {
+    const map = new Map<string, ShadowRollup>();
+    for (const rollup of shadowRollups) {
+      map.set(`${rollup.reportDate}::${rollup.utmCampaign}::${rollup.center}`, rollup);
+    }
+    return map;
+  }, [shadowRollups]);
+
+  const formShadow = useMemo(
+    () => shadowRollupMap.get(`${form.reportDate}::${form.utmCampaign.trim().toLowerCase()}::${form.center}`) || null,
+    [form.reportDate, form.utmCampaign, form.center, shadowRollupMap]
+  );
+
+  const shadowTotals = useMemo(() => {
+    const spend = rows.reduce((sum, row) => {
+      const shadow = shadowRollupMap.get(`${row.reportDate}::${row.utmCampaign}::${row.center}`);
+      return sum + Number(row.spend || 0) * (shadow ? 1 : 0);
+    }, 0);
+    const leads = shadowRollups.reduce((sum, row) => sum + Number(row.leadCount || 0), 0);
+    const qualified = shadowRollups.reduce((sum, row) => sum + Number(row.qualifiedLeadCount || 0), 0);
+    return { spend, leads, qualified };
+  }, [rows, shadowRollups, shadowRollupMap]);
+
+  function applyShadowCounts() {
+    if (!formShadow) return;
+    setForm((prev) => ({
+      ...prev,
+      leads: String(formShadow.leadCount),
+      qualifiedLeads: String(formShadow.qualifiedLeadCount),
+      notes: [
+        prev.notes?.trim(),
+        `NeoDove shadow applied: leads=${formShadow.leadCount}, qualified=${formShadow.qualifiedLeadCount}, connected=${formShadow.connectedLeadCount}, source_bucket=${formShadow.sourceBucket}`,
+      ]
+        .filter(Boolean)
+        .join(" | "),
+    }));
+    setNotice("Applied NeoDove shadow counts to the form.");
+  }
 
   async function saveRow() {
     if (!form.campaignId.trim() || !form.campaignName.trim() || !form.utmCampaign.trim() || !form.spend.trim()) {
@@ -326,6 +379,11 @@ export default function AgencyPerformanceManagement() {
           <Button type="button" variant="outline" onClick={downloadAgencyTemplate}>
             <Download className="w-4 h-4 mr-2" /> CSV Template
           </Button>
+          {formShadow ? (
+            <Button type="button" variant="outline" onClick={applyShadowCounts}>
+              Use NeoDove Shadow Counts
+            </Button>
+          ) : null}
           <div className="ml-auto text-sm text-gray-700 flex items-center gap-5">
             <span className="flex items-center gap-1">
               <IndianRupee className="w-3 h-3" /> Spend: <strong>{formatCurrency(totals.spend)}</strong>
@@ -339,6 +397,33 @@ export default function AgencyPerformanceManagement() {
 
         {notice ? <p className="text-sm text-emerald-700 mt-3">{notice}</p> : null}
         {error ? <p className="text-sm text-rose-700 mt-3">{error}</p> : null}
+        <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="rounded-xl border border-gray-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">NeoDove shadow match for current row</p>
+            {formShadow ? (
+              <div className="mt-2 text-sm text-slate-700 space-y-1">
+                <p>Source bucket: <strong>{formShadow.sourceBucket}</strong></p>
+                <p>Mapped leads: <strong>{formShadow.leadCount}</strong></p>
+                <p>Qualified signals: <strong>{formShadow.qualifiedLeadCount}</strong></p>
+                <p>Connected calls: <strong>{formShadow.connectedLeadCount}</strong></p>
+                <p>Events: <strong>{formShadow.eventCount}</strong></p>
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-slate-600">
+                No mapped NeoDove shadow rollup found for this report date + UTM campaign + center yet.
+              </p>
+            )}
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-sm font-semibold text-emerald-900">30-day NeoDove shadow coverage</p>
+            <div className="mt-2 text-sm text-emerald-800 space-y-1">
+              <p>Mapped rollups: <strong>{shadowRollups.length}</strong></p>
+              <p>Derived leads: <strong>{shadowTotals.leads}</strong></p>
+              <p>Derived qualified: <strong>{shadowTotals.qualified}</strong></p>
+              <p className="text-xs text-emerald-700">Use this to compare manual agency lead claims against actual mapped NeoDove call activity.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
@@ -351,6 +436,7 @@ export default function AgencyPerformanceManagement() {
               <TableHead>Campaign</TableHead>
               <TableHead className="text-right">Spend</TableHead>
               <TableHead className="text-right">Leads</TableHead>
+              <TableHead className="text-right">NeoDove Shadow</TableHead>
               <TableHead className="text-right">Regs</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -358,18 +444,20 @@ export default function AgencyPerformanceManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                   Loading agency rows...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                   No agency rows logged yet.
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
+              rows.map((row) => {
+                const shadow = shadowRollupMap.get(`${row.reportDate}::${row.utmCampaign}::${row.center}`) || null;
+                return (
                 <TableRow key={row.id}>
                   <TableCell>{row.reportDate}</TableCell>
                   <TableCell className="font-medium">{row.platform}</TableCell>
@@ -380,6 +468,16 @@ export default function AgencyPerformanceManagement() {
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(Number(row.spend || 0))}</TableCell>
                   <TableCell className="text-right">{row.leads}</TableCell>
+                  <TableCell className="text-right">
+                    {shadow ? (
+                      <div>
+                        <div className="font-medium">{shadow.leadCount}</div>
+                        <div className="text-[11px] text-gray-500">qual {shadow.qualifiedLeadCount}</div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-amber-700">not mapped</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">{row.registrations}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" className="text-rose-600" onClick={() => deleteRow(row.id)}>
@@ -387,7 +485,7 @@ export default function AgencyPerformanceManagement() {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))
+              )})
             )}
           </TableBody>
         </Table>

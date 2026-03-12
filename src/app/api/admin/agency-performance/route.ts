@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { agencyPerformanceLogs } from "@/db/schema";
 import { isAuthorizedOpsUser } from "@/lib/auth-helper";
+import { computeNeoDoveShadowRollups } from "@/lib/neodove-shadow";
 import {
   ALLOWED_CENTERS,
   ALLOWED_PLATFORMS,
@@ -58,7 +59,16 @@ export async function GET(request: NextRequest) {
       .where(whereClause)
       .orderBy(desc(agencyPerformanceLogs.reportDate), desc(agencyPerformanceLogs.id));
 
-    return NextResponse.json({ rows });
+    const shadowRollups = await computeNeoDoveShadowRollups(30);
+    const filteredShadowRollups = shadowRollups.filter((item) => {
+      if (from && item.reportDate < from) return false;
+      if (to && item.reportDate > to) return false;
+      if (center && item.center !== center) return false;
+      if (platform && !item.sourceBucket.startsWith(platform)) return false;
+      return true;
+    });
+
+    return NextResponse.json({ rows, shadowRollups: filteredShadowRollups });
   } catch (error) {
     console.error("Agency performance GET error:", error);
     return NextResponse.json({ error: "Failed to fetch agency performance rows" }, { status: 500 });

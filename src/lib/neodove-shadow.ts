@@ -14,6 +14,17 @@ export interface NeoDoveShadowSummary {
   uniqueCampaignsSeen: number;
 }
 
+export interface NeoDoveShadowRollup {
+  reportDate: string;
+  utmCampaign: string;
+  center: string;
+  sourceBucket: string;
+  leadCount: number;
+  qualifiedLeadCount: number;
+  connectedLeadCount: number;
+  eventCount: number;
+}
+
 function lower(value?: string | null) {
   return String(value || "").trim().toLowerCase();
 }
@@ -147,6 +158,96 @@ export async function computeNeoDoveShadowSnapshot(windowDays = 7) {
     mappings,
     byCampaign,
   };
+}
+
+function toLeadKey(event: {
+  leadId?: string | null;
+  mobile?: string | null;
+  email?: string | null;
+  campaignId?: string | null;
+  id?: number;
+}) {
+  return (
+    lower(event.leadId) ||
+    lower(event.mobile) ||
+    lower(event.email) ||
+    `${lower(event.campaignId) || "campaign"}:${event.id || "unknown"}`
+  );
+}
+
+function qualifies(event: { stageName?: string | null; disposition?: string | null; processingNote?: string | null }) {
+  const haystack = `${lower(event.stageName)} ${lower(event.disposition)} ${lower(event.processingNote)}`;
+  return haystack.includes("qualif");
+}
+
+export async function computeNeoDoveShadowRollups(windowDays = 30) {
+  const events = await db.select().from(neodoveEventLogs).orderBy(desc(neodoveEventLogs.eventTimestamp)).all();
+  const threshold = Date.now() - windowDays * 24 * 60 * 60 * 1000;
+
+  const recentMapped = events.filter((event) => {
+    if (event.processingStatus !== "mapped" || !event.derivedUtmCampaign) return false;
+    const ts = Date.parse(event.eventTimestamp || event.createdAt || "");
+    return Number.isFinite(ts) ? ts >= threshold : true;
+  });
+
+  const rollupMap = new Map<
+    string,
+    {
+      reportDate: string;
+      utmCampaign: string;
+      center: string;
+      sourceBucket: string;
+      leadKeys: Set<string>;
+      qualifiedLeadKeys: Set<string>;
+      connectedLeadKeys: Set<string>;
+      eventCount: number;
+    }
+  >();
+
+  for (const event of recentMapped) {
+    const reportDate = String(event.eventTimestamp || event.createdAt || "").slice(0, 10) || new Date().toISOString().slice(0, 10);
+    const utmCampaign = String(event.derivedUtmCampaign || "").trim();
+    const center = String(event.derivedCenter || event.center || "network").trim().toLowerCase();
+    const sourceBucket = String(event.derivedSourceBucket || "neodove_unmapped").trim().toLowerCase();
+    const key = `${reportDate}::${utmCampaign}::${center}`;
+
+    if (!rollupMap.has(key)) {
+      rollupMap.set(key, {
+        reportDate,
+        utmCampaign,
+        center,
+        sourceBucket,
+        leadKeys: new Set<string>(),
+        qualifiedLeadKeys: new Set<string>(),
+        connectedLeadKeys: new Set<string>(),
+        eventCount: 0,
+      });
+    }
+
+    const bucket = rollupMap.get(key)!;
+    const leadKey = toLeadKey(event);
+    bucket.eventCount += 1;
+    bucket.leadKeys.add(leadKey);
+    if (event.callConnected) bucket.connectedLeadKeys.add(leadKey);
+    if (qualifies(event)) bucket.qualifiedLeadKeys.add(leadKey);
+  }
+
+  return Array.from(rollupMap.values())
+    .map<NeoDoveShadowRollup>((bucket) => ({
+      reportDate: bucket.reportDate,
+      utmCampaign: bucket.utmCampaign,
+      center: bucket.center,
+      sourceBucket: bucket.sourceBucket,
+      leadCount: bucket.leadKeys.size,
+      qualifiedLeadCount: bucket.qualifiedLeadKeys.size,
+      connectedLeadCount: bucket.connectedLeadKeys.size,
+      eventCount: bucket.eventCount,
+    }))
+    .sort((a, b) => {
+      const dateCompare = b.reportDate.localeCompare(a.reportDate);
+      if (dateCompare !== 0) return dateCompare;
+      return b.eventCount - a.eventCount;
+    });
 }
 
 export async function upsertNeoDoveCampaignMapping(input: {
