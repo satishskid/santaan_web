@@ -64,6 +64,20 @@ export interface ContentDemandQuerySignal {
   position?: number;
 }
 
+export interface WeeklyContentBrief {
+  headline: string;
+  summary: string;
+  priorities: Array<{
+    theme: string;
+    action: ContentRecommendedAction;
+    reason: string;
+    audience: string;
+    funnelStage: string;
+  }>;
+  refreshTargets: string[];
+  distributionNotes: string[];
+}
+
 export function normalizeContentToken(value?: unknown) {
   return String(value ?? "")
     .trim()
@@ -342,5 +356,62 @@ export function computeContentSummary(args: {
     openFeedback: feedback.filter((item) => normalizeContentToken(item.status || "open") === "open").length,
     opportunityGaps: opportunities.filter((item) => item.status === "gap").length,
     refreshTargets: opportunities.filter((item) => item.status === "refresh").length,
+  };
+}
+
+export function buildWeeklyContentBrief(args: {
+  opportunities: Array<{
+    label: string;
+    action: string;
+    status: string;
+    count: number;
+    demandScore?: number;
+    questionExample?: string | null;
+    audiences: string[];
+    funnelStages: string[];
+  }>;
+  ga4TopPages?: Array<{ path: string; sessions: number; activeUsers: number }>;
+  searchTopQueries?: Array<{ query: string; clicks: number; impressions: number; ctr: number; position: number }>;
+  reviewThemes?: Array<{ theme: string; count: number }>;
+}) : WeeklyContentBrief {
+  const opportunities = args.opportunities || [];
+  const topPriorities = opportunities.slice(0, 5);
+  const refreshTargets = opportunities
+    .filter((item) => item.status === "refresh")
+    .slice(0, 4)
+    .map((item) => item.label);
+
+  const distributionNotes: string[] = [];
+  const topPage = args.ga4TopPages?.[0];
+  if (topPage) {
+    distributionNotes.push(`Refresh or internally link into ${topPage.path} because it is already attracting live traffic.`);
+  }
+  const topQuery = args.searchTopQueries?.[0];
+  if (topQuery?.query) {
+    distributionNotes.push(`Use search phrasing close to "${topQuery.query}" in titles, FAQs, and social hooks.`);
+  }
+  const topReviewTheme = args.reviewThemes?.[0];
+  if (topReviewTheme?.theme) {
+    distributionNotes.push(`Reuse review trust around "${themeLabel(topReviewTheme.theme)}" in proof blocks and conversion copy.`);
+  }
+  if (!distributionNotes.length) {
+    distributionNotes.push("Use one blog, one FAQ, and one reel angle from the top priorities this week.");
+  }
+
+  return {
+    headline: "Weekly Adaptive Content Brief",
+    summary:
+      topPriorities.length > 0
+        ? `Focus this week on ${topPriorities.length} high-signal themes with the strongest combination of patient demand, search relevance, and content-gap pressure.`
+        : "No strong themes are available yet. Add more feedback, reviews, and content assets to sharpen the weekly brief.",
+    priorities: topPriorities.map((item) => ({
+      theme: item.label,
+      action: item.action as ContentRecommendedAction,
+      reason: item.questionExample || `Signal count ${item.count} with demand score ${Number(item.demandScore || 0).toFixed(1)}.`,
+      audience: item.audiences?.[0] || "patient",
+      funnelStage: item.funnelStages?.[0] || "awareness",
+    })),
+    refreshTargets,
+    distributionNotes,
   };
 }

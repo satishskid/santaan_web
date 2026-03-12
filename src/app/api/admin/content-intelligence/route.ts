@@ -16,6 +16,7 @@ import {
   CONTENT_RECOMMENDED_ACTIONS,
   computeContentOpportunityBoard,
   computeContentSummary,
+  buildWeeklyContentBrief,
   isAllowedContentValue,
   normalizeContentToken,
   parseContentDate,
@@ -226,6 +227,13 @@ async function buildDashboardPayload() {
     fetchTopicRecommendationsFromCFContentEngine({ center: "network", audience: "patient", lookbackDays: 30 }),
   ]);
 
+  const weeklyBrief = buildWeeklyContentBrief({
+    opportunities,
+    ga4TopPages: ga4Content.topContentPages,
+    searchTopQueries: searchConsoleContent.topQueries,
+    reviewThemes: reviewsSummary.topThemes,
+  });
+
   return {
     summary,
     opportunities,
@@ -235,6 +243,7 @@ async function buildDashboardPayload() {
     ga4Content,
     searchConsoleContent,
     reviewSignals: reviewsSummary,
+    weeklyBrief,
     contentEngine: {
       configured: engineHealth.configured,
       healthy: engineHealth.ok,

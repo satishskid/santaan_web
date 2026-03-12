@@ -167,6 +167,20 @@ interface ContentEngineRecommendation {
   }>;
 }
 
+interface WeeklyContentBrief {
+  headline: string;
+  summary: string;
+  priorities: Array<{
+    theme: string;
+    action: ContentRecommendedAction;
+    reason: string;
+    audience: string;
+    funnelStage: string;
+  }>;
+  refreshTargets: string[];
+  distributionNotes: string[];
+}
+
 interface DashboardPayload {
   summary: ContentSummary;
   opportunities: OpportunityRow[];
@@ -176,6 +190,7 @@ interface DashboardPayload {
   ga4Content: Ga4ContentSignals;
   searchConsoleContent: SearchConsoleSignals;
   reviewSignals: ReviewSignals;
+  weeklyBrief: WeeklyContentBrief;
   contentEngine: ContentEngineSignals;
 }
 
@@ -526,6 +541,52 @@ export default function ContentIntelligenceManagement() {
             </div>
 
             <div className="space-y-6">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 px-6 py-4">
+                  <h3 className="text-lg font-semibold text-slate-900">{payload?.weeklyBrief.headline || "Weekly Adaptive Content Brief"}</h3>
+                  <p className="mt-1 text-sm text-slate-500">Use this as the Monday brief for content writer, social team, and agency.</p>
+                </div>
+                <div className="space-y-5 p-6">
+                  <p className="text-sm leading-6 text-slate-700">{payload?.weeklyBrief.summary}</p>
+                  <div className="space-y-3">
+                    {(payload?.weeklyBrief.priorities || []).length > 0 ? payload!.weeklyBrief.priorities.map((item, index) => (
+                      <div key={`${item.theme}-${index}`} className="rounded-xl border border-slate-200 p-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900">{item.theme}</p>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                            {labelForAction(item.action)}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm text-slate-600">{item.reason}</p>
+                        <p className="mt-2 text-xs text-slate-500">Audience: {item.audience} · Funnel: {item.funnelStage}</p>
+                      </div>
+                    )) : <p className="text-sm text-slate-500">No weekly brief items yet. Add feedback and assets to generate the brief.</p>}
+                  </div>
+                  {(payload?.weeklyBrief.refreshTargets || []).length > 0 ? (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Refresh targets</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {payload!.weeklyBrief.refreshTargets.map((item) => (
+                          <span key={item} className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-900">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {(payload?.weeklyBrief.distributionNotes || []).length > 0 ? (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Distribution notes</p>
+                      <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                        {payload!.weeklyBrief.distributionNotes.map((item, index) => (
+                          <li key={`${item}-${index}`}>• {item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-100 px-6 py-4">
                   <h3 className="text-lg font-semibold text-slate-900">Cloudflare content engine</h3>
