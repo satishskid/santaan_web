@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPosts } from '@/lib/medium';
 import { getClinicalCoverImage, isClinicalReadyPost } from '@/lib/clinical';
 import { buildMetadata } from '@/lib/seo';
+import { tagToSlug } from '@/lib/tag-utils';
 
 export const metadata = buildMetadata({
   title: 'Clinical Insights for Fertility Specialists',
@@ -23,6 +24,18 @@ export const metadata = buildMetadata({
 export default async function ClinicalInsightsPage() {
   const doctorPosts = await getSantaanBlogPosts({ type: 'doctor', limit: 60 }).catch(() => []);
   const posts = doctorPosts.filter(isClinicalReadyPost).slice(0, 24);
+  const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
+    post.tags.forEach((tag) => {
+      const slug = tagToSlug(tag);
+      if (!slug) return;
+      acc[slug] = (acc[slug] || 0) + 1;
+    });
+    return acc;
+  }, {});
+  const topTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([slug]) => slug);
 
   return (
     <main className="min-h-screen bg-santaan-cream">
@@ -50,6 +63,22 @@ export default async function ClinicalInsightsPage() {
 
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
+          {topTags.length > 0 && (
+            <div className="mb-10 bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
+              <h2 className="text-xl font-playfair font-bold text-santaan-teal">Browse by topic</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {topTags.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/clinical-insights/tag/${tag}`}
+                    className="px-3 py-1.5 rounded-full bg-santaan-sage/20 text-santaan-teal hover:bg-santaan-sage/30 transition-colors text-sm font-medium"
+                  >
+                    {tag.replace(/-+/g, ' ')}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           {posts.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
               <h2 className="text-2xl font-playfair font-bold text-santaan-teal">No validated clinical briefs are live yet</h2>

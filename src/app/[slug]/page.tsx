@@ -4,7 +4,7 @@ import { PhoneCall, MessageCircle, CalendarCheck } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getServicePageBySlug, servicePageSlugs } from '@/content/servicePages';
-import { buildFaqSchema } from '@/lib/schema';
+import { buildBreadcrumbSchema, buildFaqSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
@@ -43,6 +43,10 @@ export default async function ServicePage({ params }: { params: Params }) {
   }
 
   const faqSchema = buildFaqSchema(page.faqs);
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: 'https://santaan.in/' },
+    { name: page.title, url: `https://santaan.in/${slug}` },
+  ]);
 
   return (
     <main className="min-h-screen bg-santaan-cream">
@@ -132,6 +136,7 @@ export default async function ServicePage({ params }: { params: Params }) {
       </section>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Footer />
     </main>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type SignalType = 'green' | 'yellow' | 'red' | null;
 
@@ -12,27 +12,10 @@ export function useJourneySignal() {
     }
     return null;
   });
-  
-  const [hasAssessment, setHasAssessment] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !!localStorage.getItem('santaan_signal');
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedSignal = localStorage.getItem('santaan_signal') as SignalType;
-      if (savedSignal && savedSignal !== signal) {
-        setSignalState(savedSignal);
-        setHasAssessment(true);
-      }
-    }
-  }, [signal]);
+  const hasAssessment = signal !== null;
 
   const setSignal = (newSignal: SignalType) => {
     setSignalState(newSignal);
-    setHasAssessment(!!newSignal);
     if (typeof window !== 'undefined') {
       if (newSignal) {
         localStorage.setItem('santaan_signal', newSignal);

@@ -190,7 +190,7 @@ export function SantaanLab() {
 
                             {/* CTA */}
                             <div className="mt-6">
-                                <a href="#contact">
+                                <a href="#contact" aria-label="Contact Santaan">
                                     <Button variant="default" className="w-full bg-santaan-teal hover:bg-santaan-sage text-white px-8 py-4 rounded-full text-base">
                                         Contact Us
                                     </Button>

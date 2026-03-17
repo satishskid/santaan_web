@@ -3,12 +3,11 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import { JourneyProvider } from "@/context/JourneyContext";
-import ChatWidget from "@/components/chat/ChatWidget";
 import AuthProvider from "@/components/providers/AuthProvider";
 import UtmTracker from "@/components/analytics/UtmTracker";
 import CtaContactTracker from "@/components/analytics/CtaContactTracker";
 import { defaultSeoMetadata } from "@/lib/seo";
-import StickyContactBar from "@/components/layout/StickyContactBar";
+import ClientWidgets from "@/components/layout/ClientWidgets";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -42,8 +41,7 @@ export default function RootLayout({
           <SmoothScrollProvider>
             <JourneyProvider>
               {children}
-              <ChatWidget />
-              <StickyContactBar />
+              <ClientWidgets />
             </JourneyProvider>
           </SmoothScrollProvider>
         </AuthProvider>

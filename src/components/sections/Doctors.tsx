@@ -73,7 +73,7 @@ export function Doctors({ headingAs = 'h2' }: DoctorsProps) {
                         >
                             {doc.image ? (
                                 <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-santaan-sage/20">
-                                    <img src={doc.image} alt={doc.name} className="w-full h-full object-cover object-top" />
+                                    <img src={doc.image} alt={doc.name} loading="lazy" decoding="async" className="w-full h-full object-cover object-top" />
                                 </div>
                             ) : (
                                 <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-santaan-sage/20 flex items-center justify-center text-santaan-teal">
@@ -106,7 +106,7 @@ export function Doctors({ headingAs = 'h2' }: DoctorsProps) {
                             >
                                 {member.image ? (
                                     <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-white shadow-md">
-                                        <img src={member.image} alt={member.name} className="w-full h-full object-cover object-[center_20%]" />
+                                        <img src={member.image} alt={member.name} loading="lazy" decoding="async" className="w-full h-full object-cover object-[center_20%]" />
                                     </div>
                                 ) : (
                                     <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white flex items-center justify-center text-santaan-teal shadow-md">

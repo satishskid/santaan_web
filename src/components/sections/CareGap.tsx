@@ -54,7 +54,7 @@ export function CareGap() {
 
                             <div className="pt-4">
                                 <p className="text-white/60 text-sm mb-4">It doesn&apos;t have to be this way.</p>
-                                <a href="#contact">
+                                <a href="#contact" aria-label="Contact Santaan to bridge the fertility care gap">
                                     <button className="bg-gradient-to-r from-santaan-amber to-orange-500 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2">
                                         Bridge the Gap with Santaan
                                         <Globe2 className="w-5 h-5" />

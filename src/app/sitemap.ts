@@ -20,17 +20,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const serviceRoutes = servicePageSlugs.map((slug) => `/${slug}`);
 
-  const blogRoutes = await getSantaanBlogPosts({ limit: 100 })
-    .then((posts) =>
-      posts.map((post) => (post.type === 'doctor' ? `/clinical-insights/${post.slug}` : `/fertility-insights/${post.slug}`))
-    )
-    .catch(() => []);
+  const blogPosts = await getSantaanBlogPosts({ limit: 100 }).catch(() => []);
 
-  return [...staticRoutes, ...serviceRoutes, ...blogRoutes].map((route) => ({
+  const staticEntries = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: now,
-    changeFrequency:
-      route.startsWith('/fertility-insights/') || route.startsWith('/clinical-insights/') ? 'weekly' : 'monthly',
+    changeFrequency: 'monthly' as const,
     priority: route === '/' ? 1 : route.startsWith('/ivf-clinic-') ? 0.9 : 0.7,
   }));
+
+  const serviceEntries = serviceRoutes.map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: route.startsWith('/ivf-clinic-') ? 0.9 : 0.7,
+  }));
+
+  const blogEntries = blogPosts.map((post) => {
+    const route = post.type === 'doctor' ? `/clinical-insights/${post.slug}` : `/fertility-insights/${post.slug}`;
+    const lastModified = Number.isNaN(new Date(post.publishedAt).getTime()) ? now : new Date(post.publishedAt);
+
+    return {
+      url: `${baseUrl}${route}`,
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    };
+  });
+
+  return [...staticEntries, ...serviceEntries, ...blogEntries];
 }
