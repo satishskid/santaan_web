@@ -12,6 +12,36 @@
   NODE_VERSION = "20"
 
 [[redirects]]
+  from = "/admin/*"
+  to = "https://santaan-web.vercel.app/admin/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/admin/*"
+  to = "https://santaan-web.vercel.app/api/admin/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "https://santaan-web.vercel.app/api/auth/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/login"
+  to = "https://santaan-web.vercel.app/login"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/profile"
+  to = "https://santaan-web.vercel.app/profile"
+  status = 302
+  force = true
+
+[[redirects]]
   from = "/blog"
   to = "/fertility-insights"
   status = 301
