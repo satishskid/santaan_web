@@ -93,6 +93,7 @@ export function SuccessStories() {
                                     src={story.image}
                                     alt={story.name}
                                     fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />

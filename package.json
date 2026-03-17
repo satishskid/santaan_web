@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "assets:check": "node src/scripts/check-public-assets.mjs",
+    "assets:check:strict": "node src/scripts/check-public-assets.mjs --strict",
     "migrate:blogs": "npx tsx src/scripts/migrate-blog-posts.ts",
     "migrate:spend": "node src/scripts/migrate-spend.mjs",
     "migrate:ops-inputs": "node src/scripts/migrate-ops-inputs.mjs",

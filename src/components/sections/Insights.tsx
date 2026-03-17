@@ -85,6 +85,7 @@ export function Insights() {
                     <div className="flex items-center gap-4">
                         <a
                             href="#newsletter"
+                            aria-label="Get daily updates: jump to newsletter signup"
                             className="text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
                         >
                             Get daily updates

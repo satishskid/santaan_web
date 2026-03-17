@@ -56,7 +56,7 @@ export function AssessmentCallback() {
                                 For daily guidance, <a href="#newsletter" className="text-santaan-amber font-semibold hover:text-[#E08E45]">subscribe here</a>.
                             </p>
 
-                            <a href="#santaan-signal">
+                            <a href="#santaan-signal" aria-label="Start your Santaan Signal assessment">
                                 <Button size="lg" className="bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20 text-white font-semibold">
                                     Start Your Assessment
                                 </Button>

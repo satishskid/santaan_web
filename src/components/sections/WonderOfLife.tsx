@@ -244,7 +244,7 @@ export function WonderOfLife() {
                     <div className="min-w-[85vw] md:min-w-[500px] h-[80vh] flex flex-col justify-center items-center text-center px-8 shrink-0 bg-santaan-amber text-white rounded-3xl">
                         <h3 className="text-4xl font-playfair font-bold mb-6">Your Harvest Awaits</h3>
                         <p className="text-xl mb-8 opacity-90">Every journey is unique. Let us guide yours.</p>
-                        <a href="#santaan-signal">
+                        <a href="#santaan-signal" aria-label="Start assessment: Santaan Signal">
                             <button className="bg-white text-santaan-amber px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-colors">
                                 Start Assessment
                             </button>

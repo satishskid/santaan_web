@@ -130,7 +130,7 @@ const ChatWidget: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={toggleChat} className="p-1 hover:bg-white/10 rounded transition-colors">
+                                <button onClick={toggleChat} aria-label="Minimize chat" className="p-1 hover:bg-white/10 rounded transition-colors">
                                     <Minimize2 className="w-5 h-5" />
                                 </button>
                             </div>
@@ -209,6 +209,7 @@ const ChatWidget: React.FC = () => {
 
             <motion.button
                 onClick={toggleChat}
+                aria-label={isOpen ? "Close Santaan AI chat" : "Open Santaan AI chat"}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="bg-linear-to-r from-santaan-teal to-emerald-700 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center gap-3"

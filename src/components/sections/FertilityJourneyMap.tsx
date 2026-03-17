@@ -285,7 +285,7 @@ export function FertilityJourneyMap() {
                                             </p>
                                         </div>
                                         <div className="flex gap-3">
-                                            <a href="#santaan-signal">
+                                            <a href="#santaan-signal" aria-label="Take the Santaan Signal assessment">
                                                 <motion.button 
                                                     whileHover={{ scale: 1.05 }}
                                                     whileTap={{ scale: 0.95 }}

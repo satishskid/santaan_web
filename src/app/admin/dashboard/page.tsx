@@ -1,6 +1,13 @@
 
 import CRM from "@/components/admin/CRM";
 
+export const metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
+
 export default function AdminDashboardPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">

@@ -11,6 +11,7 @@ import { SantaanLab } from "@/components/sections/SantaanLab";
 import { CareGap } from "@/components/sections/CareGap";
 import AtHomeTesting from "@/components/sections/AtHomeTesting";
 import { SuccessStories } from "@/components/sections/SuccessStories";
+import { VideoTestimonials } from "@/components/sections/VideoTestimonials";
 import { Doctors } from "@/components/sections/Doctors";
 import { Locations } from "@/components/sections/Locations";
 import { FAQ } from "@/components/sections/FAQ";
@@ -73,6 +74,7 @@ export default function Home() {
       
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
+      <VideoTestimonials items={[]} />
       <Awards />
       <NewsAnnouncements />
       

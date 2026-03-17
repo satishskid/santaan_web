@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ['/admin/', '/api/'],
     },
     sitemap: 'https://santaan.in/sitemap.xml',
-    host: 'https://santaan.in',
+    host: 'santaan.in',
   };
 }

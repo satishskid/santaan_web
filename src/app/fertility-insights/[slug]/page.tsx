@@ -4,8 +4,9 @@ import { ArrowLeft, CalendarDays, Clock, ExternalLink } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPostBySlug, getSantaanBlogPosts } from '@/lib/medium';
-import { buildBlogPostingSchema } from '@/lib/schema';
+import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
+import { tagToSlug } from '@/lib/tag-utils';
 
 type Params = Promise<{ slug: string }>;
 
@@ -71,8 +72,25 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
     author: post.author,
     keywords: post.tags,
   });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: 'https://santaan.in/' },
+    { name: 'Fertility Insights', url: 'https://santaan.in/fertility-insights' },
+    { name: post.title, url: `https://santaan.in/fertility-insights/${post.slug}` },
+  ]);
 
   const relatedLinks = getRelatedLinks(post.tags);
+  const latestPosts = await getSantaanBlogPosts({ type: 'blog', limit: 30 }).catch(() => []);
+  const postTagSlugs = new Set(post.tags.map(tagToSlug).filter(Boolean));
+  const relatedPosts = latestPosts
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => {
+      const score = p.tags.reduce((acc, t) => (postTagSlugs.has(tagToSlug(t)) ? acc + 1 : acc), 0);
+      return { post: p, score };
+    })
+    .filter((p) => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((p) => p.post);
 
   return (
     <main className="min-h-screen bg-santaan-cream">
@@ -97,6 +115,20 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
           <article className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 prose prose-lg max-w-none prose-headings:font-playfair prose-headings:text-santaan-teal prose-headings:mt-8 prose-headings:mb-4 prose-p:my-5 prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 prose-a:text-santaan-teal hover:prose-a:text-santaan-amber">
             <div dangerouslySetInnerHTML={{ __html: post.html }} />
           </article>
+
+          {post.tags.length > 0 && (
+            <div className="mt-8 flex flex-wrap gap-2">
+              {post.tags.slice(0, 12).map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/fertility-insights/tag/${tagToSlug(tag)}`}
+                  className="px-3 py-1.5 rounded-full bg-white border border-gray-100 text-santaan-teal hover:text-santaan-amber hover:border-santaan-teal/30 transition-colors text-sm font-medium"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="bg-santaan-teal text-white rounded-2xl p-6 md:p-8 mt-10">
             <h2 className="text-2xl font-playfair font-bold">Ready for a personalized fertility plan?</h2>
@@ -124,6 +156,23 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
             </div>
           )}
 
+          {relatedPosts.length > 0 && (
+            <div className="mt-10 bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
+              <h3 className="text-xl font-playfair font-bold text-santaan-teal">Related articles</h3>
+              <div className="mt-6 grid gap-4">
+                {relatedPosts.map((p) => (
+                  <Link key={p.slug} href={`/fertility-insights/${p.slug}`} className="group rounded-xl border border-gray-100 p-5 hover:border-santaan-teal/30 hover:bg-gray-50/40 transition-colors">
+                    <p className="text-sm text-gray-500">{new Date(p.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    <p className="mt-2 font-semibold text-gray-900 group-hover:text-santaan-teal transition-colors">{p.title}</p>
+                    <p className="mt-2 text-sm text-gray-600 leading-relaxed [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
+                      {p.excerpt}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-gray-500 mt-8">
             Originally authored by Santaan team and syndicated from Medium.{' '}
             <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-1">
@@ -135,6 +184,7 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
       </section>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Footer />
     </main>
   );
