@@ -42,7 +42,9 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
-netlify/
+netlify/*
+!netlify/functions/
+!netlify/functions/**
 
 # local runtime/data artifacts
 santaan.db
