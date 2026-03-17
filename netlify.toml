@@ -18,14 +18,8 @@
   force = true
 
 [[redirects]]
-  from = "/api/admin/*"
-  to = "https://santaan-web.vercel.app/api/admin/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/auth/*"
-  to = "https://santaan-web.vercel.app/api/auth/:splat"
+  from = "/api/*"
+  to = "https://santaan-web.vercel.app/api/:splat"
   status = 200
   force = true
 
