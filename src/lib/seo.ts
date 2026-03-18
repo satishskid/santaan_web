@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import { getSiteUrl } from '@/lib/site';
 
-const SITE_URL = 'https://santaan.in';
 const SITE_NAME = 'Santaan IVF';
 const DEFAULT_OG_IMAGE = '/assets/hero-origin.png';
 
@@ -14,7 +14,7 @@ export interface PageSeoInput {
 
 function canonicalUrl(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return `${SITE_URL}${normalizedPath}`;
+  return `${getSiteUrl()}${normalizedPath}`;
 }
 
 export function buildMetadata({ title, description, path, keywords = [], type = 'website' }: PageSeoInput): Metadata {
@@ -52,7 +52,7 @@ export function buildMetadata({ title, description, path, keywords = [], type = 
 }
 
 export const defaultSeoMetadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(getSiteUrl()),
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -68,13 +68,13 @@ export const defaultSeoMetadata: Metadata = {
   description:
     'Evidence-driven fertility and IVF care across Bhubaneswar, Berhampur and Bangalore, backed by compassionate doctors and advanced diagnostics.',
   alternates: {
-    canonical: SITE_URL,
+    canonical: getSiteUrl(),
   },
   openGraph: {
     title: 'Santaan IVF | Fertility & IVF Centre in Odisha & Bangalore',
     description:
       'Evidence-driven fertility and IVF care across Bhubaneswar, Berhampur and Bangalore, backed by compassionate doctors and advanced diagnostics.',
-    url: SITE_URL,
+    url: getSiteUrl(),
     siteName: SITE_NAME,
     locale: 'en_IN',
     type: 'website',

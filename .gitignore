@@ -45,6 +45,7 @@ next-env.d.ts
 netlify/*
 !netlify/functions/
 !netlify/functions/**
+.vercel-cli-data/
 
 # local runtime/data artifacts
 santaan.db

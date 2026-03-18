@@ -1,11 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { servicePageSlugs } from '@/content/servicePages';
 import { getSantaanBlogPosts } from '@/lib/medium';
-
-const baseUrl = 'https://santaan.in';
+import { getSiteUrl } from '@/lib/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const baseUrl = getSiteUrl();
 
   const staticRoutes = [
     '/',

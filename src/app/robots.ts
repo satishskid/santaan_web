@@ -1,13 +1,15 @@
 import type { MetadataRoute } from 'next';
+import { getSiteHost, getSiteUrl } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = getSiteUrl();
   return {
     rules: {
       userAgent: '*',
       allow: '/',
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://santaan.in/sitemap.xml',
-    host: 'santaan.in',
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: getSiteHost(),
   };
 }
