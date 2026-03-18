@@ -64,29 +64,32 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
     npm run dev
     ```
 
-## Deployment (Netlify)
+## Deployment (Vercel)
 
-This project is configured for deployment on Netlify.
+This project is deployed on Vercel.
 
-1.  **Connect to GitHub**: Link your repository to a new Netlify site.
-2.  **Build Settings**:
-    -   **Build Command**: `npm run build`
-    -   **Publish Directory**: `.next`
-3.  **Environment Variables**:
-    Set the following in Netlify Site Settings:
-    -   `AUTH_SECRET` (Use a strong random string)
-    -   `TURSO_DATABASE_URL`
-    -   `TURSO_AUTH_TOKEN`
-    -   `BLOG_SYNC_SECRET`
-    -   `META_AD_ACCOUNT_ID` or `META_AD_ACCOUNT_IDS`
-    -   `META_ACCESS_TOKEN`
-    -   `META_APP_SECRET`
-    -   `META_SPEND_SYNC_SECRET`
-    -   `GA4_PROPERTY_ID`
-    -   `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-    -   `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
-    -   `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
-    -   `NEXT_PUBLIC_GROQ_API_KEY`
+1. **Connect to GitHub**: Import this repository in Vercel and set `main` as the Production Branch.
+2. **Build Settings**:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: default (Next.js)
+3. **Environment Variables**:
+   Set the following in Vercel Project Settings → Environment Variables:
+   - `NEXTAUTH_SECRET` (Use a strong random string)
+   - `NEXTAUTH_URL` (e.g., `https://www.santaan.in`)
+   - `TURSO_DATABASE_URL`
+   - `TURSO_AUTH_TOKEN`
+   - `BLOG_SYNC_SECRET`
+   - `META_AD_ACCOUNT_ID` or `META_AD_ACCOUNT_IDS`
+   - `META_ACCESS_TOKEN`
+   - `META_APP_SECRET`
+   - `META_SPEND_SYNC_SECRET`
+   - `GA4_PROPERTY_ID`
+   - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+   - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+   - `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
+   - `NEXT_PUBLIC_GROQ_API_KEY`
+
+Once connected, a `git push` to `main` triggers a production deployment automatically.
 
 ### ⚠️ Critical Architecture Constraints
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for essential rules regarding Database (Turso/LibSQL) and Authentication to prevent production errors.
