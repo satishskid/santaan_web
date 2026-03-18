@@ -16,14 +16,14 @@ export const metadata = buildMetadata({
 });
 
 const priceRanges = [
-  { service: 'Consultation + Plan Review', range: '₹— (Add range)', includes: 'Doctor consult, report review, plan' },
-  { service: 'Diagnostic Workup Bundle', range: '₹— (Add range)', includes: 'AMH, hormones, ultrasound, semen analysis' },
-  { service: 'IUI (Per Cycle)', range: '₹— (Add range)', includes: 'Cycle monitoring, procedure, basic meds' },
-  { service: 'IVF (Per Cycle)', range: '₹— (Add range)', includes: 'Stimulation, retrieval, lab, transfer' },
-  { service: 'ICSI Add-on', range: '₹— (Add range)', includes: 'Micromanipulation fertilization' },
-  { service: 'PGT (Embryo Testing)', range: '₹— (Add range)', includes: 'Biopsy + lab testing + reporting' },
-  { service: 'Egg Freezing (Cycle)', range: '₹— (Add range)', includes: 'Stimulation, retrieval, vitrification' },
-  { service: 'Embryo Freezing/Storage', range: '₹— (Add range)', includes: 'Cryostorage (duration varies)' },
+  { service: 'Consultation + Plan Review', range: '₹800–₹1,500*', includes: 'Doctor consult, report review, plan' },
+  { service: 'Diagnostic Workup Bundle', range: '₹6,000–₹15,000*', includes: 'AMH, hormones, ultrasound, semen analysis' },
+  { service: 'IUI (Per Cycle)', range: '₹12,000–₹30,000*', includes: 'Cycle monitoring, procedure, basic meds' },
+  { service: 'IVF (Per Cycle)', range: '₹1,25,000–₹2,60,000*', includes: 'Stimulation, retrieval, lab, transfer' },
+  { service: 'ICSI Add-on', range: '₹25,000–₹55,000*', includes: 'Micromanipulation fertilization' },
+  { service: 'PGT (Embryo Testing)', range: '₹1,00,000–₹2,50,000*', includes: 'Biopsy + lab testing + reporting' },
+  { service: 'Egg Freezing (Cycle)', range: '₹1,10,000–₹2,40,000*', includes: 'Stimulation, retrieval, vitrification' },
+  { service: 'Embryo Freezing/Storage', range: '₹35,000–₹1,00,000*', includes: 'Cryostorage (duration varies)' },
 ];
 
 const faqs = [
@@ -57,7 +57,7 @@ export default function PricingPage() {
           <p className="uppercase tracking-[0.2em] text-santaan-amber text-xs font-semibold mb-4">Planning</p>
           <h1 className="text-4xl md:text-6xl font-playfair font-bold max-w-4xl leading-tight">Pricing and EMI Options</h1>
           <p className="mt-6 max-w-2xl text-white/85 text-lg">
-            Transparent ranges and what they usually include. Replace placeholders with final ranges once approved by the team.
+            Indicative IVF, IUI, ICSI and fertility testing costs with inclusions. Exact pricing depends on diagnosis, protocol, medicines and lab add-ons.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact-centres" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
@@ -73,9 +73,9 @@ export default function PricingPage() {
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
           <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10">
-            <h2 className="text-2xl md:text-3xl font-playfair font-bold text-santaan-teal">Typical price ranges</h2>
+            <h2 className="text-2xl md:text-3xl font-playfair font-bold text-santaan-teal">Indicative price ranges</h2>
             <p className="text-gray-600 mt-3 max-w-3xl">
-              These are placeholders and should be updated with final numbers. Ranges are shown because fertility care is personalized.
+              Ranges are shown because fertility care is personalized. Your final plan will list inclusions and exclusions based on your reports.
             </p>
 
             <div className="mt-8">
@@ -102,24 +102,27 @@ export default function PricingPage() {
 
           <div className="grid lg:grid-cols-2 gap-8 mt-10">
             <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
-              <h3 className="text-xl font-playfair font-bold text-gray-900">EMI / financing (placeholder)</h3>
+              <h3 className="text-xl font-playfair font-bold text-gray-900">EMI / financing options</h3>
               <p className="mt-3 text-gray-600">
-                Add final EMI partners, 0% EMI availability, tenure options, and required documents here.
+                EMI may be available through partner financial institutions, subject to eligibility, terms and documentation.
               </p>
               <div className="mt-6 grid gap-3">
                 <div className="rounded-xl bg-santaan-sage/15 p-4">
                   <p className="text-sm font-semibold text-santaan-teal">Tenure</p>
-                  <p className="text-sm text-gray-700 mt-1">— (Add 3–24 months etc.)</p>
+                  <p className="text-sm text-gray-700 mt-1">3–24 months (plan and lender dependent)</p>
                 </div>
                 <div className="rounded-xl bg-santaan-sage/15 p-4">
                   <p className="text-sm font-semibold text-santaan-teal">Downpayment</p>
-                  <p className="text-sm text-gray-700 mt-1">— (Add details)</p>
+                  <p className="text-sm text-gray-700 mt-1">0–30% (offer dependent)</p>
                 </div>
                 <div className="rounded-xl bg-santaan-sage/15 p-4">
                   <p className="text-sm font-semibold text-santaan-teal">Eligibility</p>
-                  <p className="text-sm text-gray-700 mt-1">— (Add criteria)</p>
+                  <p className="text-sm text-gray-700 mt-1">KYC + income proof + lender credit assessment</p>
                 </div>
               </div>
+              <p className="mt-4 text-xs text-gray-500">
+                *0% EMI offers, where available, are provided by third party financial institutions and may be limited to select plans and time windows.
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
@@ -153,6 +156,56 @@ export default function PricingPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 mt-10">
+            <h3 className="text-xl md:text-2xl font-playfair font-bold text-santaan-teal">The real cost that matters</h3>
+            <p className="text-gray-600 mt-3 max-w-4xl">
+              Fertility care is not a single product. The total cost is protocol and condition specific, and it can change with ovarian response and lab strategy. The safest way to avoid surprises is to ask for a written plan with clear inclusions.
+            </p>
+
+            <div className="grid lg:grid-cols-2 gap-6 mt-6">
+              <div className="rounded-2xl bg-santaan-sage/10 border border-santaan-sage/20 p-6">
+                <h4 className="font-semibold text-gray-900">Why “low headline prices” can become expensive</h4>
+                <ul className="mt-4 space-y-2 text-sm text-gray-700">
+                  <li>Medicines can be the largest variable and differ by ovarian reserve, BMI and response.</li>
+                  <li>Lab steps (ICSI, blastocyst culture, freezing, storage) may be added based on clinical need.</li>
+                  <li>Multiple ultrasounds, scans, anesthesia/OT charges, and repeat procedures may be billed separately.</li>
+                  <li>Some packages quote per transfer, while your real cost is per full cycle plan.</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl bg-santaan-amber/10 border border-santaan-amber/20 p-6">
+                <h4 className="font-semibold text-gray-900">How Santaan keeps planning transparent</h4>
+                <ul className="mt-4 space-y-2 text-sm text-gray-700">
+                  <li>Protocol is selected from your diagnosis, hormone trends, ovarian reserve and semen parameters.</li>
+                  <li>We treat patients as people, not a factory queue—decisions are paced to your biology and comfort.</li>
+                  <li>Advanced diagnostics and lab decision-support reduce trial-and-error and unnecessary add-ons.</li>
+                  <li>Santaan Lab is our active R&amp;D unit that continuously improves decision quality and consistency.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-2xl bg-gray-50/60 border border-gray-100 p-6">
+              <h4 className="font-semibold text-gray-900">What to ask before you compare IVF costs</h4>
+              <div className="grid md:grid-cols-2 gap-4 mt-4 text-sm text-gray-700">
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-900">Ask for a written inclusion list</p>
+                  <p>Does the quoted amount include medicines, monitoring scans, egg retrieval, lab charges and transfer?</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-900">Ask what triggers add-ons</p>
+                  <p>When would ICSI, blastocyst culture, freezing or PGT be recommended—and what do they cost?</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-900">Ask what “per cycle” means</p>
+                  <p>Is the quote per started cycle, per retrieval, or per embryo transfer?</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-900">Ask about cancellation and conversion</p>
+                  <p>If response is low or the plan changes, how are charges adjusted?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 mt-10">
             <h3 className="text-xl font-playfair font-bold text-santaan-teal">Pricing FAQs</h3>
             <div className="mt-6 grid gap-4">
               {faqs.map((faq) => (
@@ -166,6 +219,9 @@ export default function PricingPage() {
               ))}
             </div>
           </div>
+          <p className="mt-6 text-xs text-gray-500 max-w-4xl">
+            *Pricing ranges are indicative. Final costs vary by diagnosis, medicines, lab add-ons, number of cycles and center-specific protocols. Individual outcomes vary.
+          </p>
         </div>
       </section>
 
@@ -173,4 +229,3 @@ export default function PricingPage() {
     </main>
   );
 }
-

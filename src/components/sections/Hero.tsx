@@ -36,7 +36,7 @@ export function Hero() {
                 </div>
 
                 <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium tracking-wide border border-white/20 shadow-sm">
-                    Evidence-backed care
+                    Evidence-backed, research-led care
                 </span>
 
                 <h1 className="text-3xl md:text-5xl font-playfair font-bold text-white mb-3 leading-tight drop-shadow-md">
@@ -50,6 +50,18 @@ export function Hero() {
                 <p className="text-lg md:text-xl text-white/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium">
                     Advanced diagnostics, compassionate specialists, and personalized treatment pathways for your fertility journey.
                 </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-8 md:mb-10">
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
+                        Odisha&apos;s only IVF chain*
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
+                        IVF for Bharat
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
+                        Active R&amp;D + innovation focus
+                    </span>
+                </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-16">
                     <a href="#santaan-signal" aria-label="Begin your journey: take the Santaan Signal assessment">
@@ -74,20 +86,27 @@ export function Hero() {
                     </a>
                 </div>
 
-                <div className="absolute bottom-10 left-0 right-0 hidden md:flex justify-center gap-12 text-sm text-white/80 font-medium">
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-santaan-sage" />
-                        7,000+ Happy Families
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">7,000+</p>
+                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">Families supported*</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-santaan-sage" />
-                        15+ National Awards
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">15+</p>
+                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">National awards</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-santaan-sage" />
-                        Most Awarded Fertility Centre (Odisha & East)
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">0% EMI*</p>
+                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">On select plans</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">Odisha</p>
+                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">Only IVF chain*</p>
                     </div>
                 </div>
+                <p className="mt-4 text-[11px] md:text-xs text-white/70 max-w-4xl mx-auto">
+                    *Figures are indicative and based on internal records. “Only IVF chain” claim is based on publicly available information as of Mar 2026. EMI offered by partner financial institutions, subject to eligibility and terms. Medical outcomes vary by age, diagnosis and clinical factors.
+                </p>
             </div>
         </section>
     );

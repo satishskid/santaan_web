@@ -73,12 +73,12 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
     <section id="video-testimonials" className="py-24 bg-white">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="text-center mb-14">
-          <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Video Testimonials</span>
+          <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Videos</span>
           <h2 className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-2">
-            Real voices. Real journeys.
+            Expert explainers from Santaan
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4">
-            This section is ready for your content team to plug in final videos and captions.
+            Curated highlights from our YouTube channel. Patient testimonials can be added here when available.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={embedUrl}
-                  title={`Video testimonial from ${active.name}`}
+                  title={`${active.name} · ${active.label}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -97,7 +97,7 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             ) : (
               <div className="w-full aspect-video flex items-center justify-center text-center p-10">
                 <div>
-                  <p className="text-lg font-semibold text-gray-900">{items.length === 0 ? 'Video testimonials coming soon' : 'Select a story to play'}</p>
+                  <p className="text-lg font-semibold text-gray-900">{items.length === 0 ? 'Videos coming soon' : 'Select a video to play'}</p>
                   <p className="text-gray-600 mt-2">
                     {items.length === 0 ? 'Add YouTube/Vimeo links and thumbnails to activate this section.' : 'The video loads only when the user clicks, keeping the homepage light.'}
                   </p>
@@ -123,7 +123,7 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
                 <button
                   key={`${item.name}-${index}`}
                   onClick={() => setActiveIndex(index)}
-                  aria-label={`Play video testimonial: ${item.name}`}
+                  aria-label={`Play video: ${item.name}`}
                   className={`w-full text-left rounded-2xl border transition-colors overflow-hidden bg-white ${
                     selected ? 'border-santaan-teal shadow-md' : 'border-gray-100 hover:border-santaan-teal/40'
                   }`}

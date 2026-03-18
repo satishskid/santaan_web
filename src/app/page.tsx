@@ -8,6 +8,7 @@ import { FertilityReadinessAssessment } from "@/components/sections/FertilityRea
 import { FertilityJourneyMap } from "@/components/sections/FertilityJourneyMap";
 import { Awards } from "@/components/sections/Awards";
 import { SantaanLab } from "@/components/sections/SantaanLab";
+import { SantaanXplainer } from "@/components/sections/SantaanXplainer";
 import { CareGap } from "@/components/sections/CareGap";
 import AtHomeTesting from "@/components/sections/AtHomeTesting";
 import { SuccessStories } from "@/components/sections/SuccessStories";
@@ -18,6 +19,7 @@ import { FAQ } from "@/components/sections/FAQ";
 import { NewsAnnouncements } from "@/components/sections/NewsAnnouncements";
 import Script from "next/script";
 import { faqs } from "@/data/faqs";
+import { SANTAAN_YOUTUBE_VIDEOS } from "@/data/youtubeVideos";
 import { buildMetadata } from "@/lib/seo";
 import { buildFaqSchema, buildLocalClinicSchemas, buildOrganizationSchema } from "@/lib/schema";
 
@@ -74,12 +76,13 @@ export default function Home() {
       
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
-      <VideoTestimonials items={[]} />
+      <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} />
       <Awards />
       <NewsAnnouncements />
       
       {/* 2. Address Confusion - Problem Awareness */}
       <MythBusting />
+      <SantaanXplainer />
       
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <FertilityReadinessAssessment />

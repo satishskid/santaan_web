@@ -191,7 +191,7 @@ export function WonderOfLife() {
     const x = useTransform(scrollYProgress, [0, 1], ["0%", "-85%"]);
 
     return (
-        <section ref={targetRef} className="relative h-[300vh] bg-santaan-teal text-white">
+        <section id="wonder-of-life" ref={targetRef} className="relative h-[300vh] bg-santaan-teal text-white">
             <div className="sticky top-0 flex h-screen items-center overflow-hidden">
                 <motion.div style={{ x }} className="flex gap-8 px-8 md:px-20">
 
