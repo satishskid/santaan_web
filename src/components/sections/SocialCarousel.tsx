@@ -31,13 +31,23 @@ function buildThumb(item: SocialItem) {
   return undefined;
 }
 
-export function SocialCarousel({ items, heading = 'From our social channels' }: { items: SocialItem[]; heading?: string }) {
+export function SocialCarousel({
+  items,
+  heading = 'Campaign highlights',
+  description = 'Short updates from Santaan IVF on awareness, outcomes, and evidence-led care.',
+  sectionId = 'campaign-highlights',
+}: {
+  items: SocialItem[];
+  heading?: string;
+  description?: string;
+  sectionId?: string;
+}) {
   return (
-    <section id="social-carousel" className="py-16 bg-white">
+    <section id={sectionId} className="py-16 bg-white">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="mb-6">
           <h3 className="text-xl md:text-2xl font-playfair font-bold text-gray-900">{heading}</h3>
-          <p className="text-gray-600 mt-2">Highlights from YouTube, Instagram, and Facebook.</p>
+          <p className="text-gray-600 mt-2">{description}</p>
         </div>
         <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] no-scrollbar">
           <div className="grid grid-flow-col auto-cols-[75%] sm:auto-cols-[45%] md:auto-cols-[30%] gap-4 snap-x snap-mandatory">

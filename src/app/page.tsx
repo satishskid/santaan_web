@@ -79,7 +79,11 @@ export default function Home() {
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
       <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} />
-      <SocialCarousel items={SOCIAL_CAMPAIGNS} heading="Campaign highlights" />
+      <SocialCarousel
+        items={SOCIAL_CAMPAIGNS}
+        heading="Campaign highlights"
+        description="Fertility awareness, IVF guidance and Santaan milestones—built for clarity, not confusion."
+      />
       <Awards />
       <NewsAnnouncements />
       

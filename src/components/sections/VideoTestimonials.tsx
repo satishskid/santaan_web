@@ -77,7 +77,9 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
           <h2 className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-2">
             Expert explainers from Santaan
           </h2>
-          
+          <p className="text-gray-600 max-w-3xl mx-auto mt-4">
+            Evidence-driven IVF and fertility care with clear, practical guidance from our specialists in Bhubaneswar, Berhampur and Bangalore.
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
