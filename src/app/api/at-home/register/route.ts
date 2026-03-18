@@ -109,7 +109,10 @@ export async function POST(request: Request) {
         // We assume a template 'SANTAAN_LEAD_ALERT' exists with 3 params: Name, Service, Phone
         // If not, this might fail or send just the template name.
         // User needs to provide the actual Admin Template Name.
-        const adminPhone = process.env.next_public_admin_wa_phone || '9742100448';
+        const adminPhone =
+            process.env.NEXT_PUBLIC_ADMIN_WA_PHONE ||
+            process.env.next_public_admin_wa_phone ||
+            '9742100448';
         
         try {
             await sendWhatsAppMessage({ 
