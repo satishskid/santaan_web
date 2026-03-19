@@ -13,7 +13,7 @@ export const CENTER_CONTACTS: CenterContact[] = [
   {
     name: 'Bhubaneswar',
     city: 'Bhubaneswar',
-    phones: ['+91 9337326896', '+91 7328839934', '+91 7008990586'],
+    phones: ['070089 90586'],
   },
   {
     name: 'Angul',
@@ -29,5 +29,5 @@ export const CENTER_CONTACTS: CenterContact[] = [
 
 export const PRIMARY_CENTER = CENTER_CONTACTS[1];
 export const PRIMARY_CALL_NUMBER = PRIMARY_CENTER.phones[0];
-export const PRIMARY_WHATSAPP_NUMBER = '919337326896';
+export const PRIMARY_WHATSAPP_NUMBER = '917008990586';
 export const PRIMARY_WHATSAPP_URL = `https://wa.me/${PRIMARY_WHATSAPP_NUMBER}?text=${encodeURIComponent('Hello Santaan IVF, I want to discuss fertility consultation options.')}`;

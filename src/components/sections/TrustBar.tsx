@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 const stats = [
-    { label: "Families Created", value: "7,000+" },
+    { label: "Families Supported", value: "15K+" },
     { label: "Success Rate", value: "78%" },
     { label: "Years of Excellence", value: "15+" },
     { label: "State-of-Art Centers", value: "4" },

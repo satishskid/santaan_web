@@ -39,7 +39,7 @@ async function addBengaluruClinic() {
         address: "Brookefield, Bengaluru, Karnataka",
         email: "care@santaan.in",
         description: "Advanced fertility care in Bengaluru's tech hub",
-        phones: JSON.stringify(["+91 9337326896"]),
+        phones: JSON.stringify(["+91 7008990586"]),
         sortOrder: 2
     });
     console.log('✅ Bengaluru Brookefield clinic added!');

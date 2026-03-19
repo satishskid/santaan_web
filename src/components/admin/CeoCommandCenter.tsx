@@ -31,6 +31,7 @@ interface Contact {
   landingPath?: string;
   createdAt?: string;
   lastContact?: string;
+  nextFollowUpAt?: string;
 }
 
 interface SpendEntry {
@@ -71,6 +72,27 @@ interface WeekTarget {
   pending24hMax: number | null;
 }
 
+type WiringHealthPayload = {
+  ok: boolean;
+  now: string;
+  last24h: {
+    since: string;
+    buckets: Record<
+      string,
+      {
+        total24h: number;
+        converted24h: number;
+        lastSeenAt: number | null;
+      }
+    >;
+  };
+  spend: {
+    count: number;
+    total: number;
+    lastSeenAt: string | null;
+  };
+};
+
 const pendingStatuses = new Set(["new", "contacted", "qualified"]);
 const statusOrder = ["new", "contacted", "qualified", "converted", "lost"];
 const referenceTime = Date.now();
@@ -106,6 +128,18 @@ function formatPercent(value: number) {
 
 function formatNumber(value: number) {
   return Intl.NumberFormat("en-IN").format(Math.max(0, Math.round(value)));
+}
+
+function formatTimeAgo(value: number | null) {
+  if (!value) return "No data yet";
+  const diffMs = Date.now() - value;
+  const diffMin = Math.floor(diffMs / (1000 * 60));
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}d ago`;
 }
 
 function formatCurrency(value: number) {
@@ -157,6 +191,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
   const [settingsMap, setSettingsMap] = useState<Record<string, string>>({});
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
+  const [wiringHealth, setWiringHealth] = useState<WiringHealthPayload | null>(null);
+  const [wiringHealthLoading, setWiringHealthLoading] = useState(true);
   const [opsSubmission, setOpsSubmission] = useState({
     loading: true,
     agencyToday: 0,
@@ -262,6 +298,32 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
 
   useEffect(() => {
     let active = true;
+
+    async function loadWiringHealth() {
+      setWiringHealthLoading(true);
+      try {
+        const response = await fetch("/api/admin/wiring-health", { cache: "no-store" });
+        const payload = (await response.json()) as WiringHealthPayload;
+        if (!active || !response.ok) return;
+        setWiringHealth(payload);
+      } catch {
+        if (!active) return;
+        setWiringHealth(null);
+      } finally {
+        if (active) setWiringHealthLoading(false);
+      }
+    }
+
+    loadWiringHealth();
+    const interval = window.setInterval(loadWiringHealth, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
     const today = new Date().toISOString().slice(0, 10);
 
     async function loadDailyCommandCompliance() {
@@ -361,6 +423,23 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       return ageHours >= 24;
     }).length;
 
+    const todayKey = new Date(referenceTime).toISOString().slice(0, 10);
+    const followUpsDueToday = contacts.filter((contact) => {
+      const normalizedStatus = normalizeStatus(contact.status);
+      if (normalizedStatus === "converted" || normalizedStatus === "lost") return false;
+      const dueAt = parseTimestamp(contact.nextFollowUpAt);
+      if (!dueAt) return false;
+      return new Date(dueAt).toISOString().slice(0, 10) === todayKey;
+    }).length;
+
+    const overdueFollowUps = contacts.filter((contact) => {
+      const normalizedStatus = normalizeStatus(contact.status);
+      if (normalizedStatus === "converted" || normalizedStatus === "lost") return false;
+      const dueAt = parseTimestamp(contact.nextFollowUpAt);
+      if (!dueAt) return false;
+      return dueAt < referenceTime;
+    }).length;
+
     const unattributedLeads = contacts.filter(
       (contact) => !contact.utmSource && !contact.utmCampaign && !contact.utmMedium
     ).length;
@@ -370,6 +449,46 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       status,
       count: contacts.filter((contact) => normalizeStatus(contact.status) === status).length,
     }));
+
+    const neoDoveTrend = (() => {
+      const dayKeys: string[] = [];
+      for (let index = 6; index >= 0; index -= 1) {
+        const key = new Date(referenceTime - index * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        dayKeys.push(key);
+      }
+
+      const dayMap = new Map<string, { leads: number; converted: number; lastSeenAt: number | null }>();
+      for (const key of dayKeys) {
+        dayMap.set(key, { leads: 0, converted: 0, lastSeenAt: null });
+      }
+
+      for (const contact of contacts) {
+        const hay = `${contact.leadSource || ""} ${contact.utmSource || ""} ${contact.preferredChannel || ""} ${contact.tags || ""}`.toLowerCase();
+        const isNeoDove = hay.includes("neodove") || String(contact.leadSource || "").toLowerCase() === "neodove_webhook";
+        if (!isNeoDove) continue;
+
+        const anchor = parseTimestamp(contact.lastContact) || parseTimestamp(contact.createdAt);
+        if (!anchor) continue;
+        const dayKey = new Date(anchor).toISOString().slice(0, 10);
+        const row = dayMap.get(dayKey);
+        if (!row) continue;
+
+        row.leads += 1;
+        row.converted += normalizeStatus(contact.status) === "converted" ? 1 : 0;
+        row.lastSeenAt = row.lastSeenAt === null ? anchor : Math.max(row.lastSeenAt, anchor);
+      }
+
+      return dayKeys.map((key) => {
+        const row = dayMap.get(key) || { leads: 0, converted: 0, lastSeenAt: null };
+        return {
+          date: key,
+          leads: row.leads,
+          converted: row.converted,
+          conversionRate: row.leads > 0 ? (row.converted / row.leads) * 100 : 0,
+          lastSeenAt: row.lastSeenAt,
+        };
+      });
+    })();
 
     const channelMap = new Map<
       string,
@@ -516,6 +635,16 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       });
     }
 
+    if (overdueFollowUps > 0) {
+      actionItems.push({
+        priority: "High",
+        owner: "Call Center Lead",
+        title: `${overdueFollowUps} follow-ups are overdue`,
+        why: "Missed follow-ups reduce qualification and closure rates.",
+        action: "Open Follow-ups tab, assign owners, and set next follow-up timestamps.",
+      });
+    }
+
     if (hotLineSlaBreaches > 0) {
       actionItems.push({
         priority: "High",
@@ -607,6 +736,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       hotLineSlaBreaches,
       avgLeadScore,
       stalePendingLeads,
+      followUpsDueToday,
+      overdueFollowUps,
       attributionCoverage,
       totalSpend,
       cpl,
@@ -615,6 +746,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
       channelPerformance,
       assetPerformance,
       centerPerformance,
+      neoDoveTrend,
       actionItems: actionItems.slice(0, 6),
     };
   }, [contacts, spendEntries]);
@@ -727,6 +859,18 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
           icon={Clock3}
         />
         <KpiCard
+          title="Follow-ups Due Today"
+          value={formatNumber(metrics.followUpsDueToday)}
+          subtitle="Scheduled callbacks today"
+          icon={CircleDot}
+        />
+        <KpiCard
+          title="Overdue Follow-ups"
+          value={formatNumber(metrics.overdueFollowUps)}
+          subtitle="Past-due callbacks"
+          icon={AlertTriangle}
+        />
+        <KpiCard
           title="Attribution Coverage"
           value={formatPercent(metrics.attributionCoverage)}
           subtitle="UTM/source visibility"
@@ -768,6 +912,127 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
           subtitle="Spend / converted"
           icon={IndianRupee}
         />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Wiring Health (Last 24h)</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Confirms whether inbound sources are hitting CRM. Refreshes every minute.
+            </p>
+          </div>
+          <div className="text-xs text-gray-500">{wiringHealth?.last24h?.since ? `Since ${wiringHealth.last24h.since}` : ""}</div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">NeoDove Sync</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {wiringHealthLoading ? "..." : formatNumber(wiringHealth?.last24h?.buckets?.neodove?.total24h || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {wiringHealthLoading
+                ? "Checking..."
+                : `${formatNumber(wiringHealth?.last24h?.buckets?.neodove?.converted24h || 0)} converted · ${formatTimeAgo(
+                    wiringHealth?.last24h?.buckets?.neodove?.lastSeenAt ?? null
+                  )}`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Call Webhook</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {wiringHealthLoading ? "..." : formatNumber(wiringHealth?.last24h?.buckets?.calls?.total24h || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {wiringHealthLoading
+                ? "Checking..."
+                : `${formatNumber(wiringHealth?.last24h?.buckets?.calls?.converted24h || 0)} converted · ${formatTimeAgo(
+                    wiringHealth?.last24h?.buckets?.calls?.lastSeenAt ?? null
+                  )}`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">WhatsApp Webhook</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {wiringHealthLoading ? "..." : formatNumber(wiringHealth?.last24h?.buckets?.whatsapp?.total24h || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {wiringHealthLoading
+                ? "Checking..."
+                : `${formatNumber(wiringHealth?.last24h?.buckets?.whatsapp?.converted24h || 0)} converted · ${formatTimeAgo(
+                    wiringHealth?.last24h?.buckets?.whatsapp?.lastSeenAt ?? null
+                  )}`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Spend Log</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {wiringHealthLoading ? "..." : formatCurrency(wiringHealth?.spend?.total || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {wiringHealthLoading
+                ? "Checking..."
+                : `${formatNumber(wiringHealth?.spend?.count || 0)} rows · ${wiringHealth?.spend?.lastSeenAt || "No data yet"}`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">NeoDove Calls vs Conversions (7 Days)</h3>
+            <p className="text-xs text-gray-500 mt-1">Trend line from CRM contacts tagged as NeoDove.</p>
+          </div>
+          <div className="text-xs text-gray-500">
+            {formatNumber(metrics.neoDoveTrend.reduce((sum, row) => sum + row.leads, 0))} leads ·{" "}
+            {formatNumber(metrics.neoDoveTrend.reduce((sum, row) => sum + row.converted, 0))} converted ·{" "}
+            {formatPercent(
+              (() => {
+                const leads = metrics.neoDoveTrend.reduce((sum, row) => sum + row.leads, 0);
+                const converted = metrics.neoDoveTrend.reduce((sum, row) => sum + row.converted, 0);
+                return leads > 0 ? (converted / leads) * 100 : 0;
+              })()
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+                <th className="px-3 py-2 text-left font-semibold">Date</th>
+                <th className="px-3 py-2 text-right font-semibold">Leads</th>
+                <th className="px-3 py-2 text-right font-semibold">Converted</th>
+                <th className="px-3 py-2 text-right font-semibold">Conv %</th>
+                <th className="px-3 py-2 text-right font-semibold">Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.neoDoveTrend.every((row) => row.leads === 0) ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-6 text-center text-gray-500">
+                    No NeoDove-tagged leads detected in the last 7 days.
+                  </td>
+                </tr>
+              ) : (
+                metrics.neoDoveTrend.map((row) => (
+                  <tr key={row.date} className="border-b border-gray-100">
+                    <td className="px-3 py-2 text-gray-700">{row.date}</td>
+                    <td className="px-3 py-2 text-right text-gray-700">{formatNumber(row.leads)}</td>
+                    <td className="px-3 py-2 text-right text-gray-700">{formatNumber(row.converted)}</td>
+                    <td className="px-3 py-2 text-right text-gray-700">{formatPercent(row.conversionRate)}</td>
+                    <td className="px-3 py-2 text-right text-gray-500">{formatTimeAgo(row.lastSeenAt)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">

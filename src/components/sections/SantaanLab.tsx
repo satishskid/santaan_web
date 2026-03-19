@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { Microscope, Dna, Database, FileCheck, Users, BarChart3, Shield, Zap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -127,7 +126,7 @@ export function SantaanLab() {
                                     {
                                         icon: FileCheck,
                                         title: "Standardized Protocols",
-                                        stat: "7,000+ Cases",
+                                        stat: "15K+ Families",
                                         color: "santaan-teal"
                                     },
                                     {

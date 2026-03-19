@@ -1,4 +1,5 @@
 import { CENTER_CONTACTS, PRIMARY_CALL_NUMBER } from '@/data/centers';
+import { getSiteUrl } from '@/lib/site';
 
 interface FaqItem {
   question: string;
@@ -34,12 +35,13 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
 }
 
 export function buildOrganizationSchema() {
+  const baseUrl = getSiteUrl();
   return {
     '@context': 'https://schema.org',
     '@type': 'MedicalOrganization',
     name: 'Santaan IVF',
-    url: 'https://santaan.in',
-    logo: 'https://santaan.in/assets/santaan-logo.png',
+    url: baseUrl,
+    logo: `${baseUrl}/favicon.ico`,
     telephone: PRIMARY_CALL_NUMBER,
     sameAs: [
       'https://www.facebook.com/santaanfertilityclinic',
@@ -56,6 +58,7 @@ export function buildOrganizationSchema() {
 }
 
 export function buildLocalClinicSchemas() {
+  const baseUrl = getSiteUrl();
   return CENTER_CONTACTS.map((center) => ({
     // Use service-page canonicals for cities with dedicated pages.
     // Fallback to contact centres page for other active locations.
@@ -64,12 +67,12 @@ export function buildLocalClinicSchemas() {
     name: `Santaan IVF - ${center.name}`,
     url:
       center.city === 'Bhubaneswar'
-        ? 'https://santaan.in/ivf-clinic-bhubaneswar'
+        ? `${baseUrl}/ivf-clinic-bhubaneswar`
         : center.city === 'Berhampur'
-          ? 'https://santaan.in/ivf-clinic-berhampur'
+          ? `${baseUrl}/ivf-clinic-berhampur`
           : center.city === 'Bangalore'
-            ? 'https://santaan.in/ivf-clinic-bangalore-aecs-layout'
-            : 'https://santaan.in/contact-centres',
+            ? `${baseUrl}/ivf-clinic-bangalore-aecs-layout`
+            : `${baseUrl}/contact-centres`,
     telephone: center.phones[0],
     areaServed: center.city,
     address: {
@@ -91,6 +94,7 @@ export function buildBlogPostingSchema(input: {
   author?: string;
   keywords?: string[];
 }) {
+  const baseUrl = getSiteUrl();
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -99,7 +103,7 @@ export function buildBlogPostingSchema(input: {
     datePublished: input.publishedAt,
     dateModified: input.modifiedAt,
     url: input.url,
-    image: input.image || 'https://santaan.in/assets/hero-origin.png',
+    image: input.image || `${baseUrl}/assets/hero-family.png`,
     author: {
       '@type': 'Person',
       name: input.author || 'Santaan Editorial Team',
@@ -109,7 +113,7 @@ export function buildBlogPostingSchema(input: {
       name: 'Santaan IVF',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://santaan.in/assets/santaan-logo.png',
+        url: `${baseUrl}/favicon.ico`,
       },
     },
     keywords: (input.keywords || []).join(', '),

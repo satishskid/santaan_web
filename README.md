@@ -1,6 +1,6 @@
 # Santaan Web Application
 
-This is the main web application for Santaan, built with Next.js 14, Drizzle ORM, and NextAuth.js.
+This is the main web application for Santaan, built with Next.js, Drizzle ORM, and NextAuth.js.
 
 ## Features
 
@@ -12,6 +12,11 @@ This is the main web application for Santaan, built with Next.js 14, Drizzle ORM
 - **Analytics**: Dynamic script injection for Google Analytics and Facebook Pixel.
 - **SEO**: Optimized metadata, schema, sitemap/robots, and service landing pages.
 - **Blog Engine**: Medium posts are synced into Turso and published on `santaan.in/fertility-insights/*`.
+
+## Domains
+
+- Canonical site URL defaults to `https://santaan.in` via [site.ts](./src/lib/site.ts) and can be overridden with `NEXT_PUBLIC_SITE_URL` / `NEXTAUTH_URL`.
+- If you configure `santaan.in` → `www.santaan.in` as a redirect at the Vercel domain level, keep `www.santaan.in` pointing at the latest deployment because `santaan.in` will follow it.
 
 ## Getting Started
 
@@ -93,6 +98,17 @@ Once connected, a `git push` to `main` triggers a production deployment automati
 
 ### ⚠️ Critical Architecture Constraints
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for essential rules regarding Database (Turso/LibSQL) and Authentication to prevent production errors.
+
+### Production Domains (Vercel)
+
+- Ensure `santaan.in`, `www.santaan.in`, and `ivf.santaan.in` are attached to the same Vercel project.
+- To point a domain at a specific production deployment (CLI):
+  ```bash
+  vercel deploy --prod
+  vercel alias set <prod-deployment-url> santaan.in
+  vercel alias set <prod-deployment-url> www.santaan.in
+  vercel alias set <prod-deployment-url> ivf.santaan.in
+  ```
 
 ### Meta Spend Auto-Sync
 
@@ -242,6 +258,33 @@ For Facebook/Meta analytics API access:
 |-----|---------|
 | `/login` | Admin login page |
 | `/admin/dashboard` | CRM & Settings |
+
+## CRM Roles & Responsibilities (Shareable Note)
+
+Use `/login` (or the hidden footer dot link) and pick the correct role for your email. Your role controls which CRM tabs you can access.
+
+### Roles
+
+| Role | Primary responsibilities | CRM access |
+|------|--------------------------|-----------|
+| `admin` | Full control, system configuration, user + role management | All tabs + delete contacts |
+| `ceo` | Daily review of wiring health, priorities, performance | All tabs + CEO Command |
+| `crm_ops_admin` | Owns CRM hygiene, lead routing, SLA enforcement | All tabs + delete contacts |
+| `marketing_manager` | Marketing operations, agency coordination, spend + performance review | Analytics + Ops Inputs + Spend |
+| `agency_ops` | Agency reporting, campaign ops, performance logs | Analytics + Ops Inputs + Spend |
+| `performance_marketer` | Paid performance, attribution hygiene, daily spend + funnel review | Analytics + Ops Inputs + Spend |
+| `content_manager` | Content pipeline, publishing, tag hygiene, insight velocity | Analytics |
+| `field_exec` | Field activity logging, center-level ops inputs | Ops Inputs |
+| `ivr_manager` | Inbound lead capture, IVR hygiene, routing to telecalling/counseling | Contacts + Analytics |
+| `telecaller_manager` | Lead assignment, follow-up SLAs, quality monitoring | Contacts + Analytics |
+| `telecaller` | Calling + WhatsApp follow-ups, status updates, follow-up scheduling | Contacts |
+| `counselor` | Qualification + counseling notes, conversion support | Contacts |
+
+### Rules of use (everyone)
+
+- Update contact status and next follow-up date after every interaction.
+- Never delete contacts unless you are `admin` / `ceo` / `crm_ops_admin`.
+- Use tags consistently (comma-separated) for source, intent, and priority.
 
 ### Admin Credentials (Production)
 | Email | Password |

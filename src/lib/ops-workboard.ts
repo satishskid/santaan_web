@@ -21,6 +21,7 @@ export type OpsTaskTemplate = {
 export const OPS_PROFILE_LIST: OpsProfile[] = [
   { key: "ceo_crm_admin", label: "CEO / CRM Ops Admin", role: "admin", center: "network" },
   { key: "agency_ops", label: "Agency Ops", role: "agency_ops", center: "network" },
+  { key: "content_manager", label: "Content Manager (AI)", role: "content_manager", center: "network" },
   { key: "field_exec_bhubaneswar", label: "Field Exec - Bhubaneswar", role: "field_exec", center: "bhubaneswar" },
   { key: "field_exec_berhampur", label: "Field Exec - Berhampur", role: "field_exec", center: "berhampur" },
   { key: "field_exec_bangalore", label: "Field Exec - Bangalore", role: "field_exec", center: "bangalore" },
@@ -37,6 +38,7 @@ export const OPS_ROLE_TO_PROFILE: Record<string, string> = {
   marketing_manager: "agency_ops",
   agency_ops: "agency_ops",
   performance_marketer: "agency_ops",
+  content_manager: "content_manager",
   field_exec: "field_exec_bhubaneswar",
   ivr_manager: "ivr_telecalling_lead",
   telecaller_manager: "ivr_telecalling_lead",
@@ -47,6 +49,46 @@ export const OPS_ROLE_TO_PROFILE: Record<string, string> = {
 const LEADERSHIP_ROLES = new Set(["admin", "ceo", "crm_ops_admin"]);
 
 export const OPS_TASK_TEMPLATES: OpsTaskTemplate[] = [
+  {
+    code: "content_daily_plan_generate",
+    profileKey: "content_manager",
+    slot: "morning",
+    timeLabel: "10:30 AM",
+    title: "Generate today’s content drafts (use CRM prompt + embed UTMs)",
+    inputTarget: "Campaign Analytics -> Agency Feedback",
+    sla: "Drafts ready before 11:00 AM IST",
+    ownerHint: "Content Manager",
+  },
+  {
+    code: "content_publish_and_log_assets",
+    profileKey: "content_manager",
+    slot: "midday",
+    timeLabel: "01:00 PM",
+    title: "Publish posts and log asset ids + final UTM links",
+    inputTarget: "Ops Workboard (notes)",
+    sla: "All published items logged with asset + UTM link",
+    ownerHint: "Content Manager",
+  },
+  {
+    code: "content_distribute_to_centers",
+    profileKey: "content_manager",
+    slot: "afternoon",
+    timeLabel: "04:00 PM",
+    title: "Share center-specific creatives and tracking links with field/counselor teams",
+    inputTarget: "WhatsApp/Email to centers + CRM note",
+    sla: "Center teams receive assets same day",
+    ownerHint: "Content Manager",
+  },
+  {
+    code: "content_learning_and_next_day",
+    profileKey: "content_manager",
+    slot: "evening",
+    timeLabel: "08:45 PM",
+    title: "Log what worked (topic/time/caption) + next-day hypothesis",
+    inputTarget: "Campaign Analytics + Ops Workboard note",
+    sla: "1 learning logged daily",
+    ownerHint: "Content Manager",
+  },
   {
     code: "agency_daily_spend_submit",
     profileKey: "agency_ops",
@@ -218,6 +260,10 @@ export function getVisibleProfilesForRole(role?: string | null): OpsProfile[] {
 
   if (normalizedRole === "agency_ops" || normalizedRole === "marketing_manager" || normalizedRole === "performance_marketer") {
     return OPS_PROFILE_LIST.filter((profile) => profile.key === "agency_ops");
+  }
+
+  if (normalizedRole === "content_manager") {
+    return OPS_PROFILE_LIST.filter((profile) => profile.key === "content_manager");
   }
 
   if (normalizedRole === "ivr_manager" || normalizedRole === "telecaller_manager" || normalizedRole === "telecaller") {

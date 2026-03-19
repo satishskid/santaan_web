@@ -18,8 +18,8 @@ export const metadata = buildMetadata({
 const priceRanges = [
   { service: 'Consultation + Plan Review', range: '₹800–₹1,500*', includes: 'Doctor consult, report review, plan' },
   { service: 'Diagnostic Workup Bundle', range: '₹6,000–₹15,000*', includes: 'AMH, hormones, ultrasound, semen analysis' },
-  { service: 'IUI (Per Cycle)', range: '₹12,000–₹30,000*', includes: 'Cycle monitoring, procedure, basic meds' },
-  { service: 'IVF (Per Cycle)', range: '₹1,25,000–₹2,60,000*', includes: 'Stimulation, retrieval, lab, transfer' },
+  { service: 'IUI (Per Cycle)', range: '₹10,000–₹20,000*', includes: 'Cycle monitoring, procedure, basic meds' },
+  { service: 'IVF (Per Cycle)', range: '₹1,20,000–₹2,00,000*', includes: 'Stimulation, retrieval, lab, transfer' },
   { service: 'ICSI Add-on', range: '₹25,000–₹55,000*', includes: 'Micromanipulation fertilization' },
   { service: 'PGT (Embryo Testing)', range: '₹1,00,000–₹2,50,000*', includes: 'Biopsy + lab testing + reporting' },
   { service: 'Egg Freezing (Cycle)', range: '₹1,10,000–₹2,40,000*', includes: 'Stimulation, retrieval, vitrification' },
@@ -75,7 +75,7 @@ export default function PricingPage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10">
             <h2 className="text-2xl md:text-3xl font-playfair font-bold text-santaan-teal">Indicative price ranges</h2>
             <p className="text-gray-600 mt-3 max-w-3xl">
-              Ranges are shown because fertility care is personalized. Your final plan will list inclusions and exclusions based on your reports.
+              Ranges are shown because fertility care is personalized. Total cost may vary based on condition and protocol; these are average ranges. Your final plan will list inclusions and exclusions based on your reports.
             </p>
 
             <div className="mt-8">

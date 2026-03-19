@@ -41,6 +41,7 @@ export const authConfig = {
                 'marketing_manager',
                 'agency_ops',
                 'performance_marketer',
+                'content_manager',
                 'field_exec',
                 'ivr_manager',
                 'telecaller_manager',

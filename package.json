@@ -13,7 +13,8 @@
     "migrate:spend": "node src/scripts/migrate-spend.mjs",
     "migrate:ops-inputs": "node src/scripts/migrate-ops-inputs.mjs",
     "migrate:ops-workboard": "node src/scripts/migrate-ops-workboard.mjs",
-    "seed:ceo-week1-kpis": "npx tsx src/scripts/seed-ceo-week1-kpis.ts"
+    "seed:ceo-week1-kpis": "npx tsx src/scripts/seed-ceo-week1-kpis.ts",
+    "test:content-draft": "npx tsx src/scripts/test-content-draft.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",

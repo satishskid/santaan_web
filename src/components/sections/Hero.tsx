@@ -88,7 +88,7 @@ export function Hero() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
                     <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
-                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">7,000+</p>
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">15K+</p>
                         <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">Families supported*</p>
                     </div>
                     <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
@@ -105,7 +105,7 @@ export function Hero() {
                     </div>
                 </div>
                 <p className="mt-4 text-[11px] md:text-xs text-white/70 max-w-4xl mx-auto">
-                    *Figures are indicative and based on internal records. “Only IVF chain” claim is based on publicly available information as of Mar 2026. EMI offered by partner financial institutions, subject to eligibility and terms. Medical outcomes vary by age, diagnosis and clinical factors.
+                    *Figures are indicative and based on internal records. Family count is 15K+ and counting. “Only IVF chain” claim is based on publicly available information as of Mar 2026. EMI offered by partner financial institutions, subject to eligibility and terms. Medical outcomes vary by age, diagnosis and clinical factors.
                 </p>
             </div>
         </section>

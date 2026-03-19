@@ -73,7 +73,7 @@ export const LEGACY_BLOG_SEEDS: LegacyBlogSeed[] = [
     `,
     publishedAt: '2025-10-10T06:30:00.000Z',
     author: 'Santaan Editorial Team',
-    thumbnail: '/assets/hero-priya-final.jpg',
+    thumbnail: '/assets/hero-priya.jpg',
     tags: ['fertility-diet', 'pcos', 'ivf-support'],
     sourceUrl: 'https://santaan.in/fertility-insights/benefits-of-dry-fruits-during-fertility-treatment',
     type: 'blog',

@@ -12,6 +12,9 @@ export interface Contact {
     leadSource: string;
     preferredChannel?: string;
     message?: string;
+    ownerName?: string;
+    ownerEmail?: string;
+    nextFollowUpAt?: string;
     lastContact?: string;
     lastMessageAt?: string;
     conversationCount: number;

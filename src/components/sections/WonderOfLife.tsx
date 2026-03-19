@@ -89,7 +89,7 @@ const journeySteps = [
             text: "Like a space capsule docking with the station. A precise, 0.2 second lock-and-key connection.",
             icon: "🔗"
         },
-        image: "/assets/metaphor_union_spark_1770387190705.png",
+        image: "/assets/metaphor_moon_mani_1770387172927.png",
         color: "bg-purple-50/10",
         borderColor: "border-purple-200/20"
     },
@@ -147,7 +147,7 @@ const journeySteps = [
             text: "Preparing the planet for life. Just as a farmer checks the pH and moisture of the soil before planting.",
             icon: "🌍"
         },
-        image: "/assets/metaphor_ecosystem_influencers.png",
+        image: "/assets/metaphor_nursery_sapling_1770387240255.png",
         color: "bg-orange-50/10",
         borderColor: "border-orange-200/20"
     },
@@ -197,14 +197,7 @@ export function WonderOfLife() {
 
                     {/* Intro Card */}
                     <div className="min-w-[85vw] md:min-w-[500px] h-[80vh] flex flex-col justify-center px-8 relative overflow-hidden rounded-3xl shrink-0">
-                        <div className="absolute inset-0 opacity-20">
-                            <Image
-                                src="/assets/wonder-of-life-texture.png"
-                                alt="Abstract texture of life"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
+                        <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-white via-white/40 to-transparent" />
                         <div className="relative z-10">
                             <span className="text-santaan-sage uppercase tracking-widest text-sm mb-4 block">The Counselors Playbook</span>
                             <h2 className="text-5xl md:text-6xl font-playfair font-bold mb-6">

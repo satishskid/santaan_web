@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { MapPin, Mail, Phone, Loader2, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ElementType } from 'react';
 
 interface Center {
@@ -28,6 +28,17 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
     const [centers, setCenters] = useState<Center[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const HeadingTag = headingAs;
+    const centerOverrides = useMemo(
+        () =>
+            ({
+                bhubaneswar: {
+                    address: '3rd Floor, Utkal Pristine, N-5, Plot, IRC Village, Nayapalli, Bhubaneswar, Odisha 751012',
+                    phones: ['070089 90586'],
+                    hours: 'Open · Closes 6:30 pm',
+                },
+            }) as Record<string, { address: string; phones: string[]; hours?: string }>,
+        []
+    );
 
     const trackLocationEvent = (eventLabel: string) => {
         if (typeof window === 'undefined') return;
@@ -99,7 +110,15 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                 ) : (
                     <div className="grid md:grid-cols-3 gap-8">
                         {centers.map((loc, i) => {
-                            const mapHref = loc.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${loc.title} ${loc.city} ${loc.address}`)}`;
+                            const override = centerOverrides[String(loc.city || '').trim().toLowerCase()];
+                            const effectiveAddress = override?.address ?? loc.address;
+                            const effectivePhones = override?.phones ?? loc.phones;
+                            const effectiveHours = override?.hours;
+                            const mapHref =
+                                loc.mapUrl ||
+                                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                    `${loc.title} ${loc.city} ${effectiveAddress}`
+                                )}`;
 
                             return (
                             <motion.div
@@ -117,9 +136,18 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                                     </div>
                                     <MapPin className="w-6 h-6 text-santaan-amber" />
                                 </div>
-                                <p className="text-white/80 text-sm mb-4 leading-relaxed">
-                                    {loc.address}
-                                </p>
+                                {effectiveHours ? (
+                                    <div className="text-white/80 text-sm mb-4 leading-relaxed space-y-2">
+                                        <p>
+                                            <span className="font-semibold text-white/90">Address:</span> {effectiveAddress}
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold text-white/90">Hours:</span> {effectiveHours}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-white/80 text-sm mb-4 leading-relaxed">{effectiveAddress}</p>
+                                )}
                                 {loc.description && (
                                     <p className="text-white/60 text-xs mb-6">
                                         {loc.description}
@@ -141,8 +169,11 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                                     <div className="flex items-start gap-2">
                                         <Phone className="w-4 h-4 text-santaan-amber mt-0.5 flex-shrink-0" />
                                         <div className="flex flex-col gap-1">
-                                            {loc.phones.map((phone, idx) => (
-                                                <a key={idx} href={`tel:${phone}`} className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
+                                            {effectivePhones.map((phone, idx) => (
+                                                <a
+                                                    key={idx}
+                                                    href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
+                                                    className="text-white/90 text-sm hover:text-santaan-amber transition-colors"
                                                     onClick={() => {
                                                         trackLocationEvent(`location_phone_${loc.city}_${phone}`);
                                                     }}

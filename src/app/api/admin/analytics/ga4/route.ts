@@ -12,6 +12,7 @@ const READ_ROLES = new Set([
   "marketing_manager",
   "agency_ops",
   "performance_marketer",
+  "content_manager",
   "ivr_manager",
   "telecaller_manager",
 ]);

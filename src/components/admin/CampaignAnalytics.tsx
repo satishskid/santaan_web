@@ -11,6 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { resolveCenter } from "@/lib/lead-attribution";
+import { buildContentManagerGeminiPrompt, formatTopicLabel, getDefaultDraftThresholds } from "@/lib/content-draft";
 
 interface Contact {
   id: number;
@@ -113,11 +115,75 @@ function normalizeToken(value?: string | null, fallback = "unknown") {
   return token || fallback;
 }
 
+function inferTopicFromLandingPath(path: string) {
+  const value = path.toLowerCase();
+  if (value.includes("at-home") || value.includes("at_home") || value.includes("home")) return "at_home_test";
+  if (value.includes("pcos") || value.includes("pcod")) return "pcos_pcod";
+  if (value.includes("male") || value.includes("sperm")) return "male_fertility";
+  if (value.includes("egg") && (value.includes("freeze") || value.includes("freez"))) return "egg_freezing";
+  if (value.includes("iui")) return "iui";
+  if (value.includes("ivf")) return "ivf";
+  if (value.includes("success")) return "success_rates";
+  if (value.includes("doctor")) return "doctors";
+  if (value.includes("pricing") || value.includes("cost") || value.includes("price")) return "pricing";
+  return "general";
+}
+
+function bucketFromHour(hour: number) {
+  if (hour >= 7 && hour < 11) return "07:00–11:00";
+  if (hour >= 11 && hour < 14) return "11:00–14:00";
+  if (hour >= 14 && hour < 17) return "14:00–17:00";
+  if (hour >= 17 && hour < 20) return "17:00–20:00";
+  return "20:00–07:00";
+}
+
+function keywordTemplatesFor(topic: string, center: string) {
+  const city = center === "Network" ? "" : center;
+  const base = [
+    city ? `fertility clinic ${city}` : "fertility clinic",
+    city ? `ivf center ${city}` : "ivf center",
+    city ? `fertility doctor ${city}` : "fertility doctor",
+  ];
+
+  if (topic === "ivf") return [...base, city ? `ivf clinic ${city}` : "ivf clinic", city ? `ivf treatment ${city}` : "ivf treatment"];
+  if (topic === "pcos_pcod") return [...base, city ? `pcos treatment ${city}` : "pcos treatment", "pcod fertility"];
+  if (topic === "male_fertility") return [...base, city ? `male infertility clinic ${city}` : "male infertility clinic", "low sperm count treatment"];
+  if (topic === "egg_freezing") return [...base, city ? `egg freezing ${city}` : "egg freezing", "fertility preservation"];
+  if (topic === "pricing") return [...base, city ? `ivf cost ${city}` : "ivf cost", "ivf package"];
+  if (topic === "at_home_test") return [...base, "fertility test at home", "ovarian reserve test"];
+  if (topic === "success_rates") return [...base, "ivf success rate", "pregnancy chances ivf"];
+  return base;
+}
+
 export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) {
   const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
   const [ga4Snapshot, setGa4Snapshot] = useState<Ga4Snapshot | null>(null);
   const [ga4Loading, setGa4Loading] = useState(true);
   const [ga4Error, setGa4Error] = useState<string | null>(null);
+  const [draftNotice, setDraftNotice] = useState<string | null>(null);
+  const [draftThresholds, setDraftThresholds] = useState(() => {
+    const defaults = getDefaultDraftThresholds();
+    if (typeof window === "undefined") return defaults;
+    try {
+      const raw = window.localStorage.getItem("content_draft_thresholds");
+      if (!raw) return defaults;
+      const parsed = JSON.parse(raw) as Partial<{ minLeads: unknown; maxUnattributedRatio: unknown }>;
+      const minLeads = Math.max(1, Math.round(Number(parsed.minLeads ?? defaults.minLeads)));
+      const maxUnattributedRatio = Math.max(0, Math.min(1, Number(parsed.maxUnattributedRatio ?? defaults.maxUnattributedRatio)));
+      return { minLeads, maxUnattributedRatio };
+    } catch {
+      return defaults;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("content_draft_thresholds", JSON.stringify(draftThresholds));
+    } catch {
+      // ignore
+    }
+  }, [draftThresholds]);
 
   useEffect(() => {
     let active = true;
@@ -273,6 +339,112 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       });
     }
 
+    const topicAgg = contacts.reduce((acc, contact) => {
+      const topic = inferTopicFromLandingPath(contact.landingPath || "/");
+      if (!acc[topic]) acc[topic] = { leads: 0, conversions: 0 };
+      acc[topic].leads += 1;
+      if (contact.status?.toLowerCase() === "converted") acc[topic].conversions += 1;
+      return acc;
+    }, {} as Record<string, { leads: number; conversions: number }>);
+
+    const topics = Object.entries(topicAgg)
+      .map(([topic, data]) => ({
+        topic,
+        ...data,
+        rate: data.leads > 0 ? (data.conversions / data.leads) * 100 : 0,
+      }))
+      .sort((a, b) => b.conversions - a.conversions || b.rate - a.rate || b.leads - a.leads)
+      .slice(0, 6);
+
+    const landingAggByTopic = contacts.reduce((acc, contact) => {
+      const topic = inferTopicFromLandingPath(contact.landingPath || "/");
+      const path = contact.landingPath || "/";
+      if (!acc[topic]) acc[topic] = {};
+      if (!acc[topic][path]) acc[topic][path] = { leads: 0, conversions: 0 };
+      acc[topic][path].leads += 1;
+      if (contact.status?.toLowerCase() === "converted") acc[topic][path].conversions += 1;
+      return acc;
+    }, {} as Record<string, Record<string, { leads: number; conversions: number }>>);
+
+    const topLandingPagesByTopic = Object.fromEntries(
+      Object.entries(landingAggByTopic).map(([topic, paths]) => {
+        const best = Object.entries(paths)
+          .map(([path, data]) => ({
+            path,
+            ...data,
+            rate: data.leads > 0 ? (data.conversions / data.leads) * 100 : 0,
+          }))
+          .sort((a, b) => b.conversions - a.conversions || b.rate - a.rate || b.leads - a.leads)[0];
+        return [topic, best?.path || "/"];
+      })
+    ) as Record<string, string>;
+
+    const centerAgg = contacts.reduce((acc, contact) => {
+      const center = resolveCenter({ landingPath: contact.landingPath || null });
+      if (!acc[center]) acc[center] = { leads: 0, conversions: 0 };
+      acc[center].leads += 1;
+      if (contact.status?.toLowerCase() === "converted") acc[center].conversions += 1;
+      return acc;
+    }, {} as Record<string, { leads: number; conversions: number }>);
+
+    const centers = Object.entries(centerAgg)
+      .map(([center, data]) => ({
+        center,
+        ...data,
+        rate: data.leads > 0 ? (data.conversions / data.leads) * 100 : 0,
+      }))
+      .sort((a, b) => b.conversions - a.conversions || b.rate - a.rate || b.leads - a.leads)
+      .slice(0, 6);
+
+    const timeAgg = contacts.reduce((acc, contact) => {
+      const anchor = parseTimestamp(contact.createdAt) || parseTimestamp(contact.lastContact);
+      if (!anchor) return acc;
+      const hour = new Date(anchor).getHours();
+      const bucket = bucketFromHour(hour);
+      if (!acc[bucket]) acc[bucket] = { leads: 0, conversions: 0 };
+      acc[bucket].leads += 1;
+      if (contact.status?.toLowerCase() === "converted") acc[bucket].conversions += 1;
+      return acc;
+    }, {} as Record<string, { leads: number; conversions: number }>);
+
+    const timeWindows = Object.entries(timeAgg)
+      .map(([window, data]) => ({
+        window,
+        ...data,
+        rate: data.leads > 0 ? (data.conversions / data.leads) * 100 : 0,
+      }))
+      .sort((a, b) => b.conversions - a.conversions || b.rate - a.rate || b.leads - a.leads);
+
+    const scaleCandidates = Object.entries(byCampaign)
+      .map(([name, data]) => {
+        const spend = spendByCampaign[normalizeToken(name, "organic")] || 0;
+        const cpp = data.conversions > 0 ? spend / data.conversions : Number.POSITIVE_INFINITY;
+        return {
+          campaign: name,
+          source: data.source,
+          leads: data.leads,
+          conversions: data.conversions,
+          spend,
+          cpp,
+          rate: data.leads > 0 ? (data.conversions / data.leads) * 100 : 0,
+        };
+      })
+      .filter((row) => row.leads >= 8)
+      .sort((a, b) => a.cpp - b.cpp);
+
+    const bestPaid = scaleCandidates.filter((row) => Number.isFinite(row.cpp) && row.conversions >= 2).slice(0, 4);
+    const pausePaid = scaleCandidates
+      .filter((row) => row.spend >= 3000 && row.conversions === 0)
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 4);
+
+    const keywordSuggestions = (() => {
+      const primaryCenter = centers[0]?.center || "Network";
+      const uniqueTopics = Array.from(new Set(topics.map((t) => t.topic))).slice(0, 3);
+      const keywords = uniqueTopics.flatMap((topic) => keywordTemplatesFor(topic, primaryCenter));
+      return Array.from(new Set(keywords)).slice(0, 12);
+    })();
+
     return {
       totalLeads,
       totalConversions,
@@ -283,6 +455,13 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       staleLeadCount: staleLeads.length,
       unattributedLeads,
       actionItems,
+      topics,
+      centers,
+      timeWindows,
+      bestPaid,
+      pausePaid,
+      keywordSuggestions,
+      topLandingPagesByTopic,
       bySource: Object.entries(bySource)
         .map(([name, data]) => {
           const spend = spendBySource[normalizeToken(name, "direct")] || 0;
@@ -319,6 +498,47 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         .slice(0, 8),
     };
   }, [contacts, spendEntries]);
+
+  const draftBundle = useMemo(() => {
+    return buildContentManagerGeminiPrompt({
+      totalLeads: metrics.totalLeads,
+      unattributedLeads: metrics.unattributedLeads,
+      topics: metrics.topics,
+      centers: metrics.centers,
+      timeWindows: metrics.timeWindows,
+      keywordSuggestions: metrics.keywordSuggestions,
+      topLandingPagesByTopic: metrics.topLandingPagesByTopic,
+      bestPaid: metrics.bestPaid,
+      pausePaid: metrics.pausePaid,
+    }, draftThresholds);
+  }, [
+    metrics.totalLeads,
+    metrics.unattributedLeads,
+    metrics.topics,
+    metrics.centers,
+    metrics.timeWindows,
+    metrics.keywordSuggestions,
+    metrics.topLandingPagesByTopic,
+    metrics.bestPaid,
+    metrics.pausePaid,
+    draftThresholds,
+  ]);
+
+  const copyDraftPrompt = async () => {
+    if (!draftBundle.readiness.canCopy) {
+      setDraftNotice(draftBundle.readiness.reasons[0] || "Draft prompt is not ready.");
+      window.setTimeout(() => setDraftNotice(null), 4500);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(draftBundle.prompt);
+      setDraftNotice("Copied daily draft prompt with embedded UTMs. Paste into Gemini.");
+      window.setTimeout(() => setDraftNotice(null), 3500);
+    } catch {
+      setDraftNotice("Copy failed. Please select and copy the prompt manually.");
+      window.setTimeout(() => setDraftNotice(null), 3500);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -537,7 +757,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div id="actionable-next-steps" className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
             Actionable Next Steps
@@ -562,6 +782,209 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
               Attribution gap: <strong>{metrics.unattributedLeads}</strong> lead(s) without campaign source.
             </p>
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div id="agency-feedback" className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Megaphone className="w-4 h-4 text-gray-500" />
+            Agency Feedback (Topics)
+          </h3>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={copyDraftPrompt}
+              disabled={!draftBundle.readiness.canCopy}
+              className={`px-3 py-2 text-xs font-semibold rounded-md border ${
+                draftBundle.readiness.canCopy ? "border-gray-200 bg-white hover:bg-gray-50 text-gray-800" : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Copy Gemini Draft Prompt (with UTMs)
+            </button>
+            {draftNotice ? <p className="text-xs text-gray-600">{draftNotice}</p> : null}
+          </div>
+          <div className="mt-3 rounded-lg border border-gray-100 p-3 bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs font-semibold text-gray-800">Data readiness</p>
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full border ${
+                  draftBundle.readiness.level === "high"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : draftBundle.readiness.level === "medium"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-rose-50 text-rose-700 border-rose-200"
+                }`}
+              >
+                {draftBundle.readiness.level.toUpperCase()}
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="text-xs text-gray-600">
+                <span className="font-semibold text-gray-700">Min leads</span>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={draftThresholds.minLeads}
+                  onChange={(e) =>
+                    setDraftThresholds((prev) => ({
+                      ...prev,
+                      minLeads: Math.max(1, Math.round(Number(e.target.value || 1))),
+                    }))
+                  }
+                  className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                />
+              </label>
+              <label className="text-xs text-gray-600">
+                <span className="font-semibold text-gray-700">Max unattributed %</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={Math.round(draftThresholds.maxUnattributedRatio * 100)}
+                  onChange={(e) => {
+                    const pct = Math.max(0, Math.min(100, Math.round(Number(e.target.value || 0))));
+                    setDraftThresholds((prev) => ({ ...prev, maxUnattributedRatio: pct / 100 }));
+                  }}
+                  className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                />
+              </label>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="text-[11px] text-gray-500">Saved locally for this browser.</p>
+              <button
+                type="button"
+                onClick={() => setDraftThresholds(getDefaultDraftThresholds())}
+                className="text-[11px] font-semibold text-gray-700 hover:text-gray-900"
+              >
+                Reset
+              </button>
+            </div>
+            {!draftBundle.readiness.canCopy ? (
+              <ul className="mt-2 text-xs text-gray-600 space-y-1 list-disc pl-5">
+                {draftBundle.readiness.reasons.slice(0, 2).map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-xs text-gray-600">
+                Prompt uses your best-performing topic, center, and time window. Share UTMs with the post so attribution stays clean.
+              </p>
+            )}
+          </div>
+          <div className="mt-4 space-y-3">
+            {metrics.topics.length > 0 ? (
+              metrics.topics.map((row) => (
+                <div key={row.topic} className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-gray-900">{formatTopicLabel(row.topic)}</p>
+                    <p className="text-xs text-gray-600">
+                      conv: <span className="font-semibold text-gray-800">{formatNumber(row.conversions)}</span> · rate{" "}
+                      <span className="font-semibold text-gray-800">{row.rate.toFixed(1)}%</span>
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">leads: {formatNumber(row.leads)}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">Not enough landing page signals yet.</p>
+            )}
+          </div>
+          <div className="mt-4 rounded-lg border border-gray-100 p-3 bg-white">
+            <p className="text-xs font-semibold text-gray-800">Suggested keywords (for captions / hooks)</p>
+            <p className="text-xs text-gray-600 mt-2 break-words">{metrics.keywordSuggestions.join(" · ")}</p>
+          </div>
+        </div>
+
+        <div id="best-posting-windows" className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Clock3 className="w-4 h-4 text-gray-500" />
+            Best Posting Windows
+          </h3>
+          <div className="mt-4 space-y-3">
+            {metrics.timeWindows.length > 0 ? (
+              metrics.timeWindows.slice(0, 5).map((row) => (
+                <div key={row.window} className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-gray-900">{row.window}</p>
+                    <p className="text-xs text-gray-600">
+                      conv: <span className="font-semibold text-gray-800">{formatNumber(row.conversions)}</span> · rate{" "}
+                      <span className="font-semibold text-gray-800">{row.rate.toFixed(1)}%</span>
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">leads: {formatNumber(row.leads)}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No timestamp signals yet.</p>
+            )}
+          </div>
+          <div className="mt-4 rounded-lg border border-gray-100 p-3 bg-white">
+            <p className="text-xs font-semibold text-gray-800">Location focus (from landing paths)</p>
+            <div className="mt-2 space-y-2">
+              {metrics.centers.length > 0 ? (
+                metrics.centers.slice(0, 4).map((row) => (
+                  <div key={row.center} className="flex items-center justify-between text-xs text-gray-700">
+                    <span className="font-semibold text-gray-900">{row.center}</span>
+                    <span>
+                      conv {formatNumber(row.conversions)} · rate {row.rate.toFixed(1)}%
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No location signals yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div id="paid-ads-feedback" className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <IndianRupee className="w-4 h-4 text-gray-500" />
+            Paid Ads Feedback
+          </h3>
+          <div className="mt-4 space-y-4">
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+              <p className="text-sm font-semibold text-emerald-900">Scale candidates</p>
+              <div className="mt-3 space-y-2">
+                {metrics.bestPaid.length > 0 ? (
+                  metrics.bestPaid.map((row) => (
+                    <div key={`scale-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-emerald-900">
+                      <span className="font-semibold">{row.campaign}</span>
+                      <span className="whitespace-nowrap">
+                        CPP {formatCurrency(row.cpp)} · conv {formatNumber(row.conversions)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-emerald-900/80">Not enough conversion data to recommend scaling.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-rose-100 bg-rose-50 p-4">
+              <p className="text-sm font-semibold text-rose-900">Fix / pause candidates</p>
+              <div className="mt-3 space-y-2">
+                {metrics.pausePaid.length > 0 ? (
+                  metrics.pausePaid.map((row) => (
+                    <div key={`pause-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-rose-900">
+                      <span className="font-semibold">{row.campaign}</span>
+                      <span className="whitespace-nowrap">
+                        spend {formatCurrency(row.spend)} · conv {formatNumber(row.conversions)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-rose-900/80">No obvious money-wasters detected at current thresholds.</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-gray-500">
+            This is based on CRM leads/conversions + Spend logs. Keep UTMs consistent and log spend daily for better recommendations.
+          </p>
         </div>
       </div>
 

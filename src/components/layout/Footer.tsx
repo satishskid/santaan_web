@@ -61,13 +61,12 @@ export function Footer() {
                     <div className="space-y-6">
                         <Link href="/" className="inline-flex items-center">
                             <div className="bg-white rounded-lg p-2">
-                                <Image
-                                    src="/assets/santaan-logo.png"
-                                    alt="Santaan Logo"
-                                    width={120}
-                                    height={67}
-                                    className="h-8 w-auto object-contain"
-                                />
+                                <span className="flex items-center gap-2 px-2">
+                                    <Image src="/favicon.ico" alt="" width={20} height={20} className="h-5 w-5" />
+                                    <span className="font-playfair font-bold text-santaan-teal text-xl tracking-tight leading-none">
+                                        Santaan
+                                    </span>
+                                </span>
                             </div>
                         </Link>
                         <p className="text-gray-300 leading-relaxed">

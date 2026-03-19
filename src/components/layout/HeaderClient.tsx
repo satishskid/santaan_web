@@ -78,26 +78,24 @@ export function HeaderClient({ session }: HeaderClientProps) {
             <div className="container mx-auto px-4 md:px-6">
                 <nav className="flex items-center justify-between" aria-label="Global">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center group" aria-label="Santaan IVF Home">
+                    <Link href="/" className="flex items-center group shrink-0" aria-label="Santaan IVF Home">
                         <span
                             className={cn(
                                 'rounded-md px-2 py-1 transition-colors',
                                 isScrolled ? 'bg-white' : 'bg-white/95 shadow-sm'
                             )}
                         >
-                            <Image
-                                src="/assets/santaan-logo.png"
-                                alt="Santaan Logo"
-                                width={120}
-                                height={67}
-                                className="h-8 w-auto object-contain"
-                                priority
-                            />
+                            <span className="flex items-center gap-2">
+                                <Image src="/favicon.ico" alt="" width={20} height={20} className="h-5 w-5" priority />
+                                <span className="font-playfair font-bold text-santaan-teal text-xl tracking-tight leading-none">
+                                    Santaan
+                                </span>
+                            </span>
                         </span>
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden lg:flex gap-4 xl:gap-6 items-center">
+                    <div className="hidden xl:flex gap-4 2xl:gap-6 items-center">
                         {navigation.map((item) => (
                             <Link
                                 key={item.name}
@@ -110,7 +108,7 @@ export function HeaderClient({ session }: HeaderClientProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="hidden lg:flex items-center gap-2 xl:gap-3">
+                    <div className="hidden xl:flex items-center gap-2 2xl:gap-3">
                         <a
                             href={`tel:${PRIMARY_CALL_NUMBER}`}
                             data-cta-kind="call"
@@ -186,7 +184,7 @@ export function HeaderClient({ session }: HeaderClientProps) {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex lg:hidden gap-4 items-center">
+                    <div className="flex xl:hidden gap-4 items-center">
                         {session?.user && (
                             <Link href="/profile" className="relative w-8 h-8">
                                 {session.user.image ? (

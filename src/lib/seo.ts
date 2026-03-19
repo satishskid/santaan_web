@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getSiteUrl } from '@/lib/site';
 
 const SITE_NAME = 'Santaan IVF';
-const DEFAULT_OG_IMAGE = '/assets/hero-origin.png';
+const DEFAULT_OG_IMAGE = '/assets/hero-family.png';
 
 export interface PageSeoInput {
   title: string;
@@ -56,10 +56,9 @@ export const defaultSeoMetadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/assets/santaan-logo.png', type: 'image/png' },
     ],
     shortcut: ['/favicon.ico'],
-    apple: [{ url: '/assets/santaan-logo.png', type: 'image/png' }],
+    apple: [{ url: '/favicon.ico' }],
   },
   title: {
     default: 'Santaan IVF | Fertility & IVF Centre in Odisha & Bangalore',

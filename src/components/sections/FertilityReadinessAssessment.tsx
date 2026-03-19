@@ -533,7 +533,7 @@ export function FertilityReadinessAssessment() {
                                         <p className="text-sm text-gray-600">
                                             Ready to take the next step? Speak with our fertility specialists.
                                         </p>
-                                        <a href="tel:+919337326896">
+                                        <a href="tel:+917008990586">
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, BookOpen, Calendar } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface SantaanPost {
@@ -57,15 +56,7 @@ export function Insights() {
 
     return (
         <section id="insights" className="py-20 bg-santaan-cream relative overflow-hidden">
-            {/* Background Texture */}
-            <div className="absolute inset-0 opacity-5 pointer-events-none">
-                <Image
-                    src="/assets/wonder-of-life-texture.png"
-                    alt="Texture"
-                    fill
-                    className="object-cover"
-                />
-            </div>
+            <div className="absolute inset-0 opacity-5 pointer-events-none bg-gradient-to-br from-santaan-teal via-santaan-amber to-santaan-cream" />
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Header */}

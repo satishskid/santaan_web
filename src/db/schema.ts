@@ -30,6 +30,9 @@ export const contacts = sqliteTable('contacts', {
     leadSource: text('lead_source'), // website, whatsapp, telegram, referral
     leadScore: integer('lead_score').default(0), // 0-100
     message: text('message'), // Initial message/inquiry
+    ownerName: text('owner_name'),
+    ownerEmail: text('owner_email'),
+    nextFollowUpAt: text('next_follow_up_at'),
     
     // UTM Attribution
     utmSource: text('utm_source'),

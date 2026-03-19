@@ -59,13 +59,12 @@ export default function AdminLoginPage() {
                     {/* Header */}
                     <div className="text-center mb-8">
                         <div className="flex justify-center mb-4">
-                            <Image 
-                                src="/assets/santaan-logo.png" 
-                                alt="Santaan Logo" 
-                                width={80} 
-                                height={45}
-                                className="h-12 w-auto object-contain"
-                            />
+                            <span className="flex items-center gap-2">
+                                <Image src="/favicon.ico" alt="" width={24} height={24} className="h-6 w-6" />
+                                <span className="font-playfair font-bold text-santaan-teal text-3xl tracking-tight leading-none">
+                                    Santaan
+                                </span>
+                            </span>
                         </div>
                         <h1 className="text-2xl font-playfair font-bold text-gray-900">Admin Portal</h1>
                         <p className="text-gray-500 text-sm mt-1">Sign in to access the dashboard</p>

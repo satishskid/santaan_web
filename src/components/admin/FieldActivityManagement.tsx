@@ -73,7 +73,7 @@ const initialForm: FieldForm = {
 function downloadFieldTemplate() {
   const template = [
     "activity_date,center,activity_type,asset_code,location,owner_name,spend,estimated_reach,actual_footfall,leads_collected,qualified_leads,registrations,utm_campaign,qr_code_id,call_number,whatsapp_number,proof_url,notes",
-    "2026-02-22,bhubaneswar,doctor_visit,dr_bbsr_01,Saheed Nagar,field_exec_1,1500,80,20,7,3,1,fy26q1_bbsr_doctor_referral,qr_bbsr_dr_01,9337326896,9668904011,https://example.com/proof.jpg,doctor round completed",
+    "2026-02-22,bhubaneswar,doctor_visit,dr_bbsr_01,Saheed Nagar,field_exec_1,1500,80,20,7,3,1,fy26q1_bbsr_doctor_referral,qr_bbsr_dr_01,7008990586,9668904011,https://example.com/proof.jpg,doctor round completed",
     "2026-02-22,berhampur,hoarding,hoard_brp_12,Gosaninuagaon,field_exec_2,6200,15000,35,12,4,1,fy26q1_brp_hoarding_main,qr_brp_h_12,9692081966,9668904011,https://example.com/hoarding.jpg,near bus stand",
   ].join("\n");
 
