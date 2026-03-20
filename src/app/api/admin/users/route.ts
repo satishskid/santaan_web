@@ -93,6 +93,72 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    if (Array.isArray(body?.users)) {
+      const pin = typeof body?.pin === 'string' ? body.pin.trim() : '';
+      if (!PIN_REGEX.test(pin)) return NextResponse.json({ error: 'PIN must be exactly 6 digits' }, { status: 400 });
+
+      const defaultRole = normalizeRole(body?.defaultRole);
+      const fallbackRole = ALLOWED_ROLES.has(defaultRole) ? defaultRole : 'user';
+      const hashedPassword = await bcrypt.hash(pin, 12);
+
+      const results: Array<
+        | { status: 'created'; username: string; id: string }
+        | { status: 'skipped'; username: string; reason: string }
+        | { status: 'error'; username: string; error: string }
+      > = [];
+
+      for (const entry of body.users as unknown[]) {
+        const raw = entry as { username?: unknown; name?: unknown; role?: unknown };
+        const username = normalizeLoginId(raw?.username);
+        const name = typeof raw?.name === 'string' ? raw.name.trim().slice(0, 80) : '';
+        const role = normalizeRole(raw?.role);
+        const effectiveRole = ALLOWED_ROLES.has(role) ? role : fallbackRole;
+
+        const loginIdValidation = validateLoginId(username);
+        if (!loginIdValidation.ok) {
+          results.push({ status: 'error', username: username || '(missing)', error: loginIdValidation.error });
+          continue;
+        }
+
+        if (!ALLOWED_ROLES.has(effectiveRole)) {
+          results.push({ status: 'error', username, error: 'Invalid role' });
+          continue;
+        }
+
+        const existing = await db.select().from(users).where(eq(users.email, username)).get();
+        if (existing) {
+          results.push({ status: 'skipped', username, reason: 'Username already exists' });
+          continue;
+        }
+
+        const inserted = await db
+          .insert(users)
+          .values({
+            email: username,
+            name: name || null,
+            role: effectiveRole,
+            password: hashedPassword,
+          })
+          .returning();
+
+        const created = inserted?.[0];
+        if (!created) {
+          results.push({ status: 'error', username, error: 'Insert failed' });
+          continue;
+        }
+        results.push({ status: 'created', username: created.email, id: created.id });
+      }
+
+      return NextResponse.json({
+        success: true,
+        createdCount: results.filter((row) => row.status === 'created').length,
+        skippedCount: results.filter((row) => row.status === 'skipped').length,
+        errorCount: results.filter((row) => row.status === 'error').length,
+        results,
+      });
+    }
+
     const username = normalizeLoginId(body?.username);
     const name = typeof body?.name === 'string' ? body.name.trim().slice(0, 80) : '';
     const role = normalizeRole(body?.role);
@@ -222,5 +288,37 @@ export async function PATCH(request: Request) {
     });
   } catch (_error) {
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    const sessionRole = (session?.user as { role?: string } | undefined)?.role;
+    if (!await isAuthorizedLeadership(session?.user?.email, sessionRole)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = String(searchParams.get('id') || '').trim();
+    if (!id) return NextResponse.json({ error: 'User id required' }, { status: 400 });
+
+    const existing = await db.select().from(users).where(eq(users.id, id)).get();
+    if (!existing) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    const loginId = String(existing.email || '').trim().toLowerCase();
+    if (SUPER_ADMIN_EMAILS.has(loginId) || loginId.includes('@')) {
+      return NextResponse.json({ error: 'Cannot delete admin/email users. Disable instead.' }, { status: 403 });
+    }
+
+    const sessionEmail = String(session?.user?.email || '').trim().toLowerCase();
+    if (sessionEmail && sessionEmail === loginId) {
+      return NextResponse.json({ error: 'Cannot delete current user.' }, { status: 403 });
+    }
+
+    await db.delete(users).where(eq(users.id, id));
+    return NextResponse.json({ success: true });
+  } catch (_error) {
+    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }
 }

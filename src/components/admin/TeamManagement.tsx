@@ -59,6 +59,9 @@ export default function TeamManagement() {
   const [userNotice, setUserNotice] = useState<string | null>(null);
   const [userError, setUserError] = useState<string | null>(null);
   const [showDisabled, setShowDisabled] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkPin, setBulkPinValue] = useState("");
+  const [bulkDefaultRole, setBulkDefaultRole] = useState("telecaller");
 
   const [userForm, setUserForm] = useState<{
     id?: string;
@@ -174,6 +177,101 @@ export default function TeamManagement() {
   }
 
   const isEditingUser = Boolean(userForm.id);
+
+  function fillUatTemplate() {
+    const lines = [
+      "telecaller1.bbsr,telecaller",
+      "telecaller2.bbsr,telecaller",
+      "telecaller3.bbsr,telecaller",
+      "telecaller4.bbsr,telecaller",
+      "telecaller5.bbsr,telecaller",
+      "telecaller6.bbsr,telecaller",
+      "telecaller1.bam,telecaller",
+      "telecaller2.bam,telecaller",
+      "telecaller1.blr,telecaller",
+      "telecaller_mgr.hq,telecaller_manager",
+      "content1.hq,content_manager",
+      "agency1.hq,agency_ops",
+      "agency2.hq,agency_ops",
+      "ceo1.hq,ceo",
+    ];
+    setBulkText(lines.join("\n"));
+    setUserError(null);
+    setUserNotice("UAT template filled. Set a staff PIN and click Bulk Create Users.");
+  }
+
+  async function bulkCreateUsers() {
+    const pin = bulkPin.trim();
+    if (!/^\d{6}$/.test(pin)) {
+      setUserError("Bulk PIN must be exactly 6 digits.");
+      return;
+    }
+
+    const rows = bulkText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (rows.length === 0) {
+      setUserError("Paste at least one username (one per line).");
+      return;
+    }
+
+    const usersToCreate = rows.map((line) => {
+      const parts = line.split(",").map((p) => p.trim());
+      const username = parts[0] || "";
+      const role = parts[1] || bulkDefaultRole;
+      const name = parts[2] || "";
+      return { username, role, name };
+    });
+
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ users: usersToCreate, defaultRole: bulkDefaultRole, pin }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to bulk create users");
+      }
+      const createdCount = typeof payload?.createdCount === "number" ? payload.createdCount : 0;
+      const skippedCount = typeof payload?.skippedCount === "number" ? payload.skippedCount : 0;
+      const errorCount = typeof payload?.errorCount === "number" ? payload.errorCount : 0;
+      setUserNotice(`Bulk create done. Created=${createdCount}, Skipped=${skippedCount}, Errors=${errorCount}.`);
+      setBulkPinValue("");
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to bulk create users");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
+
+  async function deleteUser(user: AccessUser) {
+    if (!confirm(`Delete ${user.username}? This cannot be undone.`)) return;
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch(`/api/admin/users?id=${encodeURIComponent(user.id)}`, {
+        method: "DELETE",
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to delete user");
+      }
+      setUserNotice("User deleted.");
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
 
   async function saveUser() {
     const username = userForm.username.trim().toLowerCase();
@@ -492,6 +590,51 @@ export default function TeamManagement() {
         {userError ? <p className="text-sm text-rose-700 mt-3">{userError}</p> : null}
       </div>
 
+      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900">Bulk Create Users (UAT)</h3>
+        <p className="text-sm text-gray-600 mt-1">
+          Paste one per line: <span className="font-mono">username</span> or <span className="font-mono">username,role</span> or <span className="font-mono">username,role,name</span>.
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <select
+            value={bulkDefaultRole}
+            onChange={(event) => setBulkDefaultRole(event.target.value)}
+            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            {ROLE_OPTIONS.filter((value) => value !== "disabled").map((value) => (
+              <option key={value} value={value}>
+                Default role: {value}
+              </option>
+            ))}
+          </select>
+          <Input
+            placeholder="Bulk PIN (6 digits)"
+            value={bulkPin}
+            onChange={(event) => setBulkPinValue(event.target.value)}
+            inputMode="numeric"
+          />
+        </div>
+
+        <div className="mt-3">
+          <textarea
+            value={bulkText}
+            onChange={(event) => setBulkText(event.target.value)}
+            placeholder="telecaller1.bbsr,telecaller\ntelecaller2.bbsr,telecaller\ncounselor1.bam,counselor"
+            className="w-full min-h-40 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="outline" onClick={fillUatTemplate} disabled={usersSaving}>
+            Fill UAT Template
+          </Button>
+          <Button onClick={bulkCreateUsers} disabled={usersSaving}>
+            Bulk Create Users
+          </Button>
+        </div>
+      </div>
+
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
@@ -556,6 +699,16 @@ export default function TeamManagement() {
                       >
                         <Ban className="w-4 h-4 mr-1" />
                         Disable
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-rose-600 hover:text-rose-700"
+                        onClick={() => deleteUser(user)}
+                        disabled={usersSaving}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete
                       </Button>
                     </TableCell>
                   </TableRow>
