@@ -69,6 +69,33 @@ This is the main web application for Santaan, built with Next.js, Drizzle ORM, a
     npm run dev
     ```
 
+## Admin Note: Usernames + PINs (UAT / Small Team)
+
+- **Login URL:** `https://www.santaan.in/login`
+- **Login ID:** use role-based usernames like `telecaller1.bbsr`, `counselor1.bam` (admins can still use email).
+- **PIN:** 6 digits.
+
+### Create users + set PIN (Admin dashboard)
+
+1. Sign in to the Admin dashboard.
+2. Go to `Team` tab → `User Access (Username + PIN)`.
+3. Create a user:
+   - `Username`: `telecaller1.bbsr` / `counselor1.bam` / etc.
+   - `Role`: choose the correct role (telecaller, counselor, etc.)
+   - `PIN`: enter a 6-digit PIN
+   - Click `Create User`
+4. Manage users:
+   - `Edit` to change username/name/role
+   - `Reset PIN` to set a new 6-digit PIN
+   - `Disable` when an employee leaves (login blocked)
+
+### Set default UAT PINs (bulk)
+
+- In the same `User Access` section:
+  - `Set UAT PIN (Admins)` resets PIN for the admin/leadership group.
+  - `Set UAT PIN (Staff)` resets PIN for all non-admin active users.
+- This is meant for short UAT windows (example: 2 weeks). After that, reset individual PINs per user.
+
 ## Deployment (Vercel)
 
 This project is deployed on Vercel.

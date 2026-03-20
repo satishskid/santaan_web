@@ -2,7 +2,15 @@ import { db } from '@/lib/db';
 import { admins, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-const SUPER_ADMINS = ['satish@skids.health', 'satish.rath@gmail.com', 'demo@santaan.com'];
+const SUPER_ADMINS = [
+    'raghab.panda@santaan.in',
+    'satish.rath@santaan.in',
+    'digi.social@skids.health',
+    'satsh@skids.health',
+    'satish@skids.health',
+    'satish.rath@gmail.com',
+    'demo@santaan.com',
+];
 const OPS_ROLES = new Set([
     'admin',
     'ceo',
@@ -23,6 +31,12 @@ function hasOpsRole(role?: string | null) {
     return OPS_ROLES.has(role.trim().toLowerCase());
 }
 
+function hasLeadershipRole(role?: string | null) {
+    if (!role) return false;
+    const normalized = role.trim().toLowerCase();
+    return normalized === 'admin' || normalized === 'ceo' || normalized === 'crm_ops_admin';
+}
+
 export async function isAuthorizedAdmin(email: string | null | undefined): Promise<boolean> {
     if (!email) return false;
     const normalizedEmail = email.trim().toLowerCase();
@@ -40,6 +54,28 @@ export async function isAuthorizedAdmin(email: string | null | undefined): Promi
         return Boolean(dbAdmin);
     } catch (error) {
         console.error('Admin check error:', error);
+        return false;
+    }
+}
+
+export async function isAuthorizedLeadership(
+    email: string | null | undefined,
+    sessionRole?: string | null | undefined
+): Promise<boolean> {
+    if (!email) return false;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (SUPER_ADMINS.includes(normalizedEmail)) return true;
+    if (hasLeadershipRole(sessionRole)) return true;
+
+    try {
+        const dbUser = await db.select().from(users).where(eq(users.email, normalizedEmail)).get();
+        if (hasLeadershipRole(dbUser?.role)) return true;
+
+        const dbAdmin = await db.select().from(admins).where(eq(admins.email, normalizedEmail)).get();
+        return Boolean(dbAdmin);
+    } catch (error) {
+        console.error('Leadership check error:', error);
         return false;
     }
 }

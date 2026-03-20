@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { admins, users } from '@/db/schema';
 import { auth } from '@/auth';
-import { isAuthorizedAdmin } from '@/lib/auth-helper';
+import { isAuthorizedLeadership } from '@/lib/auth-helper';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
     try {
         const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const sessionRole = (session?.user as { role?: string } | undefined)?.role;
+        if (!await isAuthorizedLeadership(session?.user?.email, sessionRole)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -22,7 +23,8 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const sessionRole = (session?.user as { role?: string } | undefined)?.role;
+        if (!await isAuthorizedLeadership(session?.user?.email, sessionRole)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -48,7 +50,8 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
     try {
         const session = await auth();
-        if (!await isAuthorizedAdmin(session?.user?.email)) {
+        const sessionRole = (session?.user as { role?: string } | undefined)?.role;
+        if (!await isAuthorizedLeadership(session?.user?.email, sessionRole)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

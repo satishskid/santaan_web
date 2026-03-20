@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
             });
 
             if (result?.error) {
-                setError("Invalid email or password");
+                setError("Invalid username or PIN");
             } else {
                 router.push("/admin/dashboard");
                 router.refresh();
@@ -81,16 +81,16 @@ export default function AdminLoginPage() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Email Address
+                                Username or Email
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <Input
                                     id="email"
-                                    type="email"
+                                    type="text"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="admin@santaan.in"
+                                    placeholder="telecaller1.bbsr or satish.rath@santaan.in"
                                     className="pl-10"
                                     required
                                 />
@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Password
+                                PIN / Password
                             </label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
+                                    placeholder="6 digit PIN"
                                     className="pl-10 pr-10"
                                     required
                                 />

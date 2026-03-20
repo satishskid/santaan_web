@@ -32,7 +32,15 @@ export const authConfig = {
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
             const userEmail = auth?.user?.email?.toLowerCase();
             const userRole = (auth?.user as { role?: string } | undefined)?.role;
-            const adminEmails = ['satish@skids.health', 'satish.rath@gmail.com', 'demo@santaan.com', 'raghab.panda@santaan.in', 'satish.rath@santaan.in'];
+            const adminEmails = [
+                'raghab.panda@santaan.in',
+                'satish.rath@santaan.in',
+                'digi.social@skids.health',
+                'satsh@skids.health',
+                'satish@skids.health',
+                'satish.rath@gmail.com',
+                'demo@santaan.com',
+            ];
             const isAdminRole = userRole === 'admin';
             const operationalRoles = new Set([
                 'admin',

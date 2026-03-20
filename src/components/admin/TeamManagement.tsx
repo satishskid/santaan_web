@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, Shield, Trash2, UserPlus } from "lucide-react";
+import { Ban, KeyRound, Mail, Save, Shield, Trash2, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,6 +12,31 @@ interface AdminUser {
   role: string;
   createdAt: string;
 }
+
+interface AccessUser {
+  id: string;
+  username: string;
+  name: string;
+  role: string;
+  createdAt: string;
+}
+
+const ROLE_OPTIONS = [
+  "admin",
+  "ceo",
+  "crm_ops_admin",
+  "marketing_manager",
+  "agency_ops",
+  "performance_marketer",
+  "content_manager",
+  "field_exec",
+  "ivr_manager",
+  "telecaller_manager",
+  "telecaller",
+  "counselor",
+  "user",
+  "disabled",
+] as const;
 
 function prettyDate(value?: string) {
   if (!value) return "-";
@@ -27,6 +52,26 @@ export default function TeamManagement() {
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersSaving, setUsersSaving] = useState(false);
+  const [users, setUsers] = useState<AccessUser[]>([]);
+  const [userNotice, setUserNotice] = useState<string | null>(null);
+  const [userError, setUserError] = useState<string | null>(null);
+  const [showDisabled, setShowDisabled] = useState(false);
+
+  const [userForm, setUserForm] = useState<{
+    id?: string;
+    username: string;
+    name: string;
+    role: string;
+    pin: string;
+  }>({
+    username: "",
+    name: "",
+    role: "telecaller",
+    pin: "",
+  });
 
   async function fetchTeam() {
     setLoading(true);
@@ -45,8 +90,26 @@ export default function TeamManagement() {
     }
   }
 
+  async function fetchUsers() {
+    setUsersLoading(true);
+    setUserError(null);
+    try {
+      const response = await fetch("/api/admin/users");
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to fetch users");
+      }
+      setUsers(payload.users || []);
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to fetch users");
+    } finally {
+      setUsersLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchTeam();
+    fetchUsers();
   }, []);
 
   async function handleAddAdmin() {
@@ -99,6 +162,180 @@ export default function TeamManagement() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function resetUserForm() {
+    setUserForm({
+      username: "",
+      name: "",
+      role: "telecaller",
+      pin: "",
+    });
+  }
+
+  const isEditingUser = Boolean(userForm.id);
+
+  async function saveUser() {
+    const username = userForm.username.trim().toLowerCase();
+    const name = userForm.name.trim();
+    const role = userForm.role.trim().toLowerCase();
+    const pin = userForm.pin.trim();
+
+    if (!username) {
+      setUserError("Username is required.");
+      return;
+    }
+    if (!role) {
+      setUserError("Role is required.");
+      return;
+    }
+
+    if (!isEditingUser && !/^\d{6}$/.test(pin)) {
+      setUserError("PIN must be exactly 6 digits.");
+      return;
+    }
+
+    if (isEditingUser && pin && !/^\d{6}$/.test(pin)) {
+      setUserError("PIN must be exactly 6 digits.");
+      return;
+    }
+
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: isEditingUser ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isEditingUser
+            ? {
+                id: userForm.id,
+                username,
+                name,
+                role,
+                ...(pin ? { pin } : {}),
+              }
+            : {
+                username,
+                name,
+                role,
+                pin,
+              }
+        ),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to save user");
+      }
+      setUserNotice(isEditingUser ? "User updated." : "User created.");
+      resetUserForm();
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to save user");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
+
+  async function disableUser(user: AccessUser) {
+    if (!confirm(`Disable ${user.username}?`)) return;
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, role: "disabled" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to disable user");
+      }
+      setUserNotice("User disabled.");
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to disable user");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
+
+  async function resetPin(user: AccessUser) {
+    const newPin = prompt(`Set new 6-digit PIN for ${user.username}:`);
+    if (!newPin) return;
+    const trimmed = newPin.trim();
+    if (!/^\d{6}$/.test(trimmed)) {
+      setUserError("PIN must be exactly 6 digits.");
+      return;
+    }
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, pin: trimmed }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to reset PIN");
+      }
+      setUserNotice("PIN updated.");
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to reset PIN");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
+
+  async function setBulkPin(scope: "admins" | "staff") {
+    const label = scope === "admins" ? "ADMINs" : "STAFF users";
+    const newPin = prompt(`Set a 6-digit UAT PIN for ${label} (this will reset PINs for the whole group):`);
+    if (!newPin) return;
+    const trimmed = newPin.trim();
+    if (!/^\d{6}$/.test(trimmed)) {
+      setUserError("PIN must be exactly 6 digits.");
+      return;
+    }
+    if (!confirm(`Confirm: reset PIN for ${label}?`)) return;
+
+    setUsersSaving(true);
+    setUserError(null);
+    setUserNotice(null);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope, pin: trimmed }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to set UAT PIN");
+      }
+      const updatedCount = typeof payload?.updatedCount === "number" ? payload.updatedCount : 0;
+      setUserNotice(`UAT PIN updated for ${updatedCount} users.`);
+      await fetchUsers();
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : "Failed to set UAT PIN");
+    } finally {
+      setUsersSaving(false);
+    }
+  }
+
+  function startEditUser(user: AccessUser) {
+    setUserError(null);
+    setUserNotice(null);
+    setUserForm({
+      id: user.id,
+      username: user.username,
+      name: user.name || "",
+      role: user.role || "user",
+      pin: "",
+    });
   }
 
   return (
@@ -180,6 +417,149 @@ export default function TeamManagement() {
                   </TableCell>
                 </TableRow>
               ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-santaan-teal" />
+          User Access (Username + PIN)
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          Create and manage role-based usernames like telecaller1.bbsr with 6-digit PINs.
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Input
+            placeholder="Username (e.g., telecaller1.bbsr)"
+            value={userForm.username}
+            onChange={(event) => setUserForm((prev) => ({ ...prev, username: event.target.value }))}
+          />
+          <Input
+            placeholder="Name (optional)"
+            value={userForm.name}
+            onChange={(event) => setUserForm((prev) => ({ ...prev, name: event.target.value }))}
+          />
+          <select
+            value={userForm.role}
+            onChange={(event) => setUserForm((prev) => ({ ...prev, role: event.target.value }))}
+            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            {ROLE_OPTIONS.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+          <Input
+            placeholder={isEditingUser ? "New PIN (optional, 6 digits)" : "PIN (6 digits)"}
+            value={userForm.pin}
+            onChange={(event) => setUserForm((prev) => ({ ...prev, pin: event.target.value }))}
+            inputMode="numeric"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button onClick={saveUser} disabled={usersSaving}>
+            <Save className="w-4 h-4 mr-2" />
+            {isEditingUser ? "Update User" : "Create User"}
+          </Button>
+          <Button variant="outline" onClick={() => setBulkPin("admins")} disabled={usersSaving}>
+            Set UAT PIN (Admins)
+          </Button>
+          <Button variant="outline" onClick={() => setBulkPin("staff")} disabled={usersSaving}>
+            Set UAT PIN (Staff)
+          </Button>
+          {isEditingUser ? (
+            <Button variant="outline" onClick={resetUserForm} disabled={usersSaving}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel Edit
+            </Button>
+          ) : null}
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700 ml-auto">
+            <input
+              type="checkbox"
+              checked={showDisabled}
+              onChange={(event) => setShowDisabled(event.target.checked)}
+            />
+            Show disabled users
+          </label>
+        </div>
+
+        {userNotice ? <p className="text-sm text-emerald-700 mt-3">{userNotice}</p> : null}
+        {userError ? <p className="text-sm text-rose-700 mt-3">{userError}</p> : null}
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Username</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {usersLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  Loading users...
+                </TableCell>
+              </TableRow>
+            ) : users.filter((user) => showDisabled || user.role !== "disabled").length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              users
+                .filter((user) => showDisabled || user.role !== "disabled")
+                .map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium text-gray-900">{user.username}</TableCell>
+                    <TableCell className="text-gray-700">{user.name || "-"}</TableCell>
+                    <TableCell>
+                      <span className="px-2 py-1 rounded-full text-xs bg-slate-100 text-slate-700">
+                        {user.role || "user"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-gray-600">{prettyDate(user.createdAt)}</TableCell>
+                    <TableCell className="text-right flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => startEditUser(user)}
+                        disabled={usersSaving}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => resetPin(user)}
+                        disabled={usersSaving}
+                      >
+                        <KeyRound className="w-4 h-4 mr-1" />
+                        Reset PIN
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-rose-600 hover:text-rose-700"
+                        onClick={() => disableUser(user)}
+                        disabled={usersSaving || user.role === "disabled"}
+                      >
+                        <Ban className="w-4 h-4 mr-1" />
+                        Disable
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
             )}
           </TableBody>
         </Table>
