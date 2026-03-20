@@ -62,7 +62,7 @@ This is the main web application for Santaan, built with Next.js, Drizzle ORM, a
     # Seed initial admin user
     npx tsx src/scripts/seed-users.ts
     ```
-    *Default Admin:* `raghab.panda@santaan.in` / `password123`
+    Default admin users can be seeded via `npx tsx src/scripts/seed-users.ts` with `SANTAAN_SEED_PASSWORD` set in `.env.local`.
 
 5.  **Run Development Server:**
     ```bash
@@ -287,12 +287,8 @@ Use `/login` (or the hidden footer dot link) and pick the correct role for your 
 - Use tags consistently (comma-separated) for source, intent, and priority.
 
 ### Admin Credentials (Production)
-| Email | Password |
-|-------|----------|
-| raghab.panda@santaan.in | Santaan@2026! |
-| satish.rath@santaan.in | Santaan@2026! |
-| satish@skids.health | Santaan@2026! |
-| demo@santaan.com | Demo@2026! |
+- Admin credentials are managed by leadership / CRM Ops Admin.
+- For seeding or resets, use the seeding scripts with `SANTAAN_SEED_PASSWORD` in your environment (never commit passwords to git).
 
 ### Secret Footer Link
 A tiny "•" dot after "Terms of Service" in footer links to `/login`

@@ -19,25 +19,28 @@ if (!url || !authToken) {
 const client = createClient({ url, authToken });
 const db = drizzle(client, { schema: { users } });
 
-// Admin accounts with secure passwords
-// IMPORTANT: Change these passwords after first login!
+const DEFAULT_PASSWORD = process.env.SANTAAN_SEED_PASSWORD;
 const ADMINS = [
-    { email: "raghab.panda@santaan.in", name: "Raghab Panda", password: "sant_growth26" },
-    { email: "satish.rath@santaan.in", name: "Satish Rath", password: "sant_growth26" },
-    { email: "satish@skids.health", name: "Satish Rath (Skids)", password: "sant_growth26" },
-    { email: "satish.rath@gmail.com", name: "Satish Rath (Gmail)", password: "sant_growth26" },
-    { email: "demo@santaan.com", name: "Demo Admin", password: "sant_growth26" }
+    { email: "raghab.panda@santaan.in", name: "Raghab Panda" },
+    { email: "satish.rath@santaan.in", name: "Satish Rath" },
+    { email: "satish@skids.health", name: "Satish Rath (Skids)" },
+    { email: "satish.rath@gmail.com", name: "Satish Rath (Gmail)" },
+    { email: "demo@santaan.com", name: "Demo Admin" }
 ];
 
 async function seedAdmins() {
     console.log("🌱 Seeding admin users to production database...\n");
+    if (!DEFAULT_PASSWORD) {
+        console.error("❌ Missing SANTAAN_SEED_PASSWORD in .env.local");
+        process.exit(1);
+    }
 
     for (const admin of ADMINS) {
         try {
             const existingUser = await db.select().from(users).where(eq(users.email, admin.email)).get();
 
             if (!existingUser) {
-                const hashedPassword = await bcrypt.hash(admin.password, 12);
+                const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
                 await db.insert(users).values({
                     email: admin.email,
                     name: admin.name,
@@ -47,7 +50,7 @@ async function seedAdmins() {
                 console.log(`✅ Created admin: ${admin.email}`);
             } else {
                 // Update password if user exists
-                const hashedPassword = await bcrypt.hash(admin.password, 12);
+                const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
                 await db.update(users)
                     .set({ password: hashedPassword, role: "admin" })
                     .where(eq(users.email, admin.email));
@@ -59,15 +62,7 @@ async function seedAdmins() {
     }
 
     console.log("\n" + "=".repeat(50));
-    console.log("🔐 ADMIN CREDENTIALS (Change after first login!)");
-    console.log("=".repeat(50));
-    ADMINS.forEach(admin => {
-        console.log(`\n📧 ${admin.email}`);
-        console.log(`🔑 ${admin.password}`);
-    });
-    console.log("\n" + "=".repeat(50));
-    console.log("🌐 Login URL: https://www.santaan.in/login");
-    console.log("=".repeat(50));
+    console.log("✅ Done. Passwords were set from SANTAAN_SEED_PASSWORD (not printed).");
 }
 
 seedAdmins()

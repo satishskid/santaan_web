@@ -286,8 +286,8 @@ Policy:
 3. Disable access for inactive team members immediately.
 4. Use only approved admins for production changes.
 
-Current emergency reset baseline (as requested):
-1. Admin password rotated to `sant_growth26`
+Current emergency reset baseline:
+1. Admin password rotated and shared only via CRM Ops Admin
 2. CEO should schedule mandatory password refresh after onboarding cycle.
 
 ---
@@ -327,4 +327,3 @@ If this manual is executed strictly for 30 days:
 2. Week-1 setup runbook: `/Users/spr/santaan hope/santaan-web/CEO_FIRST_WEEK_SETUP_2026-02-19.md`
 3. Growth operating manual: `/Users/spr/santaan hope/santaan-web/CEO_GROWTH_JOB_MANUAL_2026-02-19.md`
 4. This executive manual: `/Users/spr/santaan hope/santaan-web/CEO_EXECUTIVE_OPERATING_MANUAL_2026-02-19.md`
-

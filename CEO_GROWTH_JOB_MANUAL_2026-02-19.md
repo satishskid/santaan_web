@@ -159,7 +159,7 @@ Use these objective triggers:
 1. Admin access is role-based and registry-backed.
 2. Sensitive admin APIs require authenticated admin authorization.
 3. Default weak password policy is removed.
-4. Current requested admin password baseline has been rotated to: `sant_growth26`.
+4. Admin password baseline is rotated periodically and shared only via CRM Ops Admin.
 5. CEO should mandate immediate periodic password rotation (quarterly minimum).
 
 ## 13) CEO Weekly Review Template (Copy/Paste)

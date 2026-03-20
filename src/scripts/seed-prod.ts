@@ -22,7 +22,7 @@ const client = createClient({
 
 const db = drizzle(client, { schema });
 
-const DEFAULT_PASSWORD = "sant_growth26";
+const DEFAULT_PASSWORD = process.env.SANTAAN_SEED_PASSWORD;
 const ADMINS = [
     { email: "raghab.panda@santaan.in", name: "Raghab Panda" },
     { email: "satish.rath@santaan.in", name: "Satish Rath" },
@@ -32,6 +32,10 @@ const ADMINS = [
 
 async function seed() {
     console.log("🌱 Seeding PRODUCTION users to Turso...");
+    if (!DEFAULT_PASSWORD) {
+        console.error("❌ Missing SANTAAN_SEED_PASSWORD in .env.local");
+        process.exit(1);
+    }
 
     const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
@@ -59,7 +63,7 @@ async function seed() {
     }
 
     console.log("\n🔐 Seeding complete.");
-    console.log(`👉 Default password: ${DEFAULT_PASSWORD}`);
+    console.log("👉 Passwords were set from SANTAAN_SEED_PASSWORD (not printed).");
 }
 
 seed().catch((err) => {

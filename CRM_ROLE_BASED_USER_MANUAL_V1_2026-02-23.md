@@ -17,7 +17,7 @@ This manual explains exactly how each team member logs in, what they must update
 Current system uses **email + password** login.
 
 Standard temporary training password (if assigned):
-- `sant_growth26`
+- Ask CRM Ops Admin for the current temporary training password.
 
 ### Starter role test accounts (for UAT/training)
 - Agency Ops: `agency.e2e@santaan.in`
@@ -240,4 +240,3 @@ Required commands:
 ## 13) Governance rule
 No owner, no due date, no note = no action.
 This CRM is an execution system, not only a reporting dashboard.
-
