@@ -39,18 +39,18 @@ function formatStatus(value: string) {
 }
 
 const DAILY_TIPS = [
-  "Mark task status in CRM right after completion so the evening wrap is accurate.",
-  "Log UTMs in every link you publish today so we can measure ROI.",
-  "If a lead is hot, update status immediately and add the next action note.",
-  "Use the Campaign Analytics keywords list before finalizing copy.",
-  "If a task is blocked, write the blocker clearly in notes so help is fast.",
-  "Use the Ops Workboard to track field activity and keep dates consistent.",
-  "Keep call outcomes short and specific: reason, outcome, next step.",
-  "Review NeoDove sync status before the first calling cycle.",
-  "Share center-specific creatives with correct tracking links only.",
-  "Always close the loop: update leads after WhatsApp/phone follow-ups.",
-  "Check integration health once in the morning and flag any warnings.",
-  "Write one learning from today’s content performance for tomorrow.",
+  "You’ve got this. Start with the first task and momentum will follow.",
+  "Small updates create big clarity. Mark status as you go.",
+  "One good action now beats a perfect plan later. Begin.",
+  "The system is here to help you, not test you. Keep it simple.",
+  "You’re not alone — the whole team is moving together today.",
+  "Focus on progress, not perfection. The CRM keeps it organized.",
+  "If something is stuck, note it clearly. Help will come faster.",
+  "You only need one step at a time. Today’s list is enough.",
+  "We win by showing up and updating. That’s it.",
+  "Your work today helps real families. Thank you.",
+  "Breathe, pick one task, and start. You can do this.",
+  "Keep it easy: update, move on, repeat. You’re doing great.",
 ];
 
 function dailyTipFor(dateKey: string) {

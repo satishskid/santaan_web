@@ -45,18 +45,18 @@ function formatNote(note?: string | null) {
 }
 
 const DAILY_TIPS = [
-  "Keep status updates short and factual so tomorrow’s standup is clear.",
-  "If blocked, tag the blocker and the owner in CRM notes.",
-  "Record UTM links used today so we can trace lead sources later.",
-  "Confirm NeoDove sync counts and reconcile any gaps before sign-off.",
-  "Close the loop on high‑intent leads with a next action note.",
-  "Share what worked in content today to reduce tomorrow’s guesswork.",
-  "If spend was logged, also mention CPA/qualified outcomes in notes.",
-  "Update counselor outcomes the same day to keep conversion data fresh.",
-  "If a task slipped, move it to tomorrow’s first action.",
-  "Celebrate one win in notes to keep the team aligned.",
-  "Check integration health alerts before logging off.",
-  "Add one improvement idea for tomorrow’s workflow.",
+  "You showed up today. That matters. Thank you.",
+  "Progress is progress. The CRM captures it, and we improve tomorrow.",
+  "Even a small update helps the whole team stay aligned.",
+  "If today was hard, it’s okay. You still moved us forward.",
+  "Take a breath. Close the open loops you can, rest for the rest.",
+  "Consistency beats intensity. You’re building that habit.",
+  "One honest note is enough. Keep it simple.",
+  "Tomorrow gets easier because of what you logged today.",
+  "If something is blocked, you did the right thing by flagging it.",
+  "Celebrate the wins — big or small — they matter.",
+  "You’re helping real families. That’s meaningful work.",
+  "Thanks for staying steady. We do this together.",
 ];
 
 function dailyTipFor(dateKey: string) {
