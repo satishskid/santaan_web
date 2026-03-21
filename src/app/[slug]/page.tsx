@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { getServicePageBySlug, servicePageSlugs } from '@/content/servicePages';
 import { buildBreadcrumbSchema, buildFaqSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
+import { getSiteUrl } from '@/lib/site';
 import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
 type Params = Promise<{ slug: string }>;
@@ -43,9 +44,10 @@ export default async function ServicePage({ params }: { params: Params }) {
   }
 
   const faqSchema = buildFaqSchema(page.faqs);
+  const baseUrl = getSiteUrl();
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: 'Home', url: 'https://santaan.in/' },
-    { name: page.title, url: `https://santaan.in/${slug}` },
+    { name: 'Home', url: `${baseUrl}/` },
+    { name: page.title, url: `${baseUrl}/${slug}` },
   ]);
 
   return (

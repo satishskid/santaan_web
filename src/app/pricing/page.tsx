@@ -2,8 +2,9 @@ import Script from 'next/script';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { Button } from '@/components/ui/Button';
+import { buttonVariants } from '@/components/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { buildMetadata } from '@/lib/seo';
 import { buildFaqSchema } from '@/lib/schema';
 
@@ -146,10 +147,15 @@ export default function PricingPage() {
                 </li>
               </ul>
               <div className="mt-7">
-                <Link href="/contact-centres">
-                  <Button className="bg-santaan-teal hover:bg-santaan-sage text-white rounded-full px-6">
-                    Get a personalized estimate
-                  </Button>
+                <Link
+                  href="/contact-centres"
+                  className={cn(
+                    buttonVariants({
+                      className: 'bg-santaan-teal hover:bg-santaan-sage text-white rounded-full px-6',
+                    })
+                  )}
+                >
+                  Get a personalized estimate
                 </Link>
               </div>
             </div>

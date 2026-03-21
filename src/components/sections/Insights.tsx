@@ -127,6 +127,8 @@ export function Insights() {
                                                 src={post.thumbnail}
                                                 alt={post.title}
                                                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
+                                                decoding="async"
                                             />
                                         </div>
                                     )}

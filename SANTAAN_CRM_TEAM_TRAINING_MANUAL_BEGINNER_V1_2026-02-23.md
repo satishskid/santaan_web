@@ -61,7 +61,7 @@ Each role has a login and fixed responsibilities.
 ## 4) Login and access basics
 
 1. Open login page: `/login`
-2. Enter assigned username/email and password.
+2. Enter assigned username/email and 6-digit PIN.
 3. After login, go to: `/admin/dashboard`
 4. Use only your role tabs. Do not edit data outside your scope.
 
@@ -70,10 +70,10 @@ If login fails:
 2. Retry in private/incognito browser.
 3. Contact CRM Ops Admin for reset.
 
-Password policy:
-1. Do not share passwords.
-2. If someone leaves team, admin resets immediately.
-3. Admin can create/disable/reset users.
+PIN policy:
+1. Do not share PINs.
+2. If someone leaves team, admin disables access immediately and resets if needed.
+3. Admin can create, disable, and reset user PINs from the Team tab.
 
 ---
 
@@ -403,4 +403,3 @@ Use these as initial training targets, then revise with real data after 2 weeks.
 
 This system is not for reporting only. It is for daily execution and accountability.
 If each role updates honestly and on time, Santaan leadership can scale what works, fix leaks quickly, and improve patient experience center-wise.
-

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Clock, ArrowRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { Input } from '@/components/ui/input';
 import { getSantaanBlogPosts } from '@/lib/medium';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
@@ -20,8 +21,16 @@ export const metadata = buildMetadata({
   ],
 });
 
-export default async function FertilityInsightsPage() {
+export default async function FertilityInsightsPage({ searchParams }: { searchParams?: { q?: string } }) {
+  const query = typeof searchParams?.q === 'string' ? searchParams.q.trim() : '';
+
   const posts = await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []);
+  const visiblePosts = query
+    ? posts.filter((post) => {
+        const haystack = `${post.title} ${post.excerpt}`.toLowerCase();
+        return haystack.includes(query.toLowerCase());
+      })
+    : posts;
   const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
     post.tags.forEach((tag) => {
       const slug = tagToSlug(tag);
@@ -61,6 +70,31 @@ export default async function FertilityInsightsPage() {
 
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
+          <div className="mb-10 bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
+            <h2 className="text-xl font-playfair font-bold text-santaan-teal">Search</h2>
+            <form action="/fertility-insights" method="get" className="mt-4 flex flex-col sm:flex-row gap-3">
+              <Input
+                name="q"
+                defaultValue={query}
+                placeholder="Search articles (e.g., PCOS, IVF, AMH, semen analysis)"
+                className="flex-1"
+              />
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-full bg-santaan-teal text-white font-semibold hover:bg-santaan-dark-teal transition-colors"
+              >
+                Search
+              </button>
+              <Link
+                href="/fertility-insights"
+                className="px-5 py-2.5 rounded-full border border-santaan-teal/30 text-santaan-teal font-semibold hover:bg-santaan-teal/5 transition-colors text-center"
+              >
+                Clear
+              </Link>
+            </form>
+            {query ? <p className="mt-3 text-sm text-gray-600">Showing results for “{query}”.</p> : null}
+          </div>
+
           {topTags.length > 0 && (
             <div className="mb-10 bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
               <h2 className="text-xl font-playfair font-bold text-santaan-teal">Browse by topic</h2>
@@ -77,20 +111,26 @@ export default async function FertilityInsightsPage() {
               </div>
             </div>
           )}
-          {posts.length === 0 ? (
+          {visiblePosts.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-              <h2 className="text-2xl font-playfair font-bold text-santaan-teal">Fresh articles are syncing</h2>
-              <p className="text-gray-600 mt-3">Please check back in a few minutes for the latest insights from our editorial team.</p>
+              <h2 className="text-2xl font-playfair font-bold text-santaan-teal">
+                {query ? 'No matching articles found' : 'Fresh articles are syncing'}
+              </h2>
+              <p className="text-gray-600 mt-3">
+                {query
+                  ? 'Try a different keyword (PCOS, IVF, AMH, male infertility) or clear the search.'
+                  : 'Please check back in a few minutes for the latest insights from our editorial team.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
+              {visiblePosts.map((post) => (
                 <article
                   key={post.slug}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow flex flex-col h-full"
                 >
                   {post.thumbnail ? (
-                    <img src={post.thumbnail} alt={post.title} className="w-full h-52 object-cover" loading="lazy" />
+                    <img src={post.thumbnail} alt={post.title} className="w-full h-52 object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <div className="w-full h-52 bg-gradient-to-r from-santaan-sage/30 to-santaan-teal/20" />
                   )}

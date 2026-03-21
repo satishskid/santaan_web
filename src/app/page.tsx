@@ -24,9 +24,10 @@ import { SANTAAN_YOUTUBE_VIDEOS } from "@/data/youtubeVideos";
 import { SOCIAL_CAMPAIGNS } from "@/data/socialCampaigns";
 import { buildMetadata } from "@/lib/seo";
 import { buildFaqSchema, buildLocalClinicSchemas, buildOrganizationSchema } from "@/lib/schema";
+import { getSiteUrl } from "@/lib/site";
 
 export const metadata = buildMetadata({
-  title: "Santaan IVF | Fertility & IVF Centre in Bhubaneswar, Berhampur & Bangalore",
+  title: "Santaan IVF | IVF & Fertility Centres in Odisha & Bangalore",
   description:
     "Evidence-driven fertility and IVF care in Bhubaneswar, Berhampur and Bangalore with advanced diagnostics, compassionate specialists, and personalized treatment pathways.",
   path: "/",
@@ -47,7 +48,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Santaan IVF",
-    url: "https://santaan.in",
+    url: getSiteUrl(),
   };
 
   return (

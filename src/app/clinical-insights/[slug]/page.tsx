@@ -8,6 +8,7 @@ import { getClinicalCoverImage, getClinicalQuality, isClinicalReadyPost } from '
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
+import { getSiteUrl } from '@/lib/site';
 
 type Params = Promise<{ slug: string }>;
 
@@ -50,10 +51,11 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
   }
 
   const quality = getClinicalQuality(post);
+  const baseUrl = getSiteUrl();
   const schema = buildBlogPostingSchema({
     title: post.title,
     description: post.excerpt,
-    url: `https://santaan.in/clinical-insights/${post.slug}`,
+    url: `${baseUrl}/clinical-insights/${post.slug}`,
     publishedAt: post.publishedAt,
     modifiedAt: post.publishedAt,
     image: getClinicalCoverImage(post),
@@ -61,9 +63,9 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
     keywords: post.tags,
   });
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: 'Home', url: 'https://santaan.in/' },
-    { name: 'Clinical Insights', url: 'https://santaan.in/clinical-insights' },
-    { name: post.title, url: `https://santaan.in/clinical-insights/${post.slug}` },
+    { name: 'Home', url: `${baseUrl}/` },
+    { name: 'Clinical Insights', url: `${baseUrl}/clinical-insights` },
+    { name: post.title, url: `${baseUrl}/clinical-insights/${post.slug}` },
   ]);
 
   const latestPosts = await getSantaanBlogPosts({ type: 'doctor', limit: 80 }).catch(() => []);
@@ -106,6 +108,7 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
             alt="Clinical insight cover"
             className="w-full h-56 md:h-72 rounded-2xl object-cover mb-8 border border-santaan-sage/20"
             loading="lazy"
+            decoding="async"
           />
 
           <article className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 prose prose-lg max-w-none prose-headings:font-playfair prose-headings:text-santaan-teal prose-headings:mt-8 prose-headings:mb-4 prose-p:my-5 prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 prose-a:text-santaan-teal hover:prose-a:text-santaan-amber">

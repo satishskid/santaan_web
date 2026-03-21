@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { Microscope, Dna, Database, FileCheck, Users, BarChart3, Shield, Zap, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 
 export function SantaanLab() {
     return (
@@ -189,11 +191,20 @@ export function SantaanLab() {
 
                             {/* CTA */}
                             <div className="mt-6">
-                                <a href="#contact" aria-label="Contact Santaan">
-                                    <Button variant="default" className="w-full bg-santaan-teal hover:bg-santaan-sage text-white px-8 py-4 rounded-full text-base">
-                                        Contact Us
-                                    </Button>
-                                </a>
+                                <Link
+                                    href="/contact-centres"
+                                    aria-label="Contact Santaan"
+                                    className={cn(
+                                        buttonVariants({
+                                            size: 'lg',
+                                            fullWidth: true,
+                                            className:
+                                                'w-full bg-santaan-teal hover:bg-santaan-sage text-white px-8 py-4 rounded-full text-base',
+                                        })
+                                    )}
+                                >
+                                    Contact Us
+                                </Link>
                             </div>
                         </div>
                     </motion.div>

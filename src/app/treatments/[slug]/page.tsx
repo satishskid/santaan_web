@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { buildMetadata } from '@/lib/seo';
 import { buildBreadcrumbSchema, buildFaqSchema } from '@/lib/schema';
+import { getSiteUrl } from '@/lib/site';
 import { getTreatmentPageBySlug, treatmentSlugs } from '@/content/treatments';
 
 type Params = Promise<{ slug: string }>;
@@ -38,10 +39,11 @@ export default async function TreatmentPage({ params }: { params: Params }) {
   }
 
   const faqSchema = buildFaqSchema(page.faqs);
+  const baseUrl = getSiteUrl();
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: 'Home', url: 'https://santaan.in/' },
-    { name: 'Treatments', url: 'https://santaan.in/treatments' },
-    { name: page.h1, url: `https://santaan.in/treatments/${page.slug}` },
+    { name: 'Home', url: `${baseUrl}/` },
+    { name: 'Treatments', url: `${baseUrl}/treatments` },
+    { name: page.h1, url: `${baseUrl}/treatments/${page.slug}` },
   ]);
 
   return (
@@ -175,4 +177,3 @@ export default async function TreatmentPage({ params }: { params: Params }) {
     </main>
   );
 }
-

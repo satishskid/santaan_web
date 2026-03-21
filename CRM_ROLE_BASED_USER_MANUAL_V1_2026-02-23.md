@@ -14,10 +14,10 @@ This manual explains exactly how each team member logs in, what they must update
 - After login: `/admin/dashboard`
 
 ## 2.2 Credentials format
-Current system uses **email + password** login.
+Current system uses **username/email + 6-digit PIN** login.
 
-Standard temporary training password (if assigned):
-- Ask CRM Ops Admin for the current temporary training password.
+Standard temporary training PIN (if assigned):
+- Ask CRM Ops Admin for the current temporary training PIN.
 
 ### Starter role test accounts (for UAT/training)
 - Agency Ops: `agency.e2e@santaan.in`
@@ -28,8 +28,8 @@ Standard temporary training password (if assigned):
 Admin accounts remain separate and controlled by leadership.
 
 ## 2.3 If login fails
-1. Confirm email spelling.
-2. Confirm password case.
+1. Confirm username/email spelling.
+2. Confirm PIN digits.
 3. Ask CRM Ops Admin for reset.
 4. Retry in incognito/private window.
 

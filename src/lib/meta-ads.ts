@@ -14,9 +14,19 @@ export interface MetaCampaignInsight {
 interface MetaInsightsApiRow {
   campaign_id?: string;
   campaign_name?: string;
+  adset_id?: string;
+  adset_name?: string;
+  ad_id?: string;
+  ad_name?: string;
   spend?: string;
+  reach?: string;
   impressions?: string;
   clicks?: string;
+  cpc?: string;
+  ctr?: string;
+  cpm?: string;
+  actions?: Array<{ action_type?: string; value?: string }>;
+  cost_per_action_type?: Array<{ action_type?: string; value?: string }>;
   date_start?: string;
   date_stop?: string;
 }
@@ -36,6 +46,51 @@ interface MetaInsightsApiResponse {
 export interface FetchMetaCampaignInsightsInput {
   date: string; // YYYY-MM-DD
   accountIds?: string[];
+}
+
+export interface MetaAdsConfig {
+  accessToken: string;
+  accountIds: string[];
+  apiVersion: string;
+  appSecretConfigured: boolean;
+}
+
+export interface MetaEntityInsight {
+  accountId: string;
+  campaignId: string;
+  campaignName: string;
+  adsetId?: string;
+  adsetName?: string;
+  adId?: string;
+  adName?: string;
+  spend: number;
+  impressions: number;
+  reach: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  leads: number;
+  cpl: number;
+  dateStart: string;
+  dateStop: string;
+}
+
+export interface MetaDashboardSnapshot {
+  windowDays: number;
+  overview: {
+    spend: number;
+    impressions: number;
+    reach: number;
+    clicks: number;
+    ctr: number;
+    cpc: number;
+    cpm: number;
+    leads: number;
+    cpl: number;
+  };
+  campaigns: MetaEntityInsight[];
+  adsets: MetaEntityInsight[];
 }
 
 function ensureActPrefix(accountId: string): string {
@@ -70,10 +125,45 @@ function parseNumeric(value: string | undefined): number {
   return parsed;
 }
 
+function toRounded(value: number, digits = 2) {
+  if (!Number.isFinite(value)) return 0;
+  return Number(value.toFixed(digits));
+}
+
 function createAppSecretProof(accessToken: string): string | null {
   const appSecret = process.env.META_APP_SECRET?.trim();
   if (!appSecret) return null;
   return createHmac("sha256", appSecret).update(accessToken).digest("hex");
+}
+
+function readAccessToken() {
+  return process.env.META_ACCESS_TOKEN?.trim() || "";
+}
+
+export function readMetaAdsConfig(): MetaAdsConfig | null {
+  const accessToken = readAccessToken();
+  const accountIds = resolveAccountIds();
+  if (!accessToken || !accountIds.length) return null;
+  return {
+    accessToken,
+    accountIds,
+    apiVersion: (process.env.META_GRAPH_API_VERSION || "v21.0").trim(),
+    appSecretConfigured: Boolean(process.env.META_APP_SECRET?.trim()),
+  };
+}
+
+function leadActionsCount(actions?: Array<{ action_type?: string; value?: string }>) {
+  if (!actions?.length) return 0;
+  return actions.reduce((sum, action) => {
+    const actionType = String(action.action_type || "").toLowerCase();
+    const isLeadLike =
+      actionType.includes("lead") ||
+      actionType.includes("submit_application") ||
+      actionType.includes("complete_registration") ||
+      actionType.includes("contact");
+    if (!isLeadLike) return sum;
+    return sum + parseNumeric(action.value);
+  }, 0);
 }
 
 async function fetchInsightsForAccount(
@@ -156,6 +246,112 @@ async function fetchInsightsForAccount(
   return insights;
 }
 
+interface FetchMetaInsightsInput {
+  accountId: string;
+  since: string;
+  until: string;
+  level: "campaign" | "adset";
+  apiVersion: string;
+  accessToken: string;
+}
+
+async function fetchInsightsRangeForAccount(input: FetchMetaInsightsInput): Promise<MetaEntityInsight[]> {
+  const insights: MetaEntityInsight[] = [];
+  const appSecretProof = createAppSecretProof(input.accessToken);
+  const fields = [
+    "campaign_id",
+    "campaign_name",
+    "adset_id",
+    "adset_name",
+    "ad_id",
+    "ad_name",
+    "spend",
+    "reach",
+    "impressions",
+    "clicks",
+    "cpc",
+    "ctr",
+    "cpm",
+    "actions",
+    "cost_per_action_type",
+    "date_start",
+    "date_stop",
+  ].join(",");
+
+  const baseUrl = new URL(`https://graph.facebook.com/${input.apiVersion}/${input.accountId}/insights`);
+  baseUrl.searchParams.set("access_token", input.accessToken);
+  baseUrl.searchParams.set("level", input.level);
+  baseUrl.searchParams.set("time_increment", "all_days");
+  baseUrl.searchParams.set("time_range", JSON.stringify({ since: input.since, until: input.until }));
+  baseUrl.searchParams.set("fields", fields);
+  baseUrl.searchParams.set("limit", "100");
+  if (appSecretProof) baseUrl.searchParams.set("appsecret_proof", appSecretProof);
+
+  let nextUrl: string | null = baseUrl.toString();
+  let guard = 0;
+
+  while (nextUrl && guard < 20) {
+    guard += 1;
+    const response = await fetch(nextUrl, {
+      method: "GET",
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+
+    let payload: MetaInsightsApiResponse | null = null;
+    try {
+      payload = (await response.json()) as MetaInsightsApiResponse;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || payload?.error) {
+      const message =
+        payload?.error?.message || `Meta API request failed with status ${response.status}`;
+      throw new Error(message);
+    }
+
+    for (const row of payload?.data || []) {
+      const spend = parseNumeric(row.spend);
+      const impressions = Math.max(0, Math.round(parseNumeric(row.impressions)));
+      const clicks = Math.max(0, Math.round(parseNumeric(row.clicks)));
+      const reach = Math.max(0, Math.round(parseNumeric(row.reach)));
+      const ctr = parseNumeric(row.ctr) || (impressions > 0 ? (clicks / impressions) * 100 : 0);
+      const cpc = parseNumeric(row.cpc) || (clicks > 0 ? spend / clicks : 0);
+      const cpm = parseNumeric(row.cpm) || (impressions > 0 ? (spend / impressions) * 1000 : 0);
+      const leads = leadActionsCount(row.actions);
+      const cpl = leads > 0 ? spend / leads : 0;
+
+      if (spend <= 0 && impressions <= 0 && clicks <= 0 && leads <= 0) continue;
+
+      insights.push({
+        accountId: input.accountId,
+        campaignId: String(row.campaign_id || "").trim() || String(row.campaign_name || "campaign_unknown").trim(),
+        campaignName: String(row.campaign_name || row.campaign_id || "campaign_unknown").trim(),
+        adsetId: String(row.adset_id || "").trim() || undefined,
+        adsetName: String(row.adset_name || row.adset_id || "").trim() || undefined,
+        adId: String(row.ad_id || "").trim() || undefined,
+        adName: String(row.ad_name || row.ad_id || "").trim() || undefined,
+        spend: toRounded(spend),
+        impressions,
+        reach,
+        clicks,
+        ctr: toRounded(ctr),
+        cpc: toRounded(cpc),
+        cpm: toRounded(cpm),
+        leads: Math.round(leads),
+        cpl: toRounded(cpl),
+        dateStart: String(row.date_start || input.since).slice(0, 10),
+        dateStop: String(row.date_stop || input.until).slice(0, 10),
+      });
+    }
+
+    nextUrl = payload?.paging?.next || null;
+  }
+
+  return insights;
+}
+
 export function inferCenterFromCampaignName(campaignName: string): string {
   const normalized = campaignName.toLowerCase();
   if (/(berh|brp|ganjam|gopalpur)/.test(normalized)) return "berhampur";
@@ -167,8 +363,8 @@ export function inferCenterFromCampaignName(campaignName: string): string {
 export async function fetchMetaCampaignInsights(
   input: FetchMetaCampaignInsightsInput
 ): Promise<MetaCampaignInsight[]> {
-  const accessToken = process.env.META_ACCESS_TOKEN?.trim();
-  if (!accessToken) {
+  const config = readMetaAdsConfig();
+  if (!config?.accessToken) {
     throw new Error("META_ACCESS_TOKEN is not configured");
   }
 
@@ -177,13 +373,83 @@ export async function fetchMetaCampaignInsights(
     throw new Error("META_AD_ACCOUNT_ID or META_AD_ACCOUNT_IDS is not configured");
   }
 
-  const apiVersion = (process.env.META_GRAPH_API_VERSION || "v21.0").trim();
   const allRows: MetaCampaignInsight[] = [];
 
   for (const accountId of accountIds) {
-    const rows = await fetchInsightsForAccount(accountId, input.date, apiVersion, accessToken);
+    const rows = await fetchInsightsForAccount(accountId, input.date, config.apiVersion, config.accessToken);
     allRows.push(...rows);
   }
 
   return allRows;
+}
+
+export async function fetchMetaDashboardSnapshot(input: {
+  since: string;
+  until: string;
+  windowDays: number;
+  accountIds?: string[];
+}): Promise<MetaDashboardSnapshot> {
+  const config = readMetaAdsConfig();
+  if (!config) {
+    throw new Error("META_ACCESS_TOKEN or META_AD_ACCOUNT_ID(S) is not configured");
+  }
+
+  const accountIds = resolveAccountIds(input.accountIds?.length ? input.accountIds : config.accountIds);
+  const [campaignRows, adsetRows] = await Promise.all([
+    Promise.all(
+      accountIds.map((accountId) =>
+        fetchInsightsRangeForAccount({
+          accountId,
+          since: input.since,
+          until: input.until,
+          level: "campaign",
+          apiVersion: config.apiVersion,
+          accessToken: config.accessToken,
+        })
+      )
+    ),
+    Promise.all(
+      accountIds.map((accountId) =>
+        fetchInsightsRangeForAccount({
+          accountId,
+          since: input.since,
+          until: input.until,
+          level: "adset",
+          apiVersion: config.apiVersion,
+          accessToken: config.accessToken,
+        })
+      )
+    ),
+  ]);
+
+  const campaigns = campaignRows.flat().sort((a, b) => b.spend - a.spend).slice(0, 12);
+  const adsets = adsetRows.flat().sort((a, b) => b.spend - a.spend).slice(0, 12);
+  const overview = campaigns.reduce(
+    (acc, row) => {
+      acc.spend += row.spend;
+      acc.impressions += row.impressions;
+      acc.reach += row.reach;
+      acc.clicks += row.clicks;
+      acc.leads += row.leads;
+      return acc;
+    },
+    { spend: 0, impressions: 0, reach: 0, clicks: 0, leads: 0 }
+  );
+
+  return {
+    windowDays: input.windowDays,
+    overview: {
+      spend: toRounded(overview.spend),
+      impressions: Math.round(overview.impressions),
+      reach: Math.round(overview.reach),
+      clicks: Math.round(overview.clicks),
+      ctr: toRounded(overview.impressions > 0 ? (overview.clicks / overview.impressions) * 100 : 0),
+      cpc: toRounded(overview.clicks > 0 ? overview.spend / overview.clicks : 0),
+      cpm: toRounded(overview.impressions > 0 ? (overview.spend / overview.impressions) * 1000 : 0),
+      leads: Math.round(overview.leads),
+      cpl: toRounded(overview.leads > 0 ? overview.spend / overview.leads : 0),
+    },
+    campaigns,
+    adsets,
+  };
 }

@@ -93,7 +93,7 @@ export default async function ClinicalInsightsPage() {
                   key={post.slug}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow flex flex-col h-full"
                 >
-                  <img src={getClinicalCoverImage(post)} alt="Clinical insight cover" className="w-full h-52 object-cover" loading="lazy" />
+                  <img src={getClinicalCoverImage(post)} alt="Clinical insight cover" className="w-full h-52 object-cover" loading="lazy" decoding="async" />
                   <div className="p-6 flex flex-col grow">
                     <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
                       <span>{new Date(post.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>

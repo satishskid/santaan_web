@@ -5,12 +5,12 @@ Use for: Telecaller, Field Team, Counselor, Agency, CEO
 
 ## 1) Login kaise karein
 1. Open karo: `/login`
-2. Email + password daalo
+2. Assigned username/email + 6-digit PIN daalo
 3. Login ke baad jao: `/admin/dashboard`
 
 Agar login issue aaye:
-- email spelling check karo
-- password check karo
+- username/email spelling check karo
+- PIN check karo
 - CRM Ops Admin se reset lo
 
 ---
@@ -94,4 +94,3 @@ Agar koi bhi item `blocked` hai:
 4. CRM Ops/Lead ko same day ping karo
 
 **No owner + no due time = no closure.**
-

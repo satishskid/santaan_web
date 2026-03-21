@@ -66,8 +66,8 @@ export default function AdminLoginPage() {
                                 </span>
                             </span>
                         </div>
-                        <h1 className="text-2xl font-playfair font-bold text-gray-900">Admin Portal</h1>
-                        <p className="text-gray-500 text-sm mt-1">Sign in to access the dashboard</p>
+                        <h1 className="text-2xl font-playfair font-bold text-gray-900">Santaan CRM Portal</h1>
+                        <p className="text-gray-500 text-sm mt-1">Sign in with your assigned username or email and 6-digit PIN</p>
                     </div>
 
                     {/* Error Message */}

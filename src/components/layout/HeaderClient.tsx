@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, Phone, Calendar, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonVariants } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Session } from 'next-auth';
@@ -43,6 +44,7 @@ function trackHeaderEvent(label: string) {
 export function HeaderClient({ session }: HeaderClientProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const { signal } = useJourney();
 
     useEffect(() => {
@@ -109,6 +111,9 @@ export function HeaderClient({ session }: HeaderClientProps) {
 
                     {/* Actions */}
                     <div className="hidden xl:flex items-center gap-2 2xl:gap-3">
+                        <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
+                            Search
+                        </button>
                         <a
                             href={`tel:${PRIMARY_CALL_NUMBER}`}
                             data-cta-kind="call"
@@ -185,6 +190,9 @@ export function HeaderClient({ session }: HeaderClientProps) {
 
                     {/* Mobile Menu Button */}
                     <div className="flex xl:hidden gap-4 items-center">
+                        <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
+                            Search
+                        </button>
                         {session?.user && (
                             <Link href="/profile" className="relative w-8 h-8">
                                 {session.user.image ? (
@@ -217,6 +225,43 @@ export function HeaderClient({ session }: HeaderClientProps) {
                 </nav>
             </div>
 
+            <AnimatePresence>
+                {searchOpen ? (
+                    <motion.div
+                        className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSearchOpen(false)}
+                    >
+                        <motion.div
+                            className="w-full max-w-xl rounded-2xl bg-white border border-gray-200 shadow-xl p-5"
+                            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                            transition={{ duration: 0.18 }}
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between gap-4">
+                                <h2 className="text-sm font-semibold text-gray-900">Search</h2>
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchOpen(false)}
+                                    className="text-gray-500 hover:text-gray-900 transition-colors"
+                                    aria-label="Close search"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form action="/fertility-insights" method="get" className="mt-4 flex gap-2">
+                                <Input name="q" placeholder="Search fertility topics (PCOS, IVF, AMH…)" autoFocus />
+                                <Button type="submit">Go</Button>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
+
             {/* Mobile Menu */}
             <AnimatePresence>
                 {mobileMenuOpen && (
@@ -242,27 +287,32 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                     <div className="space-y-4">
                                         <a
                                             href={`tel:${PRIMARY_CALL_NUMBER}`}
-                                            className="block"
                                             data-cta-kind="call"
                                             data-center="Bhubaneswar"
                                             data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                                            aria-label={`Call ${PRIMARY_CALL_NUMBER}`}
+                                            className={cn(
+                                                buttonVariants({ variant: 'outline', fullWidth: true, className: 'w-full justify-center' })
+                                            )}
                                         >
-                                            <Button variant="outline" className="w-full justify-center">
-                                                Call {PRIMARY_CALL_NUMBER}
-                                            </Button>
+                                            Call {PRIMARY_CALL_NUMBER}
                                         </a>
                                         <a
                                             href={PRIMARY_WHATSAPP_URL}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="block"
                                             data-cta-kind="whatsapp"
                                             data-center="Bhubaneswar"
                                             data-cta-target={PRIMARY_WHATSAPP_URL}
+                                            aria-label="WhatsApp a fertility advisor"
+                                            className={cn(
+                                                buttonVariants({
+                                                    fullWidth: true,
+                                                    className: 'w-full justify-center bg-emerald-600 hover:bg-emerald-700',
+                                                })
+                                            )}
                                         >
-                                            <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
-                                                WhatsApp a Fertility Advisor
-                                            </Button>
+                                            WhatsApp a Fertility Advisor
                                         </a>
                                         {CENTER_CONTACTS.map((center) => (
                                             <div key={center.name} className="space-y-2">
@@ -273,14 +323,19 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                                     <Link
                                                         key={phone}
                                                         href={`tel:${phone}`}
-                                                        className="block"
                                                         data-cta-kind="call"
                                                         data-center={center.city}
                                                         data-cta-target={`tel:${phone}`}
+                                                        aria-label={`Call ${phone}`}
+                                                        className={cn(
+                                                            buttonVariants({
+                                                                variant: 'outline',
+                                                                fullWidth: true,
+                                                                className: 'w-full justify-center',
+                                                            })
+                                                        )}
                                                     >
-                                                        <Button variant="outline" className="w-full justify-center">
-                                                            Call {phone}
-                                                        </Button>
+                                                        Call {phone}
                                                     </Link>
                                                 ))}
                                             </div>
@@ -288,8 +343,11 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                         <div className="text-xs text-gray-500">Choose your nearest center to book.</div>
                                     </div>
                                 ) : (
-                                    <Link href="/profile" className="block">
-                                        <Button className="w-full justify-center">View Profile</Button>
+                                    <Link
+                                        href="/profile"
+                                        className={cn(buttonVariants({ fullWidth: true, className: 'w-full justify-center' }))}
+                                    >
+                                        View Profile
                                     </Link>
                                 )}
                             </div>

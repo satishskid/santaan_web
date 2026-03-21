@@ -13,8 +13,9 @@ import SpendManagement from './SpendManagement';
 import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
 import DailyCommandCenter from './DailyCommandCenter';
-import { Search, Download, UserPlus, Phone, Mail, Calendar, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import NeoDoveOpsDashboard from './NeoDoveOpsDashboard';
+import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
     Table,
@@ -24,6 +25,7 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface Contact {
     id: number;
@@ -76,6 +78,7 @@ type FilterTab =
     | 'followups'
     | 'team'
     | 'analytics'
+    | 'neodove_ops'
     | 'ceo_command'
     | 'settings'
     | 'centers'
@@ -113,6 +116,7 @@ export default function CRM() {
     const opsInputRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'field_exec']);
     const contactRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager', 'telecaller', 'counselor']);
     const spendRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer']);
+    const neodoveOpsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager']);
     const analyticsRoles = new Set([
         'admin',
         'ceo',
@@ -130,6 +134,7 @@ export default function CRM() {
     const canAccessContacts = contactRoles.has(currentRole) || canAccessLeadership;
     const canDeleteContacts = canAccessLeadership;
     const canAccessSpend = spendRoles.has(currentRole) || canAccessLeadership;
+    const canAccessNeoDoveOps = neodoveOpsRoles.has(currentRole) || canAccessLeadership;
     const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
     const canAccessCeoCommand = canAccessLeadership;
 
@@ -359,6 +364,7 @@ export default function CRM() {
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
             nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
             nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
+            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -393,6 +399,7 @@ export default function CRM() {
 
         if (isTelecallerManagerPortal) {
             nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
+            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -416,6 +423,7 @@ export default function CRM() {
 
         nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
         nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
+        if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
         if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
         if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
         if (canAccessContacts) nextTabs.push({ id: 'all', label: 'All Contacts', icon: Search });
@@ -424,6 +432,7 @@ export default function CRM() {
         canAccessAnalytics,
         canAccessCeoCommand,
         canAccessContacts,
+        canAccessNeoDoveOps,
         canAccessOpsInputs,
         canAccessSpend,
         contacts,
@@ -544,6 +553,7 @@ export default function CRM() {
                 actions: [
                     { id: 'open_hot', label: 'Open Hot Leads', tab: 'hot_leads' as const },
                     { id: 'open_followups', label: 'Open Follow-ups', tab: 'followups' as const },
+                    { id: 'open_neodove_ops', label: 'Open NeoDove Ops', tab: 'neodove_ops' as const },
                     { id: 'open_daily', label: 'Open Daily Command', tab: 'daily_command' as const },
                 ],
             };
@@ -577,7 +587,7 @@ export default function CRM() {
                 { id: 'open_daily', label: 'Open Daily Command', tab: 'daily_command' as const },
             ],
         };
-    }, [contactOps.followupsDue, contactOps.hotLeads, contactOps.qualified, contactOps.staleLeads, currentRole, isAdsPortal, isContentPortal, isCounselorPortal, isCeoPortal, isTelecallerManagerPortal]);
+    }, [contactOps.followupsDue, contactOps.hotLeads, contactOps.qualified, contactOps.staleLeads, isAdsPortal, isContentPortal, isCounselorPortal, isCeoPortal, isTelecallerManagerPortal]);
 
     const riderStorageKey = useMemo(() => `crm_rider_${currentRole || 'unknown'}_${todayKey}`, [currentRole, todayKey]);
     const [riderState, setRiderState] = useState<Record<string, boolean>>(() => {
@@ -668,13 +678,16 @@ export default function CRM() {
                 </div>
                 <div className="flex gap-2">
                     {canAccessLeadership ? (
-                        <Link href="/admin/marketing-manual">
-                            <Button
-                                variant="outline"
-                                className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
-                            >
-                                <BookOpen className="w-4 h-4" /> Manual & SLA
-                            </Button>
+                        <Link
+                            href="/admin/marketing-manual"
+                            className={cn(
+                                buttonVariants({
+                                    variant: 'outline',
+                                    className: 'flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50',
+                                })
+                            )}
+                        >
+                            <BookOpen className="w-4 h-4" /> Manual & SLA
                         </Link>
                     ) : null}
                     {isContactTab && (
@@ -889,6 +902,10 @@ export default function CRM() {
                 ) : activeTab === 'analytics' ? (
                     <div className="p-6">
                         <CampaignAnalytics contacts={contacts} />
+                    </div>
+                ) : activeTab === 'neodove_ops' ? (
+                    <div className="p-6">
+                        <NeoDoveOpsDashboard />
                     </div>
                 ) : activeTab === 'ceo_command' ? (
                     <div className="p-6">

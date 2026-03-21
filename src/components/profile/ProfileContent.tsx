@@ -1,9 +1,10 @@
 "use client";
 
 import { useJourney } from '@/context/JourneyContext';
-import { Button } from '@/components/ui/Button';
+import { buttonVariants } from '@/components/ui/Button';
 import { Sprout, CheckCircle, AlertCircle, Video, Stethoscope, FileText, ArrowRight, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export function ProfileContent() {
     const { signal } = useJourney();
@@ -13,8 +14,8 @@ export function ProfileContent() {
             return (
                 <div className="bg-gray-50 rounded-xl p-6 text-center">
                     <p className="text-gray-500 mb-4">You haven&apos;t taken the full clinical assessment yet.</p>
-                    <Link href="/#assessment">
-                        <Button className="w-full">Start Assessment</Button>
+                    <Link href="/#santaan-signal" className={cn(buttonVariants({ className: 'w-full' }))}>
+                        Start Assessment
                     </Link>
                 </div>
             );

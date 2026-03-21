@@ -1,6 +1,7 @@
-import { Button } from '@/components/ui/Button';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import Image from 'next/image';
+import { buttonVariants } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 
 export function Hero() {
     return (
@@ -64,25 +65,34 @@ export function Hero() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-16">
-                    <a href="#santaan-signal" aria-label="Begin your journey: take the Santaan Signal assessment">
-                        <Button
-                            size="lg"
-                            className="group w-full sm:w-auto bg-santaan-amber hover:bg-[#E08E45] border-none shadow-lg hover:shadow-xl transition-all"
-                        >
-                            Begin Your Journey
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
+                    <a
+                        href="#santaan-signal"
+                        aria-label="Begin your journey: take the Santaan Signal assessment"
+                        className={cn(
+                            buttonVariants({
+                                size: 'lg',
+                                className:
+                                    'group w-full sm:w-auto bg-santaan-amber hover:bg-[#E08E45] border-none shadow-lg hover:shadow-xl transition-all',
+                            })
+                        )}
+                    >
+                        Begin Your Journey
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </a>
 
-                    <a href="#insights" aria-label="Read today's fertility insight">
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 backdrop-blur-sm"
-                        >
-                            <BookOpen className="w-5 h-5 mr-2" />
-                            Read Today&apos;s Insight
-                        </Button>
+                    <a
+                        href="#insights"
+                        aria-label="Read today's fertility insight"
+                        className={cn(
+                            buttonVariants({
+                                variant: 'outline',
+                                size: 'lg',
+                                className: 'w-full sm:w-auto border-white/40 text-white hover:bg-white/10 backdrop-blur-sm',
+                            })
+                        )}
+                    >
+                        <BookOpen className="w-5 h-5 mr-2" />
+                        Read Today&apos;s Insight
                     </a>
                 </div>
 

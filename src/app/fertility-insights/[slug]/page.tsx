@@ -7,6 +7,7 @@ import { getSantaanBlogPostBySlug, getSantaanBlogPosts } from '@/lib/medium';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
+import { getSiteUrl } from '@/lib/site';
 
 type Params = Promise<{ slug: string }>;
 
@@ -62,10 +63,11 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
     redirect(`/clinical-insights/${slug}`);
   }
 
+  const baseUrl = getSiteUrl();
   const schema = buildBlogPostingSchema({
     title: post.title,
     description: post.excerpt,
-    url: `https://santaan.in/fertility-insights/${post.slug}`,
+    url: `${baseUrl}/fertility-insights/${post.slug}`,
     publishedAt: post.publishedAt,
     modifiedAt: post.publishedAt,
     image: post.thumbnail,
@@ -73,9 +75,9 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
     keywords: post.tags,
   });
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: 'Home', url: 'https://santaan.in/' },
-    { name: 'Fertility Insights', url: 'https://santaan.in/fertility-insights' },
-    { name: post.title, url: `https://santaan.in/fertility-insights/${post.slug}` },
+    { name: 'Home', url: `${baseUrl}/` },
+    { name: 'Fertility Insights', url: `${baseUrl}/fertility-insights` },
+    { name: post.title, url: `${baseUrl}/fertility-insights/${post.slug}` },
   ]);
 
   const relatedLinks = getRelatedLinks(post.tags);

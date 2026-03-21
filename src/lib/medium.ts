@@ -111,6 +111,24 @@ function stripInternalPublishingTail(html: string): string {
   return html.slice(0, safeIndex);
 }
 
+function ensureImageAttributes(html: string): string {
+  if (!html) return html;
+
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const hasAlt = /\salt\s*=/.test(tag);
+    const hasLoading = /\sloading\s*=/.test(tag);
+    const hasDecoding = /\sdecoding\s*=/.test(tag);
+
+    let injection = '';
+    if (!hasAlt) injection += ' alt=""';
+    if (!hasLoading) injection += ' loading="lazy"';
+    if (!hasDecoding) injection += ' decoding="async"';
+
+    if (!injection) return tag;
+    return tag.replace(/<img\b/i, `<img${injection}`);
+  });
+}
+
 function sanitizeMediumHtml(input: string): string {
   if (!input) return '';
 
@@ -132,6 +150,7 @@ function sanitizeMediumHtml(input: string): string {
 
   // Remove dangling separators often used before internal notes.
   html = html.replace(/<p>\s*[—-]\s*[—-]?\s*<\/p>\s*$/gi, '');
+  html = ensureImageAttributes(html);
   html = html.trim();
   return html;
 }

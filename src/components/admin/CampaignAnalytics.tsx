@@ -6,6 +6,7 @@ import {
   Globe2,
   IndianRupee,
   Megaphone,
+  Search,
   Target,
   TrendingUp,
   Users,
@@ -64,6 +65,115 @@ interface Ga4Snapshot {
   }>;
 }
 
+interface SearchConsoleSnapshot {
+  configured: boolean;
+  message?: string;
+  windowDays: number;
+  siteUrl: string;
+  overview: {
+    clicks: number;
+    impressions: number;
+    ctr: number;
+    position: number;
+  };
+  topQueries: Array<{
+    query: string;
+    clicks: number;
+    impressions: number;
+    ctr: number;
+    position: number;
+    page?: string | null;
+  }>;
+  topPages: Array<{
+    page: string;
+    clicks: number;
+    impressions: number;
+    ctr: number;
+    position: number;
+  }>;
+}
+
+interface MetaEntityInsight {
+  accountId: string;
+  campaignId: string;
+  campaignName: string;
+  adsetId?: string;
+  adsetName?: string;
+  spend: number;
+  impressions: number;
+  reach: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  leads: number;
+  cpl: number;
+  dateStart: string;
+  dateStop: string;
+}
+
+interface MetaSnapshot {
+  configured: boolean;
+  message?: string;
+  accountCount?: number;
+  appSecretConfigured?: boolean;
+  windowDays: number;
+  overview: {
+    spend: number;
+    impressions: number;
+    reach: number;
+    clicks: number;
+    ctr: number;
+    cpc: number;
+    cpm: number;
+    leads: number;
+    cpl: number;
+  };
+  campaigns: MetaEntityInsight[];
+  adsets: MetaEntityInsight[];
+}
+
+interface IntegrationStatusSnapshot {
+  ok: boolean;
+  generatedAt: string;
+  services: {
+    ga4: {
+      configured: boolean;
+      status: string;
+      propertyId?: string | null;
+      message: string;
+    };
+    searchConsole: {
+      configured: boolean;
+      status: string;
+      siteUrl?: string | null;
+      message: string;
+    };
+    meta: {
+      configured: boolean;
+      status: string;
+      accountCount: number;
+      appSecretConfigured: boolean;
+      spendRows7d: number;
+      spendTotal7d: number;
+      lastSpendAt?: string | null;
+      message: string;
+    };
+    neodove: {
+      configured: boolean;
+      status: string;
+      processed24h: number;
+      errors24h: number;
+      duplicates24h: number;
+      trackedContacts: number;
+      syncErrors: number;
+      missingFollowUp: number;
+      lastEventAt?: string | null;
+      message: string;
+    };
+  };
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -106,6 +216,23 @@ function formatCurrency(value: number) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-IN").format(Number.isFinite(value) ? value : 0);
+}
+
+function formatPercent(value: number) {
+  return `${Number.isFinite(value) ? value.toFixed(1) : "0.0"}%`;
+}
+
+function prettyDate(value?: string | null) {
+  if (!value) return "—";
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) return value;
+  return new Date(parsed).toLocaleString("en-IN");
+}
+
+function toneClasses(status: string) {
+  if (status === "ready") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (status === "warning") return "bg-amber-50 text-amber-700 border-amber-200";
+  return "bg-rose-50 text-rose-700 border-rose-200";
 }
 
 function normalizeToken(value?: string | null, fallback = "unknown") {
@@ -157,9 +284,18 @@ function keywordTemplatesFor(topic: string, center: string) {
 
 export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) {
   const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
+  const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatusSnapshot | null>(null);
+  const [integrationLoading, setIntegrationLoading] = useState(true);
+  const [integrationError, setIntegrationError] = useState<string | null>(null);
   const [ga4Snapshot, setGa4Snapshot] = useState<Ga4Snapshot | null>(null);
   const [ga4Loading, setGa4Loading] = useState(true);
   const [ga4Error, setGa4Error] = useState<string | null>(null);
+  const [searchConsoleSnapshot, setSearchConsoleSnapshot] = useState<SearchConsoleSnapshot | null>(null);
+  const [searchConsoleLoading, setSearchConsoleLoading] = useState(true);
+  const [searchConsoleError, setSearchConsoleError] = useState<string | null>(null);
+  const [metaSnapshot, setMetaSnapshot] = useState<MetaSnapshot | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
   const [draftThresholds, setDraftThresholds] = useState(() => {
     const defaults = getDefaultDraftThresholds();
@@ -188,6 +324,25 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
   useEffect(() => {
     let active = true;
 
+    async function loadIntegrationStatus() {
+      setIntegrationLoading(true);
+      setIntegrationError(null);
+      try {
+        const response = await fetch("/api/admin/analytics/integrations");
+        const payload = (await response.json()) as IntegrationStatusSnapshot & { error?: string; message?: string };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.message || payload?.error || "Failed to fetch integration health");
+        }
+        setIntegrationStatus(payload);
+      } catch (error) {
+        if (!active) return;
+        setIntegrationError(error instanceof Error ? error.message : "Failed to fetch integration health");
+      } finally {
+        if (active) setIntegrationLoading(false);
+      }
+    }
+
     async function loadSpend() {
       try {
         const response = await fetch("/api/admin/spend");
@@ -199,6 +354,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       }
     }
 
+    loadIntegrationStatus();
     loadSpend();
     return () => {
       active = false;
@@ -228,6 +384,62 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
 
     loadGa4();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSearchConsole() {
+      setSearchConsoleLoading(true);
+      setSearchConsoleError(null);
+      try {
+        const response = await fetch("/api/admin/analytics/search-console?days=7");
+        const payload = (await response.json()) as SearchConsoleSnapshot & { error?: string; message?: string };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.message || payload?.error || "Failed to fetch Search Console metrics");
+        }
+        setSearchConsoleSnapshot(payload);
+      } catch (error) {
+        if (!active) return;
+        setSearchConsoleError(error instanceof Error ? error.message : "Failed to fetch Search Console metrics");
+      } finally {
+        if (active) setSearchConsoleLoading(false);
+      }
+    }
+
+    loadSearchConsole();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMetaAnalytics() {
+      setMetaLoading(true);
+      setMetaError(null);
+      try {
+        const response = await fetch("/api/admin/analytics/meta?days=7");
+        const payload = (await response.json()) as MetaSnapshot & { error?: string; message?: string };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.message || payload?.error || "Failed to fetch Meta analytics");
+        }
+        setMetaSnapshot(payload);
+      } catch (error) {
+        if (!active) return;
+        setMetaError(error instanceof Error ? error.message : "Failed to fetch Meta analytics");
+      } finally {
+        if (active) setMetaLoading(false);
+      }
+    }
+
+    loadMetaAnalytics();
     return () => {
       active = false;
     };
@@ -499,6 +711,39 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     };
   }, [contacts, spendEntries]);
 
+  const effectiveKeywordSuggestions = useMemo(() => {
+    const searchConsoleKeywords =
+      searchConsoleSnapshot?.configured
+        ? (searchConsoleSnapshot.topQueries || [])
+            .map((row) => row.query.trim())
+            .filter(Boolean)
+            .slice(0, 8)
+        : [];
+    return Array.from(new Set([...searchConsoleKeywords, ...metrics.keywordSuggestions])).slice(0, 12);
+  }, [metrics.keywordSuggestions, searchConsoleSnapshot]);
+
+  const serviceHealth = useMemo(() => {
+    if (!integrationStatus) return null;
+    return {
+      ga4: {
+        ...integrationStatus.services.ga4,
+        status: ga4Error ? "warning" : integrationStatus.services.ga4.status,
+        message: ga4Error || integrationStatus.services.ga4.message,
+      },
+      searchConsole: {
+        ...integrationStatus.services.searchConsole,
+        status: searchConsoleError ? "warning" : integrationStatus.services.searchConsole.status,
+        message: searchConsoleError || integrationStatus.services.searchConsole.message,
+      },
+      meta: {
+        ...integrationStatus.services.meta,
+        status: metaError ? "warning" : integrationStatus.services.meta.status,
+        message: metaError || integrationStatus.services.meta.message,
+      },
+      neodove: integrationStatus.services.neodove,
+    };
+  }, [ga4Error, integrationStatus, metaError, searchConsoleError]);
+
   const draftBundle = useMemo(() => {
     return buildContentManagerGeminiPrompt({
       totalLeads: metrics.totalLeads,
@@ -506,7 +751,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       topics: metrics.topics,
       centers: metrics.centers,
       timeWindows: metrics.timeWindows,
-      keywordSuggestions: metrics.keywordSuggestions,
+      keywordSuggestions: effectiveKeywordSuggestions,
       topLandingPagesByTopic: metrics.topLandingPagesByTopic,
       bestPaid: metrics.bestPaid,
       pausePaid: metrics.pausePaid,
@@ -517,7 +762,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     metrics.topics,
     metrics.centers,
     metrics.timeWindows,
-    metrics.keywordSuggestions,
+    effectiveKeywordSuggestions,
     metrics.topLandingPagesByTopic,
     metrics.bestPaid,
     metrics.pausePaid,
@@ -542,6 +787,72 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Target className="w-4 h-4 text-gray-500" />
+            Integration Health
+          </h3>
+        </div>
+        {integrationLoading ? (
+          <div className="p-6 text-sm text-gray-500">Loading integration health...</div>
+        ) : integrationError ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{integrationError}</div>
+        ) : serviceHealth ? (
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">GA4</p>
+                <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${toneClasses(serviceHealth.ga4.status)}`}>
+                  {serviceHealth.ga4.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">{serviceHealth.ga4.message}</p>
+              <p className="mt-2 text-xs text-gray-500">Property: {serviceHealth.ga4.propertyId || "—"}</p>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">Search Console</p>
+                <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${toneClasses(serviceHealth.searchConsole.status)}`}>
+                  {serviceHealth.searchConsole.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">{serviceHealth.searchConsole.message}</p>
+              <p className="mt-2 text-xs text-gray-500 truncate">Site: {serviceHealth.searchConsole.siteUrl || "—"}</p>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">Meta Ads</p>
+                <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${toneClasses(serviceHealth.meta.status)}`}>
+                  {serviceHealth.meta.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">{serviceHealth.meta.message}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                accounts {formatNumber(serviceHealth.meta.accountCount)} · spend rows 7d {formatNumber(serviceHealth.meta.spendRows7d)}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Last spend sync: {prettyDate(serviceHealth.meta.lastSpendAt)}</p>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">NeoDove</p>
+                <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${toneClasses(serviceHealth.neodove.status)}`}>
+                  {serviceHealth.neodove.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">{serviceHealth.neodove.message}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                processed 24h {formatNumber(serviceHealth.neodove.processed24h)} · errors {formatNumber(serviceHealth.neodove.errors24h)}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Last event: {prettyDate(serviceHealth.neodove.lastEventAt)}</p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50/50">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -623,6 +934,185 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
             {ga4Snapshot?.message || "GA4 credentials are not configured for this environment yet."}
           </div>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Search className="w-4 h-4 text-gray-500" />
+              SEO Demand Signals (Search Console · 7 days)
+            </h3>
+          </div>
+          {searchConsoleLoading ? (
+            <div className="p-6 text-sm text-gray-500">Loading Search Console metrics...</div>
+          ) : searchConsoleError ? (
+            <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{searchConsoleError}</div>
+          ) : searchConsoleSnapshot?.configured ? (
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Clicks</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(searchConsoleSnapshot.overview.clicks)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Impressions</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(searchConsoleSnapshot.overview.impressions)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">CTR</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatPercent(searchConsoleSnapshot.overview.ctr)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Avg Position</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{searchConsoleSnapshot.overview.position.toFixed(1)}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Top Queries</p>
+                  <div className="space-y-2">
+                    {searchConsoleSnapshot.topQueries.length > 0 ? (
+                      searchConsoleSnapshot.topQueries.map((row) => (
+                        <div key={row.query} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{row.query}</p>
+                              <p className="text-[11px] text-gray-500 mt-1 truncate">{row.page || "No dominant page mapped yet"}</p>
+                            </div>
+                            <p className="text-xs text-gray-500 text-right">
+                              clicks <span className="font-semibold text-gray-700">{formatNumber(row.clicks)}</span>
+                              <br />
+                              pos <span className="font-semibold text-gray-700">{row.position.toFixed(1)}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No query data available from Search Console.</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Top SEO Pages</p>
+                  <div className="space-y-2">
+                    {searchConsoleSnapshot.topPages.length > 0 ? (
+                      searchConsoleSnapshot.topPages.map((row) => (
+                        <div key={row.page} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                          <div className="flex items-start justify-between gap-4">
+                            <p className="text-sm font-medium text-gray-800 truncate">{row.page}</p>
+                            <p className="text-xs text-gray-500 text-right">
+                              clicks <span className="font-semibold text-gray-700">{formatNumber(row.clicks)}</span>
+                              <br />
+                              ctr <span className="font-semibold text-gray-700">{formatPercent(row.ctr)}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No page data available from Search Console.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 text-sm text-amber-700 bg-amber-50 border-t border-amber-100">
+              {searchConsoleSnapshot?.message || "Search Console credentials are not configured for this environment yet."}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <IndianRupee className="w-4 h-4 text-gray-500" />
+              Meta Ads Depth (7 days)
+            </h3>
+          </div>
+          {metaLoading ? (
+            <div className="p-6 text-sm text-gray-500">Loading Meta campaign detail...</div>
+          ) : metaError ? (
+            <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{metaError}</div>
+          ) : metaSnapshot?.configured ? (
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Spend</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatCurrency(metaSnapshot.overview.spend)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Impressions</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(metaSnapshot.overview.impressions)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Clicks</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(metaSnapshot.overview.clicks)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                  <p className="text-xs text-gray-500">Leads</p>
+                  <p className="mt-1 text-xl font-semibold text-gray-900">{formatNumber(metaSnapshot.overview.leads)}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Top Campaigns</p>
+                  <div className="space-y-2">
+                    {metaSnapshot.campaigns.length > 0 ? (
+                      metaSnapshot.campaigns.slice(0, 6).map((row) => (
+                        <div key={`${row.accountId}-${row.campaignId}`} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{row.campaignName}</p>
+                              <p className="text-[11px] text-gray-500 mt-1">
+                                CTR {formatPercent(row.ctr)} · CPC {formatCurrency(row.cpc)} · CPL {row.leads > 0 ? formatCurrency(row.cpl) : "—"}
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 text-right">
+                              spend <span className="font-semibold text-gray-700">{formatCurrency(row.spend)}</span>
+                              <br />
+                              leads <span className="font-semibold text-gray-700">{formatNumber(row.leads)}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No campaign detail returned from Meta.</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Top Ad Sets</p>
+                  <div className="space-y-2">
+                    {metaSnapshot.adsets.length > 0 ? (
+                      metaSnapshot.adsets.slice(0, 6).map((row) => (
+                        <div key={`${row.accountId}-${row.adsetId || row.campaignId}`} className="rounded-md border border-gray-100 p-3 bg-gray-50/40">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{row.adsetName || row.campaignName}</p>
+                              <p className="text-[11px] text-gray-500 mt-1 truncate">{row.campaignName}</p>
+                            </div>
+                            <p className="text-xs text-gray-500 text-right">
+                              CTR <span className="font-semibold text-gray-700">{formatPercent(row.ctr)}</span>
+                              <br />
+                              spend <span className="font-semibold text-gray-700">{formatCurrency(row.spend)}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No ad set detail returned from Meta.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 text-sm text-amber-700 bg-amber-50 border-t border-amber-100">
+              {metaSnapshot?.message || "Meta API credentials are not configured for this environment yet."}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -894,7 +1384,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
           </div>
           <div className="mt-4 rounded-lg border border-gray-100 p-3 bg-white">
             <p className="text-xs font-semibold text-gray-800">Suggested keywords (for captions / hooks)</p>
-            <p className="text-xs text-gray-600 mt-2 break-words">{metrics.keywordSuggestions.join(" · ")}</p>
+            <p className="text-xs text-gray-600 mt-2 break-words">{effectiveKeywordSuggestions.join(" · ")}</p>
           </div>
         </div>
 

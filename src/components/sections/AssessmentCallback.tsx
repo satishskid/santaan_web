@@ -1,8 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
 import { MessageCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { buttonVariants } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 export function AssessmentCallback() {
     return (
@@ -56,10 +57,18 @@ export function AssessmentCallback() {
                                 For daily guidance, <a href="#newsletter" className="text-santaan-amber font-semibold hover:text-[#E08E45]">subscribe here</a>.
                             </p>
 
-                            <a href="#santaan-signal" aria-label="Start your Santaan Signal assessment">
-                                <Button size="lg" className="bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20 text-white font-semibold">
-                                    Start Your Assessment
-                                </Button>
+                            <a
+                                href="#santaan-signal"
+                                aria-label="Start your Santaan Signal assessment"
+                                className={cn(
+                                    buttonVariants({
+                                        size: 'lg',
+                                        className:
+                                            'bg-santaan-amber hover:bg-[#E08E45] shadow-lg shadow-santaan-amber/20 text-white font-semibold',
+                                    })
+                                )}
+                            >
+                                Start Your Assessment
                             </a>
                         </motion.div>
                     </div>
