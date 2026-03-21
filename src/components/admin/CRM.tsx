@@ -88,6 +88,31 @@ type FilterTab =
     | 'spend'
     | 'ops_inputs';
 
+type RiderAction = {
+    id: string;
+    label: string;
+    tab: FilterTab;
+    section?: string;
+};
+
+type RiderDefinition = {
+    title: string;
+    tasks: Array<{ id: string; label: string }>;
+    actions: RiderAction[];
+};
+
+type GuidedProtocol = {
+    title: string;
+    summary: string;
+    phases: Array<{
+        id: string;
+        label: string;
+        window: string;
+        summary: string;
+        action: RiderAction;
+    }>;
+};
+
 function normalizeStatusToken(value: unknown) {
     const token = String(value || '').trim().toLowerCase();
     if (!token) return 'new';
@@ -504,7 +529,7 @@ export default function CRM() {
         };
     }, [contacts]);
 
-    const riderDefinition = useMemo(() => {
+    const riderDefinition = useMemo<RiderDefinition>(() => {
         if (isCeoPortal) {
             return {
                 title: 'CEO Standup Dashboard',
@@ -600,6 +625,195 @@ export default function CRM() {
             ],
         };
     }, [contactOps.followupsDue, contactOps.hotLeads, contactOps.qualified, contactOps.staleLeads, isAdsPortal, isContentPortal, isCounselorPortal, isCeoPortal, isTelecallerManagerPortal]);
+
+    const guidedProtocol = useMemo<GuidedProtocol>(() => {
+        if (isCeoPortal) {
+            return {
+                title: 'Run Santaan from one protocol',
+                summary: 'Morning standup drives decisions, the team executes role-wise, and evening closure checks for leaks before the day ends.',
+                phases: [
+                    {
+                        id: 'ceo_morning',
+                        label: 'Morning Standup',
+                        window: '09:30-10:00 AM',
+                        summary: 'Review efficiency, leakage, and today’s priorities. Lock only a few decisions and hand them to the team.',
+                        action: { id: 'ceo_open_analytics', label: 'Open Analytics', tab: 'analytics' },
+                    },
+                    {
+                        id: 'ceo_execution',
+                        label: 'Execution Control',
+                        window: '10:00 AM-06:30 PM',
+                        summary: 'Track whether spend, calling, content, and follow-ups are moving against the day plan instead of reacting late.',
+                        action: { id: 'ceo_open_daily_command', label: 'Open Daily Command', tab: 'daily_command' },
+                    },
+                    {
+                        id: 'ceo_evening',
+                        label: 'Evening Closure',
+                        window: '07:00-09:00 PM',
+                        summary: 'Close the workboard, confirm blockers, and capture the decisions that must carry into tomorrow.',
+                        action: { id: 'ceo_open_workboard', label: 'Open Workboard', tab: 'workboard' },
+                    },
+                ],
+            };
+        }
+
+        if (isAdsPortal) {
+            return {
+                title: 'Ads team: fewer tabs, clearer flow',
+                summary: 'Start with spend and decisions, build or update campaigns, then close the day with proof of what was changed.',
+                phases: [
+                    {
+                        id: 'ads_morning',
+                        label: 'Morning Check',
+                        window: '10:00-11:00 AM',
+                        summary: 'Log spend, verify UTM naming, and read the approved direction before touching Meta.',
+                        action: { id: 'ads_open_spend', label: 'Open Spend', tab: 'spend' },
+                    },
+                    {
+                        id: 'ads_execution',
+                        label: 'Campaign Build',
+                        window: '11:00 AM-06:00 PM',
+                        summary: 'Use Meta Launch for draft packs, creative handoff, approvals, and the account-opening link for live setup.',
+                        action: { id: 'ads_open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' },
+                    },
+                    {
+                        id: 'ads_evening',
+                        label: 'Evening Closure',
+                        window: '07:00-08:30 PM',
+                        summary: 'Mark what launched, what was blocked, and what should be reviewed tomorrow so leadership sees the real picture.',
+                        action: { id: 'ads_open_workboard', label: 'Open Workboard', tab: 'workboard' },
+                    },
+                ],
+            };
+        }
+
+        if (isContentPortal) {
+            return {
+                title: 'Content work should feel guided, not guessed',
+                summary: 'Morning gives the data and theme, mid-day turns it into assets, and evening locks the learning back into the CRM.',
+                phases: [
+                    {
+                        id: 'content_morning',
+                        label: 'Morning Brief',
+                        window: '10:00-11:00 AM',
+                        summary: 'Start from real demand signals, top landing pages, and conversion-led ideas instead of intuition-only posting.',
+                        action: { id: 'content_open_analytics', label: 'Open Agency Feedback', tab: 'analytics', section: 'agency-feedback' },
+                    },
+                    {
+                        id: 'content_execution',
+                        label: 'Create & Handoff',
+                        window: '11:00 AM-05:30 PM',
+                        summary: 'Build the copy, keywords, creative brief, and tracked links in Meta Launch so performance can move fast without back-and-forth.',
+                        action: { id: 'content_open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' },
+                    },
+                    {
+                        id: 'content_evening',
+                        label: 'Evening Learnings',
+                        window: '07:00-08:30 PM',
+                        summary: 'Log what went live, what angles worked, and what should be repeated or dropped tomorrow.',
+                        action: { id: 'content_open_workboard', label: 'Open Workboard', tab: 'workboard' },
+                    },
+                ],
+            };
+        }
+
+        if (isTelecallerManagerPortal) {
+            return {
+                title: 'Telecalling should run from queues, not memory',
+                summary: 'Morning picks the hottest priorities, the day is spent clearing follow-ups and sync exceptions, and evening closes the leak-check.',
+                phases: [
+                    {
+                        id: 'ivr_morning',
+                        label: 'Morning Queue Check',
+                        window: '10:00-11:00 AM',
+                        summary: `Start with hot leads (${contactOps.hotLeads}) and due follow-ups (${contactOps.followupsDue}) so the team works urgency first.`,
+                        action: { id: 'ivr_open_neodove_ops', label: 'Open NeoDove Ops', tab: 'neodove_ops' },
+                    },
+                    {
+                        id: 'ivr_execution',
+                        label: 'Calling & Reconciliation',
+                        window: '11:00 AM-06:30 PM',
+                        summary: 'Use live lists to assign, call, update outcomes, and fix anything that drifted between NeoDove and CRM.',
+                        action: { id: 'ivr_open_followups', label: 'Open Follow-ups', tab: 'followups' },
+                    },
+                    {
+                        id: 'ivr_evening',
+                        label: 'Evening Review',
+                        window: '07:00-08:30 PM',
+                        summary: 'Close the queue, flag blockers, and publish the final summary so missed calls do not quietly carry over.',
+                        action: { id: 'ivr_open_daily_command', label: 'Open Daily Command', tab: 'daily_command' },
+                    },
+                ],
+            };
+        }
+
+        if (isCounselorPortal) {
+            return {
+                title: 'Counselors should only see the next patient decision',
+                summary: 'The system should help you act lead by lead, keep follow-ups clean, and make evening closure easy.',
+                phases: [
+                    {
+                        id: 'counselor_morning',
+                        label: 'Morning Priorities',
+                        window: '10:00-11:00 AM',
+                        summary: `Open the leads needing action now, especially qualified (${contactOps.qualified}) and hot cases, before new work distracts the team.`,
+                        action: { id: 'counselor_open_followups', label: 'Open Follow-ups', tab: 'followups' },
+                    },
+                    {
+                        id: 'counselor_execution',
+                        label: 'Consult & Update',
+                        window: '11:00 AM-06:30 PM',
+                        summary: 'Talk to leads, update outcomes immediately, and never leave an active patient without a next follow-up time.',
+                        action: { id: 'counselor_open_all', label: 'Open All Contacts', tab: 'all' },
+                    },
+                    {
+                        id: 'counselor_evening',
+                        label: 'Evening Check',
+                        window: '07:00-08:00 PM',
+                        summary: 'Review the remaining queue and make sure nothing active is left without notes, status, or next action.',
+                        action: { id: 'counselor_open_hot', label: 'Open Hot Leads', tab: 'hot_leads' },
+                    },
+                ],
+            };
+        }
+
+        return {
+            title: 'Use the CRM as a guided workday',
+            summary: 'Read the day, do role-wise work, and close the day inside the system so decisions stay data-driven.',
+            phases: [
+                {
+                    id: 'general_morning',
+                    label: 'Morning Check',
+                    window: '09:30-11:00 AM',
+                    summary: 'Start from the dashboard and the assigned rider instead of searching across screens.',
+                    action: { id: 'general_open_today', label: 'Open Today', tab: 'today' },
+                },
+                {
+                    id: 'general_execution',
+                    label: 'Execution',
+                    window: '11:00 AM-06:30 PM',
+                    summary: 'Work from the role-specific portal that matches your responsibilities and keep updates structured.',
+                    action: { id: 'general_open_workboard', label: 'Open Workboard', tab: 'workboard' },
+                },
+                {
+                    id: 'general_evening',
+                    label: 'Evening Closure',
+                    window: '07:00-09:00 PM',
+                    summary: 'Use the workboard and command center to close open loops and carry only intentional tasks to tomorrow.',
+                    action: { id: 'general_open_daily', label: 'Open Daily Command', tab: 'daily_command' },
+                },
+            ],
+        };
+    }, [
+        contactOps.followupsDue,
+        contactOps.hotLeads,
+        contactOps.qualified,
+        isAdsPortal,
+        isContentPortal,
+        isCounselorPortal,
+        isCeoPortal,
+        isTelecallerManagerPortal,
+    ]);
 
     const riderStorageKey = useMemo(() => `crm_rider_${currentRole || 'unknown'}_${todayKey}`, [currentRole, todayKey]);
     const [riderState, setRiderState] = useState<Record<string, boolean>>(() => {
@@ -894,6 +1108,50 @@ export default function CRM() {
                                         </p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-xs text-gray-500">Daily Protocol</p>
+                                    <h3 className="text-lg font-bold text-gray-900 mt-1">{guidedProtocol.title}</h3>
+                                    <p className="text-sm text-gray-600 mt-2 max-w-3xl">{guidedProtocol.summary}</p>
+                                </div>
+                                <div className="rounded-full bg-santaan-teal/10 px-3 py-1 text-xs font-semibold text-santaan-teal">
+                                    Morning -&gt; Work -&gt; Close
+                                </div>
+                            </div>
+
+                            <div className="mt-5 grid gap-4 md:grid-cols-3">
+                                {guidedProtocol.phases.map((phase) => (
+                                    <div key={phase.id} className="rounded-xl border border-gray-200 bg-gray-50/40 p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-xs uppercase tracking-wide text-gray-500">{phase.label}</p>
+                                                <h4 className="text-sm font-semibold text-gray-900 mt-1">{phase.window}</h4>
+                                            </div>
+                                            <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-gray-600 border border-gray-200">
+                                                Guided
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mt-3 leading-6">{phase.summary}</p>
+                                        <Button
+                                            variant="outline"
+                                            className="mt-4 text-xs"
+                                            onClick={() => (phase.action.section ? openAnalyticsSection(phase.action.section) : openTab(phase.action.tab))}
+                                        >
+                                            {phase.action.label}
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-4 rounded-lg border border-dashed border-santaan-amber/40 bg-santaan-amber/5 px-4 py-3">
+                                <p className="text-sm font-medium text-gray-900">Keep the workflow light for the team</p>
+                                <p className="text-xs text-gray-600 mt-1">
+                                    Standup decisions should happen once in the morning, execution should happen inside role screens, and evening closure should confirm nothing critical is missing.
+                                </p>
                             </div>
                         </div>
 
