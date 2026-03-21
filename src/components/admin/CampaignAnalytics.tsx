@@ -157,6 +157,28 @@ interface MetaConversionSummary {
   lastEventAt?: string | null;
 }
 
+interface MetaAudienceRow {
+  id: number;
+  accountId: string;
+  audienceKey: string;
+  audienceId: string;
+  name: string;
+  lastSyncedAt?: string | null;
+}
+
+interface MetaAudienceSyncRow {
+  id: number;
+  accountId: string;
+  audienceKey: string;
+  audienceId?: string | null;
+  audienceName?: string | null;
+  contactCount?: number | null;
+  batchCount?: number | null;
+  processStatus: string;
+  errorMessage?: string | null;
+  processedAt?: string | null;
+  createdAt?: string | null;
+}
 interface IntegrationStatusSnapshot {
   ok: boolean;
   generatedAt: string;
@@ -214,6 +236,12 @@ interface StatCardProps {
 }
 
 const ANALYTICS_NOW = Date.now();
+const DEFAULT_PERFORMANCE_RULES = {
+  minQualified: 4,
+  maxQualifiedCpa: 1800,
+  pauseSpendThreshold: 3000,
+  maxQualifiedCpaForPause: 4000,
+};
 
 function StatCard({ title, value, subtext, icon: Icon, color }: StatCardProps) {
   return (
@@ -346,6 +374,14 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
   const [metaSignalError, setMetaSignalError] = useState<string | null>(null);
   const [metaSignalNotice, setMetaSignalNotice] = useState<string | null>(null);
   const [metaSignalRetryId, setMetaSignalRetryId] = useState<number | null>(null);
+  const [metaAudienceStatus, setMetaAudienceStatus] = useState<{
+    audiences: MetaAudienceRow[];
+    latestSync: MetaAudienceSyncRow[];
+  } | null>(null);
+  const [metaAudienceLoading, setMetaAudienceLoading] = useState(true);
+  const [metaAudienceError, setMetaAudienceError] = useState<string | null>(null);
+  const [metaAudienceNotice, setMetaAudienceNotice] = useState<string | null>(null);
+  const [metaAudienceSyncing, setMetaAudienceSyncing] = useState(false);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
   const [draftThresholds, setDraftThresholds] = useState(() => {
     const defaults = getDefaultDraftThresholds();
@@ -361,6 +397,22 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       return defaults;
     }
   });
+  const [performanceRules, setPerformanceRules] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_PERFORMANCE_RULES;
+    try {
+      const raw = window.localStorage.getItem("crm_performance_rules");
+      if (!raw) return DEFAULT_PERFORMANCE_RULES;
+      const parsed = JSON.parse(raw) as Partial<typeof DEFAULT_PERFORMANCE_RULES>;
+      return {
+        minQualified: Math.max(1, Math.round(Number(parsed.minQualified ?? DEFAULT_PERFORMANCE_RULES.minQualified))),
+        maxQualifiedCpa: Math.max(100, Math.round(Number(parsed.maxQualifiedCpa ?? DEFAULT_PERFORMANCE_RULES.maxQualifiedCpa))),
+        pauseSpendThreshold: Math.max(500, Math.round(Number(parsed.pauseSpendThreshold ?? DEFAULT_PERFORMANCE_RULES.pauseSpendThreshold))),
+        maxQualifiedCpaForPause: Math.max(100, Math.round(Number(parsed.maxQualifiedCpaForPause ?? DEFAULT_PERFORMANCE_RULES.maxQualifiedCpaForPause))),
+      };
+    } catch {
+      return DEFAULT_PERFORMANCE_RULES;
+    }
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -370,6 +422,15 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       // ignore
     }
   }, [draftThresholds]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("crm_performance_rules", JSON.stringify(performanceRules));
+    } catch {
+      // ignore
+    }
+  }, [performanceRules]);
 
   useEffect(() => {
     let active = true;
@@ -439,6 +500,41 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
 
     loadMetaSignals();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMetaAudiences() {
+      setMetaAudienceLoading(true);
+      setMetaAudienceError(null);
+      try {
+        const response = await fetch("/api/admin/meta-audiences");
+        const payload = (await response.json()) as {
+          audiences?: MetaAudienceRow[];
+          latestSync?: MetaAudienceSyncRow[];
+          error?: string;
+        };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.error || "Failed to fetch Meta audience status");
+        }
+        setMetaAudienceStatus({
+          audiences: payload.audiences || [],
+          latestSync: payload.latestSync || [],
+        });
+      } catch (error) {
+        if (!active) return;
+        setMetaAudienceError(error instanceof Error ? error.message : "Failed to fetch Meta audience status");
+      } finally {
+        if (active) setMetaAudienceLoading(false);
+      }
+    }
+
+    loadMetaAudiences();
     return () => {
       active = false;
     };
@@ -573,6 +669,22 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       }
       return acc;
     }, {} as Record<string, { leads: number; conversions: number; source: string }>);
+
+    const byCampaignQualified = contacts.reduce((acc, contact) => {
+      if (!contact.utmCampaign) return acc;
+      const campaign = normalizeToken(contact.utmCampaign, "organic");
+      if (!acc[campaign]) {
+        acc[campaign] = { qualified: 0, converted: 0 };
+      }
+      const status = contact.status?.toLowerCase();
+      if (status === "qualified" || status === "converted") {
+        acc[campaign].qualified += 1;
+      }
+      if (status === "converted") {
+        acc[campaign].converted += 1;
+      }
+      return acc;
+    }, {} as Record<string, { qualified: number; converted: number }>);
 
     const byLandingPage = contacts.reduce((acc, contact) => {
       const path = contact.landingPath || "/";
@@ -733,6 +845,38 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       .sort((a, b) => b.spend - a.spend)
       .slice(0, 4);
 
+    const qualifiedRecommendations = Object.entries(byCampaign)
+      .map(([name, data]) => {
+        const qualified = byCampaignQualified[name]?.qualified || 0;
+        const converted = byCampaignQualified[name]?.converted || 0;
+        const spend = spendByCampaign[normalizeToken(name, "organic")] || 0;
+        const qualifiedCpa = qualified > 0 ? spend / qualified : Number.POSITIVE_INFINITY;
+        return {
+          campaign: name,
+          source: data.source,
+          leads: data.leads,
+          qualified,
+          converted,
+          spend,
+          qualifiedCpa,
+        };
+      })
+      .filter((row) => row.spend > 0)
+      .sort((a, b) => a.qualifiedCpa - b.qualifiedCpa);
+
+    const scaleQualified = qualifiedRecommendations
+      .filter((row) => row.qualified >= performanceRules.minQualified && row.qualifiedCpa <= performanceRules.maxQualifiedCpa)
+      .slice(0, 4);
+
+    const pauseQualified = qualifiedRecommendations
+      .filter(
+        (row) =>
+          (row.spend >= performanceRules.pauseSpendThreshold && row.qualified === 0) ||
+          (row.qualified >= performanceRules.minQualified && row.qualifiedCpa >= performanceRules.maxQualifiedCpaForPause)
+      )
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 4);
+
     const keywordSuggestions = (() => {
       const primaryCenter = centers[0]?.center || "Network";
       const uniqueTopics = Array.from(new Set(topics.map((t) => t.topic))).slice(0, 3);
@@ -755,6 +899,8 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
       timeWindows,
       bestPaid,
       pausePaid,
+      scaleQualified,
+      pauseQualified,
       keywordSuggestions,
       topLandingPagesByTopic,
       bySource: Object.entries(bySource)
@@ -792,7 +938,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         .sort((a, b) => b.leads - a.leads)
         .slice(0, 8),
     };
-  }, [contacts, spendEntries]);
+  }, [contacts, spendEntries, performanceRules]);
 
   const effectiveKeywordSuggestions = useMemo(() => {
     const searchConsoleKeywords =
@@ -909,6 +1055,36 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
   };
 
+  const syncMetaAudiences = async (mode: "all" | "qualified" | "converted") => {
+    setMetaAudienceSyncing(true);
+    setMetaAudienceNotice(null);
+    try {
+      const response = await fetch("/api/admin/meta-audiences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Meta audience sync failed");
+      }
+      setMetaAudienceNotice("Audience sync completed. Refreshing...");
+      const statusResponse = await fetch("/api/admin/meta-audiences");
+      const statusPayload = await statusResponse.json();
+      if (statusResponse.ok) {
+        setMetaAudienceStatus({
+          audiences: statusPayload.audiences || [],
+          latestSync: statusPayload.latestSync || [],
+        });
+      }
+    } catch (error) {
+      setMetaAudienceNotice(error instanceof Error ? error.message : "Meta audience sync failed");
+    } finally {
+      setMetaAudienceSyncing(false);
+      window.setTimeout(() => setMetaAudienceNotice(null), 3500);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -981,6 +1157,89 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
             </div>
           </div>
         ) : null}
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-gray-500" />
+              Meta Custom Audiences (CRM Sync)
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Sync qualified and converted CRM cohorts into Meta Custom Audiences for stronger lookalikes.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => syncMetaAudiences("qualified")}
+              disabled={metaAudienceSyncing}
+              className="px-3 py-2 text-xs font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 disabled:opacity-50"
+            >
+              Sync Qualified
+            </button>
+            <button
+              type="button"
+              onClick={() => syncMetaAudiences("converted")}
+              disabled={metaAudienceSyncing}
+              className="px-3 py-2 text-xs font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 disabled:opacity-50"
+            >
+              Sync Converted
+            </button>
+            <button
+              type="button"
+              onClick={() => syncMetaAudiences("all")}
+              disabled={metaAudienceSyncing}
+              className="px-3 py-2 text-xs font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 disabled:opacity-50"
+            >
+              Sync All
+            </button>
+            {metaAudienceNotice ? <span className="text-xs text-gray-600">{metaAudienceNotice}</span> : null}
+          </div>
+        </div>
+        {metaAudienceLoading ? (
+          <div className="p-6 text-sm text-gray-500">Loading Meta audience status...</div>
+        ) : metaAudienceError ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{metaAudienceError}</div>
+        ) : (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(metaAudienceStatus?.audiences || []).map((aud) => (
+                <div key={`${aud.accountId}-${aud.audienceKey}`} className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                  <p className="text-xs text-gray-500">{aud.audienceKey.toUpperCase()}</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-1">{aud.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">Account {aud.accountId.replace("act_", "")}</p>
+                  <p className="text-xs text-gray-500 mt-1">Last synced {prettyDate(aud.lastSyncedAt)}</p>
+                </div>
+              ))}
+              {(metaAudienceStatus?.audiences || []).length === 0 && (
+                <p className="text-sm text-gray-500">No audiences stored yet. Run a sync to create them.</p>
+              )}
+            </div>
+            <div className="rounded-lg border border-gray-100 p-3 bg-white">
+              <p className="text-xs font-semibold text-gray-800">Latest sync events</p>
+              <div className="mt-3 space-y-2">
+                {(metaAudienceStatus?.latestSync || []).length > 0 ? (
+                  metaAudienceStatus?.latestSync.map((sync) => (
+                    <div key={sync.id} className="flex items-start justify-between gap-3 text-xs text-gray-700">
+                      <span className="font-semibold">{sync.audienceName || sync.audienceKey}</span>
+                      <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${signalToneClasses(sync.processStatus)}`}>
+                        {sync.processStatus}
+                      </span>
+                      <span className="text-gray-500">
+                        contacts {formatNumber(sync.contactCount || 0)} · batches {formatNumber(sync.batchCount || 0)}
+                      </span>
+                      <span className="text-gray-500">{prettyDate(sync.processedAt || sync.createdAt)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-gray-500">No sync history yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -1713,6 +1972,118 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
                 ) : (
                   <p className="text-xs text-rose-900/80">No obvious money-wasters detected at current thresholds.</p>
                 )}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+              <p className="text-sm font-semibold text-blue-900">CRM-qualified CPA signals</p>
+              <p className="text-xs text-blue-700 mt-1">
+                Uses CRM-qualified leads (not just form fills) to recommend scale/pause decisions.
+              </p>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700">
+                <label className="text-xs text-gray-700">
+                  <span className="font-semibold">Min qualified to scale</span>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={performanceRules.minQualified}
+                    onChange={(e) =>
+                      setPerformanceRules((prev) => ({
+                        ...prev,
+                        minQualified: Math.max(1, Math.round(Number(e.target.value || 1))),
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                  />
+                </label>
+                <label className="text-xs text-gray-700">
+                  <span className="font-semibold">Max qualified CPA (INR)</span>
+                  <input
+                    type="number"
+                    min={100}
+                    step={100}
+                    value={performanceRules.maxQualifiedCpa}
+                    onChange={(e) =>
+                      setPerformanceRules((prev) => ({
+                        ...prev,
+                        maxQualifiedCpa: Math.max(100, Math.round(Number(e.target.value || 100))),
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                  />
+                </label>
+                <label className="text-xs text-gray-700">
+                  <span className="font-semibold">Pause spend threshold (INR)</span>
+                  <input
+                    type="number"
+                    min={500}
+                    step={100}
+                    value={performanceRules.pauseSpendThreshold}
+                    onChange={(e) =>
+                      setPerformanceRules((prev) => ({
+                        ...prev,
+                        pauseSpendThreshold: Math.max(500, Math.round(Number(e.target.value || 500))),
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                  />
+                </label>
+                <label className="text-xs text-gray-700">
+                  <span className="font-semibold">High CPA pause trigger (INR)</span>
+                  <input
+                    type="number"
+                    min={500}
+                    step={100}
+                    value={performanceRules.maxQualifiedCpaForPause}
+                    onChange={(e) =>
+                      setPerformanceRules((prev) => ({
+                        ...prev,
+                        maxQualifiedCpaForPause: Math.max(500, Math.round(Number(e.target.value || 500))),
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-900"
+                  />
+                </label>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3">
+                  <p className="text-xs font-semibold text-emerald-900">Scale (qualified CPA)</p>
+                  <div className="mt-2 space-y-2">
+                    {metrics.scaleQualified.length > 0 ? (
+                      metrics.scaleQualified.map((row) => (
+                        <div key={`qscale-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-emerald-900">
+                          <span className="font-semibold">{row.campaign}</span>
+                          <span className="whitespace-nowrap">
+                            qCPA {formatCurrency(row.qualifiedCpa)} · q {formatNumber(row.qualified)}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-emerald-900/80">No campaigns meet the qualified CPA scale rule yet.</p>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-rose-100 bg-rose-50 p-3">
+                  <p className="text-xs font-semibold text-rose-900">Pause (qualified CPA)</p>
+                  <div className="mt-2 space-y-2">
+                    {metrics.pauseQualified.length > 0 ? (
+                      metrics.pauseQualified.map((row) => (
+                        <div key={`qpause-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-rose-900">
+                          <span className="font-semibold">{row.campaign}</span>
+                          <span className="whitespace-nowrap">
+                            spend {formatCurrency(row.spend)} · q {formatNumber(row.qualified)}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-rose-900/80">No qualified-CPA pause flags at current rules.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 text-[11px] text-gray-600">
+                Saved locally for this browser. Use this only after daily spend is logged and CRM statuses are updated.
               </div>
             </div>
           </div>

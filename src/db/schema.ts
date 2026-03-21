@@ -137,6 +137,38 @@ export const metaConversionEvents = sqliteTable(
     })
 );
 
+export const metaAudiences = sqliteTable(
+    'meta_audiences',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        accountId: text('account_id').notNull(),
+        audienceKey: text('audience_key').notNull(), // qualified | converted
+        audienceId: text('audience_id').notNull(),
+        name: text('name').notNull(),
+        lastSyncedAt: text('last_synced_at'),
+        createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+        updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    },
+    (table) => ({
+        uniqueAudienceKey: uniqueIndex('meta_audiences_account_key_unique').on(table.accountId, table.audienceKey),
+    })
+);
+
+export const metaAudienceSyncs = sqliteTable('meta_audience_syncs', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    accountId: text('account_id').notNull(),
+    audienceKey: text('audience_key').notNull(),
+    audienceId: text('audience_id'),
+    audienceName: text('audience_name'),
+    contactCount: integer('contact_count').default(0),
+    batchCount: integer('batch_count').default(0),
+    processStatus: text('process_status').default('received'), // received | processed | error
+    responsePayload: text('response_payload'),
+    errorMessage: text('error_message'),
+    processedAt: text('processed_at'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const admins = sqliteTable('admins', {
     id: integer('id').primaryKey({ autoIncrement: true }),
     email: text('email').notNull().unique(),
