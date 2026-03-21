@@ -174,6 +174,52 @@ export const campaignSpend = sqliteTable('campaign_spend', {
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Internal Meta launch planning and approval workflow
+export const metaLaunchDrafts = sqliteTable('meta_launch_drafts', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    channel: text('channel').default('meta'),
+    accountId: text('account_id').notNull(),
+    center: text('center').default('network'),
+    objective: text('objective').default('OUTCOME_LEADS'),
+    campaignName: text('campaign_name').notNull(),
+    adsetName: text('adset_name'),
+    adName: text('ad_name'),
+    status: text('status').default('draft'), // draft | content_ready | pending_approval | approved | launched | blocked
+    priority: text('priority').default('medium'),
+    audienceSummary: text('audience_summary'),
+    geoTargets: text('geo_targets'),
+    placements: text('placements'),
+    budgetType: text('budget_type').default('daily'),
+    budgetInr: real('budget_inr').default(0),
+    budgetNotes: text('budget_notes'),
+    utmCampaign: text('utm_campaign'),
+    landingUrl: text('landing_url'),
+    contentAngle: text('content_angle'),
+    hook: text('hook'),
+    primaryText: text('primary_text'),
+    headline: text('headline'),
+    description: text('description'),
+    cta: text('cta'),
+    creativeFormat: text('creative_format'),
+    creativeBrief: text('creative_brief'),
+    contentKeywords: text('content_keywords'),
+    contentOwnerName: text('content_owner_name'),
+    performanceOwnerName: text('performance_owner_name'),
+    requestedByEmail: text('requested_by_email'),
+    requestedByName: text('requested_by_name'),
+    approvalRequestedAt: text('approval_requested_at'),
+    approvedByEmail: text('approved_by_email'),
+    approvedByName: text('approved_by_name'),
+    approvedAt: text('approved_at'),
+    approvalNotes: text('approval_notes'),
+    adsManagerLink: text('ads_manager_link'),
+    launchChecklist: text('launch_checklist'),
+    launchNotes: text('launch_notes'),
+    launchedAt: text('launched_at'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Daily paid media reporting from agency (Meta/Google/YouTube)
 export const agencyPerformanceLogs = sqliteTable('agency_performance_logs', {
     id: integer('id').primaryKey({ autoIncrement: true }),

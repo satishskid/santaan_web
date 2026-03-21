@@ -14,6 +14,7 @@ import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
 import DailyCommandCenter from './DailyCommandCenter';
 import NeoDoveOpsDashboard from './NeoDoveOpsDashboard';
+import MetaLaunchPanel from './MetaLaunchPanel';
 import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,7 @@ type FilterTab =
     | 'followups'
     | 'team'
     | 'analytics'
+    | 'meta_launch'
     | 'neodove_ops'
     | 'ceo_command'
     | 'settings'
@@ -136,6 +138,7 @@ export default function CRM() {
     const canAccessSpend = spendRoles.has(currentRole) || canAccessLeadership;
     const canAccessNeoDoveOps = neodoveOpsRoles.has(currentRole) || canAccessLeadership;
     const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
+    const canAccessMetaLaunch = canAccessAnalytics;
     const canAccessCeoCommand = canAccessLeadership;
 
     const isCeoPortal = canAccessLeadership;
@@ -361,6 +364,7 @@ export default function CRM() {
 
         if (isCeoPortal) {
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
             nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
             nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
@@ -386,6 +390,7 @@ export default function CRM() {
         if (isAdsPortal) {
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
             if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Clock });
             return nextTabs;
@@ -393,6 +398,7 @@ export default function CRM() {
 
         if (isContentPortal) {
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
             return nextTabs;
         }
@@ -425,6 +431,7 @@ export default function CRM() {
         nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
         if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
         if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+        if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
         if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
         if (canAccessContacts) nextTabs.push({ id: 'all', label: 'All Contacts', icon: Search });
         return nextTabs;
@@ -432,6 +439,7 @@ export default function CRM() {
         canAccessAnalytics,
         canAccessCeoCommand,
         canAccessContacts,
+        canAccessMetaLaunch,
         canAccessNeoDoveOps,
         canAccessOpsInputs,
         canAccessSpend,
@@ -507,6 +515,7 @@ export default function CRM() {
                 ],
                 actions: [
                     { id: 'open_analytics', label: 'Open Analytics', tab: 'analytics' as const },
+                    { id: 'open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' as const },
                     { id: 'open_spend', label: 'Open Spend', tab: 'spend' as const },
                     { id: 'open_workboard', label: 'Open Workboard', tab: 'workboard' as const },
                 ],
@@ -522,6 +531,7 @@ export default function CRM() {
                 ],
                 actions: [
                     { id: 'open_spend', label: 'Open Spend', tab: 'spend' as const },
+                    { id: 'open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' as const },
                     { id: 'open_analytics', label: 'Open Analytics', tab: 'analytics' as const },
                     { id: 'open_ops_inputs', label: 'Open Ops Inputs', tab: 'ops_inputs' as const },
                 ],
@@ -537,6 +547,7 @@ export default function CRM() {
                 ],
                 actions: [
                     { id: 'open_analytics_agency', label: 'Open Agency Feedback', tab: 'analytics' as const, section: 'agency-feedback' },
+                    { id: 'open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' as const },
                     { id: 'open_analytics_windows', label: 'Open Posting Windows', tab: 'analytics' as const, section: 'best-posting-windows' },
                     { id: 'open_workboard', label: 'Open Workboard', tab: 'workboard' as const },
                 ],
@@ -583,6 +594,7 @@ export default function CRM() {
             ],
             actions: [
                 { id: 'open_analytics', label: 'Open Analytics', tab: 'analytics' as const },
+                { id: 'open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' as const },
                 { id: 'open_workboard', label: 'Open Workboard', tab: 'workboard' as const },
                 { id: 'open_daily', label: 'Open Daily Command', tab: 'daily_command' as const },
             ],
@@ -902,6 +914,10 @@ export default function CRM() {
                 ) : activeTab === 'analytics' ? (
                     <div className="p-6">
                         <CampaignAnalytics contacts={contacts} />
+                    </div>
+                ) : activeTab === 'meta_launch' ? (
+                    <div className="p-6">
+                        <MetaLaunchPanel currentRole={currentRole} />
                     </div>
                 ) : activeTab === 'neodove_ops' ? (
                     <div className="p-6">
