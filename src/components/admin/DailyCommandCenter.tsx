@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, Clock3, Loader2, Target, Users } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Clock3, Loader2, Target, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 
@@ -56,6 +56,26 @@ interface OpsPayload {
   summary: OpsSummaryRow[];
 }
 
+type PerformanceRecommendation = {
+  campaign: string;
+  qualified: number;
+  spend: number;
+  qualifiedCpa: number;
+};
+
+type PerformanceRulesPayload = {
+  ok: boolean;
+  windowDays: number;
+  rules: {
+    minQualified: number;
+    maxQualifiedCpa: number;
+    pauseSpendThreshold: number;
+    maxQualifiedCpaForPause: number;
+  };
+  scaleQualified: PerformanceRecommendation[];
+  pauseQualified: PerformanceRecommendation[];
+};
+
 const LEADERSHIP_ROLES = new Set(["admin", "ceo", "crm_ops_admin"]);
 
 const STATUS_LABEL: Record<OpsStatus, string> = {
@@ -105,6 +125,9 @@ export default function DailyCommandCenter() {
   const [notice, setNotice] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [payload, setPayload] = useState<OpsPayload | null>(null);
+  const [performanceData, setPerformanceData] = useState<PerformanceRulesPayload | null>(null);
+  const [performanceLoading, setPerformanceLoading] = useState(false);
+  const [performanceError, setPerformanceError] = useState<string | null>(null);
   const [activeProfileKey, setActiveProfileKey] = useState("");
   const [savingTask, setSavingTask] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -188,6 +211,32 @@ export default function DailyCommandCenter() {
     [summary]
   );
 
+  useEffect(() => {
+    let active = true;
+    async function loadPerformance() {
+      setPerformanceLoading(true);
+      setPerformanceError(null);
+      try {
+        const response = await fetch("/api/admin/analytics/performance-rules?days=30", { cache: "no-store" });
+        const payload = (await response.json()) as PerformanceRulesPayload & { error?: string };
+        if (!response.ok) throw new Error(payload?.error || "Failed to load performance recommendations");
+        if (!active) return;
+        setPerformanceData(payload);
+      } catch (error) {
+        if (!active) return;
+        setPerformanceError(error instanceof Error ? error.message : "Failed to load performance recommendations");
+      } finally {
+        if (active) setPerformanceLoading(false);
+      }
+    }
+    if (isLeadership) {
+      loadPerformance();
+    }
+    return () => {
+      active = false;
+    };
+  }, [isLeadership]);
+
   async function saveTask(task: OpsTaskRow, status: OpsStatus) {
     const key = taskKey(task);
     setSavingTask(key);
@@ -246,6 +295,60 @@ export default function DailyCommandCenter() {
         {notice ? <p className="text-sm text-emerald-700 mt-3">{notice}</p> : null}
         {error ? <p className="text-sm text-rose-700 mt-3">{error}</p> : null}
       </div>
+
+      {isLeadership ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-santaan-teal" />
+                CRM-Qualified CPA Recommendations
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Built from 30-day spend + CRM-qualified outcomes. Use this during standup to set scale/pause actions.
+              </p>
+            </div>
+          </div>
+          {performanceLoading ? (
+            <p className="text-sm text-gray-500 mt-3">Loading recommendations...</p>
+          ) : performanceError ? (
+            <p className="text-sm text-rose-700 mt-3">{performanceError}</p>
+          ) : performanceData ? (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+                <p className="text-xs font-semibold text-emerald-900">Scale candidates</p>
+                <div className="mt-3 space-y-2">
+                  {performanceData.scaleQualified.length > 0 ? (
+                    performanceData.scaleQualified.map((row) => (
+                      <div key={`scale-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-emerald-900">
+                        <span className="font-semibold">{row.campaign}</span>
+                        <span className="whitespace-nowrap">qCPA ₹{Math.round(row.qualifiedCpa)} · q {row.qualified}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-emerald-900/80">No scale flags at current rules.</p>
+                  )}
+                </div>
+              </div>
+              <div className="rounded-lg border border-rose-100 bg-rose-50 p-4">
+                <p className="text-xs font-semibold text-rose-900">Pause candidates</p>
+                <div className="mt-3 space-y-2">
+                  {performanceData.pauseQualified.length > 0 ? (
+                    performanceData.pauseQualified.map((row) => (
+                      <div key={`pause-${row.campaign}`} className="flex items-start justify-between gap-3 text-xs text-rose-900">
+                        <span className="font-semibold">{row.campaign}</span>
+                        <span className="whitespace-nowrap">spend ₹{Math.round(row.spend)} · q {row.qualified}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-rose-900/80">No pause flags at current rules.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {loading && !payload ? (
         <div className="bg-white border border-gray-200 rounded-xl p-10 text-center text-gray-500">
