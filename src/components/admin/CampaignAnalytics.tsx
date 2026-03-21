@@ -133,6 +133,30 @@ interface MetaSnapshot {
   adsets: MetaEntityInsight[];
 }
 
+interface MetaConversionEvent {
+  id: number;
+  contactId?: number | null;
+  eventName: string;
+  signalType: string;
+  processStatus: string;
+  center?: string | null;
+  utmCampaign?: string | null;
+  leadSource?: string | null;
+  eventTime?: string | null;
+  receivedAt?: string | null;
+  retryCount?: number | null;
+  errorMessage?: string | null;
+}
+
+interface MetaConversionSummary {
+  processed24h: number;
+  errors24h: number;
+  skipped24h: number;
+  qualified24h: number;
+  converted24h: number;
+  lastEventAt?: string | null;
+}
+
 interface IntegrationStatusSnapshot {
   ok: boolean;
   generatedAt: string;
@@ -242,6 +266,19 @@ function toneClasses(status: string) {
   return "bg-rose-50 text-rose-700 border-rose-200";
 }
 
+function signalToneClasses(status: string) {
+  const normalized = status.toLowerCase();
+  if (normalized === "processed") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (normalized === "skipped") return "bg-slate-50 text-slate-700 border-slate-200";
+  if (normalized === "processing") return "bg-amber-50 text-amber-700 border-amber-200";
+  if (normalized === "error") return "bg-rose-50 text-rose-700 border-rose-200";
+  return "bg-gray-50 text-gray-600 border-gray-200";
+}
+
+function prettySignalName(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 function normalizeToken(value?: string | null, fallback = "unknown") {
   const token = String(value || "")
     .trim()
@@ -303,6 +340,12 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
   const [metaSnapshot, setMetaSnapshot] = useState<MetaSnapshot | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState<string | null>(null);
+  const [metaSignalSummary, setMetaSignalSummary] = useState<MetaConversionSummary | null>(null);
+  const [metaSignalEvents, setMetaSignalEvents] = useState<MetaConversionEvent[]>([]);
+  const [metaSignalLoading, setMetaSignalLoading] = useState(true);
+  const [metaSignalError, setMetaSignalError] = useState<string | null>(null);
+  const [metaSignalNotice, setMetaSignalNotice] = useState<string | null>(null);
+  const [metaSignalRetryId, setMetaSignalRetryId] = useState<number | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
   const [draftThresholds, setDraftThresholds] = useState(() => {
     const defaults = getDefaultDraftThresholds();
@@ -363,6 +406,39 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
 
     loadIntegrationStatus();
     loadSpend();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMetaSignals() {
+      setMetaSignalLoading(true);
+      setMetaSignalError(null);
+      try {
+        const response = await fetch("/api/admin/meta-conversion-events?limit=25");
+        const payload = (await response.json()) as {
+          summary?: MetaConversionSummary;
+          events?: MetaConversionEvent[];
+          error?: string;
+        };
+        if (!active) return;
+        if (!response.ok) {
+          throw new Error(payload?.error || "Failed to fetch Meta conversion events");
+        }
+        setMetaSignalSummary(payload.summary || null);
+        setMetaSignalEvents(payload.events || []);
+      } catch (error) {
+        if (!active) return;
+        setMetaSignalError(error instanceof Error ? error.message : "Failed to fetch Meta conversion events");
+      } finally {
+        if (active) setMetaSignalLoading(false);
+      }
+    }
+
+    loadMetaSignals();
     return () => {
       active = false;
     };
@@ -792,6 +868,47 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
     }
   };
 
+  const refreshMetaSignals = async () => {
+    setMetaSignalLoading(true);
+    setMetaSignalError(null);
+    try {
+      const response = await fetch("/api/admin/meta-conversion-events?limit=25");
+      const payload = (await response.json()) as { summary?: MetaConversionSummary; events?: MetaConversionEvent[]; error?: string };
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to refresh Meta conversion events");
+      }
+      setMetaSignalSummary(payload.summary || null);
+      setMetaSignalEvents(payload.events || []);
+    } catch (error) {
+      setMetaSignalError(error instanceof Error ? error.message : "Failed to refresh Meta conversion events");
+    } finally {
+      setMetaSignalLoading(false);
+    }
+  };
+
+  const retryMetaSignal = async (eventId: number) => {
+    setMetaSignalRetryId(eventId);
+    setMetaSignalNotice(null);
+    try {
+      const response = await fetch("/api/admin/meta-conversion-events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Retry failed");
+      }
+      setMetaSignalNotice("Retry queued. Refreshing...");
+      await refreshMetaSignals();
+    } catch (error) {
+      setMetaSignalNotice(error instanceof Error ? error.message : "Retry failed");
+    } finally {
+      setMetaSignalRetryId(null);
+      window.setTimeout(() => setMetaSignalNotice(null), 3500);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -864,6 +981,120 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
             </div>
           </div>
         ) : null}
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Megaphone className="w-4 h-4 text-gray-500" />
+              Meta CRM Signal Loop
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              CRM-qualified and converted stages are sent back to Meta so optimization learns from real outcomes.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={refreshMetaSignals}
+              disabled={metaSignalLoading}
+              className="px-3 py-2 text-xs font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 disabled:opacity-50"
+            >
+              Refresh
+            </button>
+            {metaSignalNotice ? <span className="text-xs text-gray-600">{metaSignalNotice}</span> : null}
+          </div>
+        </div>
+        {metaSignalLoading ? (
+          <div className="p-6 text-sm text-gray-500">Loading Meta conversion events...</div>
+        ) : metaSignalError ? (
+          <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{metaSignalError}</div>
+        ) : (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Processed 24h</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{formatNumber(metaSignalSummary?.processed24h || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Errors 24h</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{formatNumber(metaSignalSummary?.errors24h || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Skipped 24h</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{formatNumber(metaSignalSummary?.skipped24h || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Qualified 24h</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{formatNumber(metaSignalSummary?.qualified24h || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Converted 24h</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{formatNumber(metaSignalSummary?.converted24h || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-3 bg-gray-50/40">
+                <p className="text-xs text-gray-500">Last Signal</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{prettyDate(metaSignalSummary?.lastEventAt)}</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Time</th>
+                    <th className="px-4 py-3 text-left">Signal</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-left">Center</th>
+                    <th className="px-4 py-3 text-left">UTM Campaign</th>
+                    <th className="px-4 py-3 text-left">Notes</th>
+                    <th className="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {metaSignalEvents.map((event) => (
+                    <tr key={event.id} className="hover:bg-gray-50/40">
+                      <td className="px-4 py-3 text-gray-600">{prettyDate(event.eventTime || event.receivedAt)}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{prettySignalName(event.signalType)}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${signalToneClasses(event.processStatus)}`}>
+                          {event.processStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{event.center || "—"}</td>
+                      <td className="px-4 py-3 text-gray-600">{event.utmCampaign || "—"}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">
+                        {event.processStatus === "error" ? event.errorMessage || "Error" : event.leadSource || "OK"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {event.processStatus === "error" ? (
+                          <button
+                            type="button"
+                            disabled={metaSignalRetryId === event.id}
+                            onClick={() => retryMetaSignal(event.id)}
+                            className="px-2 py-1 text-xs font-semibold rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-800 disabled:opacity-50"
+                          >
+                            {metaSignalRetryId === event.id ? "Retrying..." : "Retry"}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {metaSignalEvents.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                        No CRM-to-Meta signals yet. Signals will appear once qualified or converted stages are recorded.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
