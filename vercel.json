@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/zoho-cliq-morning",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/zoho-cliq-evening",
+      "schedule": "00 14 * * *"
     }
   ]
 }
