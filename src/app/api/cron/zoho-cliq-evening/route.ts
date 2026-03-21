@@ -44,6 +44,26 @@ function formatNote(note?: string | null) {
   return safe.length > 80 ? `${safe.slice(0, 77)}...` : safe;
 }
 
+const DAILY_TIPS = [
+  "Keep status updates short and factual so tomorrow’s standup is clear.",
+  "If blocked, tag the blocker and the owner in CRM notes.",
+  "Record UTM links used today so we can trace lead sources later.",
+  "Confirm NeoDove sync counts and reconcile any gaps before sign-off.",
+  "Close the loop on high‑intent leads with a next action note.",
+  "Share what worked in content today to reduce tomorrow’s guesswork.",
+  "If spend was logged, also mention CPA/qualified outcomes in notes.",
+  "Update counselor outcomes the same day to keep conversion data fresh.",
+  "If a task slipped, move it to tomorrow’s first action.",
+  "Celebrate one win in notes to keep the team aligned.",
+  "Check integration health alerts before logging off.",
+  "Add one improvement idea for tomorrow’s workflow.",
+];
+
+function dailyTipFor(dateKey: string) {
+  const seed = Number(dateKey.replace(/-/g, "")) || 0;
+  return DAILY_TIPS[seed % DAILY_TIPS.length];
+}
+
 export async function GET(req: NextRequest) {
   try {
     if (!isAuthorized(req)) {
@@ -122,7 +142,13 @@ export async function GET(req: NextRequest) {
       "Still open (top 10):",
       ...openLines,
       "",
+      `Daily tip: ${dailyTipFor(dateKey)}`,
+      "",
       "Please update any remaining tasks before sign-off so tomorrow’s standup is accurate.",
+      "",
+      "Manuals:",
+      "- https://www.santaan.in/admin/marketing-manual",
+      "- https://www.santaan.in/admin/ceo-manual",
     ].join("\n");
 
     const result = await postZohoCliqMessage(message);

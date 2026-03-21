@@ -38,6 +38,26 @@ function formatStatus(value: string) {
   return value.replace("_", " ");
 }
 
+const DAILY_TIPS = [
+  "Mark task status in CRM right after completion so the evening wrap is accurate.",
+  "Log UTMs in every link you publish today so we can measure ROI.",
+  "If a lead is hot, update status immediately and add the next action note.",
+  "Use the Campaign Analytics keywords list before finalizing copy.",
+  "If a task is blocked, write the blocker clearly in notes so help is fast.",
+  "Use the Ops Workboard to track field activity and keep dates consistent.",
+  "Keep call outcomes short and specific: reason, outcome, next step.",
+  "Review NeoDove sync status before the first calling cycle.",
+  "Share center-specific creatives with correct tracking links only.",
+  "Always close the loop: update leads after WhatsApp/phone follow-ups.",
+  "Check integration health once in the morning and flag any warnings.",
+  "Write one learning from today’s content performance for tomorrow.",
+];
+
+function dailyTipFor(dateKey: string) {
+  const seed = Number(dateKey.replace(/-/g, "")) || 0;
+  return DAILY_TIPS[seed % DAILY_TIPS.length];
+}
+
 export async function GET(req: NextRequest) {
   try {
     if (!isAuthorized(req)) {
@@ -97,9 +117,15 @@ export async function GET(req: NextRequest) {
       "Morning focus (update status in CRM):",
       ...(morningLines.length ? morningLines : ["- No morning tasks found."]),
       "",
+      `Daily tip: ${dailyTipFor(dateKey)}`,
+      "",
       "Open CRM:",
       "- https://www.santaan.in/login",
       "- https://www.santaan.in/admin/dashboard",
+      "",
+      "Manuals:",
+      "- https://www.santaan.in/admin/marketing-manual",
+      "- https://www.santaan.in/admin/ceo-manual",
       "",
       "Please update your task status after completion so the evening review stays accurate.",
     ].join("\n");
