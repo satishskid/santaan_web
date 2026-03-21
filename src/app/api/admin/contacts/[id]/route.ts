@@ -4,6 +4,9 @@ import { contacts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { isAuthorizedOpsUser } from '@/lib/auth-helper';
+import { emitMetaSignalsForContactChange } from '@/lib/meta-conversions';
+
+export const runtime = 'nodejs';
 
 const UPDATE_ROLES = new Set([
     'admin',
@@ -48,6 +51,11 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         }
 
         const body = await request.json();
+        const explicitSignals = Array.isArray(body?.metaSignalStages)
+            ? body.metaSignalStages.map((value: unknown) => String(value || ''))
+            : body?.metaSignalStages
+              ? [String(body.metaSignalStages)]
+              : [];
 
         type ContactInsert = typeof contacts.$inferInsert;
         const update: Partial<ContactInsert> = {};
@@ -108,9 +116,24 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
             update.phone = String(update.phone);
         }
 
+        const existing = await db.select().from(contacts).where(eq(contacts.id, id)).get();
+        if (!existing) {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        }
+
         const updated = await db.update(contacts).set(update).where(eq(contacts.id, id)).returning();
         if (!updated[0]) {
             return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        }
+
+        try {
+            await emitMetaSignalsForContactChange({
+                before: existing,
+                after: updated[0],
+                explicitSignals,
+            });
+        } catch (signalError) {
+            console.error('Meta signal emission on contact update failed:', signalError);
         }
 
         return NextResponse.json({ success: true, contact: updated[0] });

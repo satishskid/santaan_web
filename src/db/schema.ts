@@ -105,6 +105,38 @@ export const neodoveEvents = sqliteTable('neodove_events', {
     errorMessage: text('error_message'),
 });
 
+export const metaConversionEvents = sqliteTable(
+    'meta_conversion_events',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        eventKey: text('event_key').notNull(),
+        contactId: integer('contact_id'),
+        eventName: text('event_name').notNull(),
+        signalType: text('signal_type').notNull(), // lead_qualified | consultation_booked | consultation_completed | patient_converted
+        crmStatus: text('crm_status'),
+        center: text('center'),
+        sourceChannel: text('source_channel'),
+        actionSource: text('action_source'),
+        pixelId: text('pixel_id'),
+        leadSource: text('lead_source'),
+        utmCampaign: text('utm_campaign'),
+        eventTime: text('event_time').notNull(),
+        emailHash: text('email_hash'),
+        phoneHash: text('phone_hash'),
+        externalIdHash: text('external_id_hash'),
+        payload: text('payload').notNull(),
+        responsePayload: text('response_payload'),
+        processStatus: text('process_status').default('received'), // received | processing | processed | skipped | error
+        retryCount: integer('retry_count').default(0),
+        processedAt: text('processed_at'),
+        receivedAt: text('received_at').default(sql`CURRENT_TIMESTAMP`),
+        errorMessage: text('error_message'),
+    },
+    (table) => ({
+        uniqueEventKey: uniqueIndex('meta_conversion_events_event_key_unique').on(table.eventKey),
+    })
+);
+
 export const admins = sqliteTable('admins', {
     id: integer('id').primaryKey({ autoIncrement: true }),
     email: text('email').notNull().unique(),

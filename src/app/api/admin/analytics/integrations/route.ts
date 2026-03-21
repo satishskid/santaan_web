@@ -3,9 +3,10 @@ import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isAuthorizedOpsUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
-import { campaignSpend, contacts, neodoveEvents } from "@/db/schema";
+import { campaignSpend, contacts, metaConversionEvents, neodoveEvents } from "@/db/schema";
 import { readGa4Config } from "@/lib/ga4";
 import { readMetaAdsConfig } from "@/lib/meta-ads";
+import { readMetaConversionsConfig } from "@/lib/meta-conversions";
 import { readSearchConsoleConfig } from "@/lib/search-console";
 
 export const runtime = "nodejs";
@@ -40,7 +41,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [neodoveSummary, spendSummary, neodoveLeadSummary, neodoveLastEvent] = await Promise.all([
+    const [neodoveSummary, spendSummary, neodoveLeadSummary, neodoveLastEvent, metaSignalSummary, metaSignalLastEvent] = await Promise.all([
       db
         .select({
           processed: sql<number>`SUM(CASE WHEN ${neodoveEvents.processStatus} = 'processed' THEN 1 ELSE 0 END)`,
@@ -74,11 +75,24 @@ export async function GET() {
         )
         .get(),
       db.select().from(neodoveEvents).orderBy(desc(neodoveEvents.receivedAt), desc(neodoveEvents.id)).get(),
+      db
+        .select({
+          processed: sql<number>`SUM(CASE WHEN ${metaConversionEvents.processStatus} = 'processed' THEN 1 ELSE 0 END)`,
+          errors: sql<number>`SUM(CASE WHEN ${metaConversionEvents.processStatus} = 'error' THEN 1 ELSE 0 END)`,
+          skipped: sql<number>`SUM(CASE WHEN ${metaConversionEvents.processStatus} = 'skipped' THEN 1 ELSE 0 END)`,
+          qualified: sql<number>`SUM(CASE WHEN ${metaConversionEvents.signalType} = 'lead_qualified' THEN 1 ELSE 0 END)`,
+          converted: sql<number>`SUM(CASE WHEN ${metaConversionEvents.signalType} = 'patient_converted' THEN 1 ELSE 0 END)`,
+        })
+        .from(metaConversionEvents)
+        .where(gte(metaConversionEvents.receivedAt, recentIso(24 * 60 * 60 * 1000)))
+        .get(),
+      db.select().from(metaConversionEvents).orderBy(desc(metaConversionEvents.receivedAt), desc(metaConversionEvents.id)).get(),
     ]);
 
     const ga4Config = readGa4Config();
     const searchConsoleConfig = readSearchConsoleConfig();
     const metaConfig = readMetaAdsConfig();
+    const metaConversionsConfig = readMetaConversionsConfig();
     const neodoveConfigured = Boolean(
       process.env.NEODOVE_WEBHOOK_SECRET?.trim() ||
         process.env.NEODOVE_CUSTOM_INTEGRATION_URL?.trim() ||
@@ -106,9 +120,16 @@ export async function GET() {
           status: metaConfig ? "ready" : "missing",
           accountCount: metaConfig?.accountIds.length || 0,
           appSecretConfigured: Boolean(metaConfig?.appSecretConfigured),
+          conversionsConfigured: Boolean(metaConversionsConfig),
           spendRows7d: Number(spendSummary?.count || 0),
           spendTotal7d: Number(spendSummary?.total || 0),
           lastSpendAt: spendSummary?.lastSeenAt || null,
+          conversionsProcessed24h: Number(metaSignalSummary?.processed || 0),
+          conversionsErrors24h: Number(metaSignalSummary?.errors || 0),
+          conversionsSkipped24h: Number(metaSignalSummary?.skipped || 0),
+          qualifiedSignals24h: Number(metaSignalSummary?.qualified || 0),
+          convertedSignals24h: Number(metaSignalSummary?.converted || 0),
+          lastConversionAt: metaSignalLastEvent?.receivedAt || null,
           message: metaConfig ? "Meta API credentials are configured." : "Meta access token or account ids are missing.",
         },
         neodove: {

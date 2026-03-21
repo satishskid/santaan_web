@@ -154,9 +154,16 @@ interface IntegrationStatusSnapshot {
       status: string;
       accountCount: number;
       appSecretConfigured: boolean;
+      conversionsConfigured?: boolean;
       spendRows7d: number;
       spendTotal7d: number;
       lastSpendAt?: string | null;
+      conversionsProcessed24h?: number;
+      conversionsErrors24h?: number;
+      conversionsSkipped24h?: number;
+      qualifiedSignals24h?: number;
+      convertedSignals24h?: number;
+      lastConversionAt?: string | null;
       message: string;
     };
     neodove: {
@@ -834,6 +841,12 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
                 accounts {formatNumber(serviceHealth.meta.accountCount)} · spend rows 7d {formatNumber(serviceHealth.meta.spendRows7d)}
               </p>
               <p className="mt-1 text-xs text-gray-500">Last spend sync: {prettyDate(serviceHealth.meta.lastSpendAt)}</p>
+              <p className="mt-1 text-xs text-gray-500">
+                signal loop {serviceHealth.meta.conversionsConfigured ? "on" : "off"} · processed 24h {formatNumber(serviceHealth.meta.conversionsProcessed24h || 0)} · errors {formatNumber(serviceHealth.meta.conversionsErrors24h || 0)}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                qualified 24h {formatNumber(serviceHealth.meta.qualifiedSignals24h || 0)} · converted 24h {formatNumber(serviceHealth.meta.convertedSignals24h || 0)} · last signal {prettyDate(serviceHealth.meta.lastConversionAt)}
+              </p>
             </div>
 
             <div className="rounded-lg border border-gray-100 p-4 bg-white">

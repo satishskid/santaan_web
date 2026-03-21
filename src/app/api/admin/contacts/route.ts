@@ -6,6 +6,9 @@ import { auth } from '@/auth';
 import { eq } from 'drizzle-orm';
 
 import { isAuthorizedOpsUser } from '@/lib/auth-helper';
+import { emitMetaSignalsForContactChange } from '@/lib/meta-conversions';
+
+export const runtime = 'nodejs';
 
 const CREATE_ROLES = new Set([
     'admin',
@@ -76,6 +79,14 @@ export async function POST(request: Request) {
                 status: body?.status ? String(body.status) : 'New',
             })
             .returning();
+
+        if (created[0]) {
+            try {
+                await emitMetaSignalsForContactChange({ before: null, after: created[0] });
+            } catch (signalError) {
+                console.error('Meta signal emission on contact create failed:', signalError);
+            }
+        }
 
         return NextResponse.json({ success: true, contact: created[0] }, { status: 201 });
     } catch (error) {

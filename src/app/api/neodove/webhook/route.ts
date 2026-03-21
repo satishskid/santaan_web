@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { contacts, neodoveEvents } from "@/db/schema";
 import { ensureMandatoryUtm } from "@/lib/utm";
 import { resolveCenter } from "@/lib/lead-attribution";
+import { emitMetaSignalsForContactChange } from "@/lib/meta-conversions";
 import {
   mapNeoDoveStatus,
   normalizeIndianMobile,
@@ -332,6 +333,16 @@ export async function POST(req: NextRequest) {
         .returning();
 
       const updatedContact = updatedRows[0];
+      if (updatedContact) {
+        try {
+          await emitMetaSignalsForContactChange({
+            before: existing,
+            after: updatedContact,
+          });
+        } catch (signalError) {
+          console.error("Meta signal emission on NeoDove update failed:", signalError);
+        }
+      }
       await db
         .update(neodoveEvents)
         .set({
@@ -384,6 +395,17 @@ export async function POST(req: NextRequest) {
         conversationCount: 1,
         submittedAt: Date.now(),
       }).returning();
+
+      if (createdRows[0]) {
+        try {
+          await emitMetaSignalsForContactChange({
+            before: null,
+            after: createdRows[0],
+          });
+        } catch (signalError) {
+          console.error("Meta signal emission on NeoDove create failed:", signalError);
+        }
+      }
 
       await db
         .update(neodoveEvents)
