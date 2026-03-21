@@ -212,6 +212,12 @@ interface IntegrationStatusSnapshot {
       lastConversionAt?: string | null;
       message: string;
     };
+    zohoCliq: {
+      configured: boolean;
+      status: string;
+      channel?: string | null;
+      message: string;
+    };
     neodove: {
       configured: boolean;
       status: string;
@@ -969,6 +975,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         status: metaError ? "warning" : integrationStatus.services.meta.status,
         message: metaError || integrationStatus.services.meta.message,
       },
+      zohoCliq: integrationStatus.services.zohoCliq,
       neodove: integrationStatus.services.neodove,
     };
   }, [ga4Error, integrationStatus, metaError, searchConsoleError]);
@@ -1099,7 +1106,7 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
         ) : integrationError ? (
           <div className="p-6 text-sm text-rose-700 bg-rose-50 border-t border-rose-100">{integrationError}</div>
         ) : serviceHealth ? (
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
             <div className="rounded-lg border border-gray-100 p-4 bg-white">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-gray-900">GA4</p>
@@ -1140,6 +1147,17 @@ export default function CampaignAnalytics({ contacts }: CampaignAnalyticsProps) 
               <p className="mt-1 text-xs text-gray-500">
                 qualified 24h {formatNumber(serviceHealth.meta.qualifiedSignals24h || 0)} · converted 24h {formatNumber(serviceHealth.meta.convertedSignals24h || 0)} · last signal {prettyDate(serviceHealth.meta.lastConversionAt)}
               </p>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 p-4 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">Zoho Cliq</p>
+                <span className={`px-2 py-1 rounded-full border text-[11px] font-semibold ${toneClasses(serviceHealth.zohoCliq.status)}`}>
+                  {serviceHealth.zohoCliq.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">{serviceHealth.zohoCliq.message}</p>
+              <p className="mt-2 text-xs text-gray-500 truncate">Channel: {serviceHealth.zohoCliq.channel || "—"}</p>
             </div>
 
             <div className="rounded-lg border border-gray-100 p-4 bg-white">

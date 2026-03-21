@@ -8,6 +8,7 @@ import { readGa4Config } from "@/lib/ga4";
 import { readMetaAdsConfig } from "@/lib/meta-ads";
 import { readMetaConversionsConfig } from "@/lib/meta-conversions";
 import { readSearchConsoleConfig } from "@/lib/search-console";
+import { readZohoCliqConfig } from "@/lib/zoho-cliq";
 
 export const runtime = "nodejs";
 
@@ -93,6 +94,7 @@ export async function GET() {
     const searchConsoleConfig = readSearchConsoleConfig();
     const metaConfig = readMetaAdsConfig();
     const metaConversionsConfig = readMetaConversionsConfig();
+    const zohoCliqConfig = readZohoCliqConfig();
     const neodoveConfigured = Boolean(
       process.env.NEODOVE_WEBHOOK_SECRET?.trim() ||
         process.env.NEODOVE_CUSTOM_INTEGRATION_URL?.trim() ||
@@ -131,6 +133,14 @@ export async function GET() {
           convertedSignals24h: Number(metaSignalSummary?.converted || 0),
           lastConversionAt: metaSignalLastEvent?.receivedAt || null,
           message: metaConfig ? "Meta API credentials are configured." : "Meta access token or account ids are missing.",
+        },
+        zohoCliq: {
+          configured: Boolean(zohoCliqConfig),
+          status: zohoCliqConfig ? "ready" : "missing",
+          channel: zohoCliqConfig?.channelUniqueName || null,
+          message: zohoCliqConfig
+            ? "Zoho Cliq OAuth credentials and channel are configured."
+            : "Zoho Cliq OAuth credentials are missing.",
         },
         neodove: {
           configured: neodoveConfigured,
