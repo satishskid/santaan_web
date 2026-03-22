@@ -629,28 +629,28 @@ export default function CRM() {
     const guidedProtocol = useMemo<GuidedProtocol>(() => {
         if (isCeoPortal) {
             return {
-                title: 'Lead the day in 3 simple steps',
-                summary: 'Morning sets focus, the day tracks progress, and evening closes loops.',
+                title: 'Lead the day with clarity',
+                summary: 'Morning aligns the team, day tracks progress, evening closes loops. Calm and steady.',
                 phases: [
                     {
                         id: 'ceo_morning',
                         label: 'Morning Standup',
                         window: '09:30-10:00 AM',
-                        summary: 'Check what’s working, pick a few priorities, and share them with the team.',
+                        summary: 'Review what moved, pick 2-3 priorities, and share them. Keep it short and clear.',
                         action: { id: 'ceo_open_analytics', label: 'Open Analytics', tab: 'analytics' },
                     },
                     {
                         id: 'ceo_execution',
                         label: 'Execution Control',
                         window: '10:00 AM-06:30 PM',
-                        summary: 'Track progress across spend, calling, content, and follow-ups.',
+                        summary: 'Check spend, calling, content, and follow-ups once or twice. Remove blockers early.',
                         action: { id: 'ceo_open_daily_command', label: 'Open Daily Command', tab: 'daily_command' },
                     },
                     {
                         id: 'ceo_evening',
                         label: 'Evening Closure',
                         window: '07:00-09:00 PM',
-                        summary: 'Close blockers, confirm what’s done, and set tomorrow’s carry-overs.',
+                        summary: 'Confirm what’s done, note what’s blocked, and set tomorrow’s carry-overs. Thank you.',
                         action: { id: 'ceo_open_workboard', label: 'Open Workboard', tab: 'workboard' },
                     },
                 ],
@@ -659,28 +659,28 @@ export default function CRM() {
 
         if (isAdsPortal) {
             return {
-                title: 'Ads flow: simple and focused',
-                summary: 'Log spend, build/update campaigns, and close the day with what changed.',
+                title: 'Ads flow: clear and repeatable',
+                summary: 'Log spend, build or adjust campaigns, and end the day with a clean status. You are on track.',
                 phases: [
                     {
                         id: 'ads_morning',
                         label: 'Morning Check',
                         window: '10:00-11:00 AM',
-                        summary: 'Log spend, verify UTM names, and read today’s decisions.',
+                        summary: 'Log spend, verify UTM names, and read today’s decisions. One task at a time.',
                         action: { id: 'ads_open_spend', label: 'Open Spend', tab: 'spend' },
                     },
                     {
                         id: 'ads_execution',
                         label: 'Campaign Build',
                         window: '11:00 AM-06:00 PM',
-                        summary: 'Use Meta Launch for drafts, approvals, and live setup links.',
+                        summary: 'Use Meta Launch for drafts, approvals, and live setup links. Keep naming consistent.',
                         action: { id: 'ads_open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' },
                     },
                     {
                         id: 'ads_evening',
                         label: 'Evening Closure',
                         window: '07:00-08:30 PM',
-                        summary: 'Mark what launched, what is blocked, and what needs review tomorrow.',
+                        summary: 'Mark what launched, what is blocked, and what needs review tomorrow. Close the loop.',
                         action: { id: 'ads_open_workboard', label: 'Open Workboard', tab: 'workboard' },
                     },
                 ],
@@ -689,28 +689,28 @@ export default function CRM() {
 
         if (isContentPortal) {
             return {
-                title: 'Content flow: guided, not guessed',
-                summary: 'Morning gives signal, mid‑day creates assets, evening captures learning.',
+                title: 'Content flow: calm and guided',
+                summary: 'Morning signals, mid-day creates assets, evening captures learning. Simple beats perfect.',
                 phases: [
                     {
                         id: 'content_morning',
                         label: 'Morning Brief',
                         window: '10:00-11:00 AM',
-                        summary: 'Start from real demand signals and top topics.',
+                        summary: 'Start from demand signals and top topics. Pick a small set and write to it.',
                         action: { id: 'content_open_analytics', label: 'Open Agency Feedback', tab: 'analytics', section: 'agency-feedback' },
                     },
                     {
                         id: 'content_execution',
                         label: 'Create & Handoff',
                         window: '11:00 AM-05:30 PM',
-                        summary: 'Create copy, keywords, and tracked links in Meta Launch.',
+                        summary: 'Create copy, keywords, and tracked links in Meta Launch. One good post is enough.',
                         action: { id: 'content_open_meta_launch', label: 'Open Meta Launch', tab: 'meta_launch' },
                     },
                     {
                         id: 'content_evening',
                         label: 'Evening Learnings',
                         window: '07:00-08:30 PM',
-                        summary: 'Log what went live and what worked for tomorrow.',
+                        summary: 'Log what went live and what worked. Note one idea for tomorrow.',
                         action: { id: 'content_open_workboard', label: 'Open Workboard', tab: 'workboard' },
                     },
                 ],
@@ -720,27 +720,27 @@ export default function CRM() {
         if (isTelecallerManagerPortal) {
             return {
                 title: 'Telecalling flow: clear queues',
-                summary: 'Hot leads first, follow‑ups next, evening closes leaks.',
+                summary: 'Hot leads first, follow-ups next, evening closes leaks. You help families every day.',
                 phases: [
                     {
                         id: 'ivr_morning',
                         label: 'Morning Queue Check',
                         window: '10:00-11:00 AM',
-                        summary: `Start with hot leads (${contactOps.hotLeads}) and due follow-ups (${contactOps.followupsDue}).`,
+                        summary: `Start with hot leads (${contactOps.hotLeads}) and due follow-ups (${contactOps.followupsDue}). Keep it steady.`,
                         action: { id: 'ivr_open_neodove_ops', label: 'Open NeoDove Ops', tab: 'neodove_ops' },
                     },
                     {
                         id: 'ivr_execution',
                         label: 'Calling & Reconciliation',
                         window: '11:00 AM-06:30 PM',
-                        summary: 'Use live lists to assign, call, and update outcomes.',
+                        summary: 'Use live lists to assign, call, and update outcomes. One call at a time.',
                         action: { id: 'ivr_open_followups', label: 'Open Follow-ups', tab: 'followups' },
                     },
                     {
                         id: 'ivr_evening',
                         label: 'Evening Review',
                         window: '07:00-08:30 PM',
-                        summary: 'Close the queue, flag blockers, and publish the day summary.',
+                        summary: 'Close the queue, flag blockers, and publish the day summary. Good work today.',
                         action: { id: 'ivr_open_daily_command', label: 'Open Daily Command', tab: 'daily_command' },
                     },
                 ],
@@ -750,27 +750,27 @@ export default function CRM() {
         if (isCounselorPortal) {
             return {
                 title: 'Counselor flow: one patient at a time',
-                summary: 'Act lead by lead, keep follow‑ups clean, close the day calmly.',
+                summary: 'Act lead by lead, keep follow-ups clean, close the day calmly. You are doing meaningful work.',
                 phases: [
                     {
                         id: 'counselor_morning',
                         label: 'Morning Priorities',
                         window: '10:00-11:00 AM',
-                        summary: `Open leads needing action now, especially qualified (${contactOps.qualified}) and hot cases.`,
+                        summary: `Open leads needing action now, especially qualified (${contactOps.qualified}) and hot cases. Start small.`,
                         action: { id: 'counselor_open_followups', label: 'Open Follow-ups', tab: 'followups' },
                     },
                     {
                         id: 'counselor_execution',
                         label: 'Consult & Update',
                         window: '11:00 AM-06:30 PM',
-                        summary: 'Update outcomes right after each consult.',
+                        summary: 'Update outcomes right after each consult. Keep notes short and clear.',
                         action: { id: 'counselor_open_all', label: 'Open All Contacts', tab: 'all' },
                     },
                     {
                         id: 'counselor_evening',
                         label: 'Evening Check',
                         window: '07:00-08:00 PM',
-                        summary: 'Make sure no active lead is left without a next action.',
+                        summary: 'Make sure no active lead is left without a next action. Finish with a clean list.',
                         action: { id: 'counselor_open_hot', label: 'Open Hot Leads', tab: 'hot_leads' },
                     },
                 ],
@@ -778,28 +778,28 @@ export default function CRM() {
         }
 
         return {
-            title: 'Use the CRM like a daily coach',
-            summary: 'Start here, do your role, and close the day inside the system.',
+            title: 'Use the CRM as your daily guide',
+            summary: 'Start here, do your role, and close the day inside the system. Calm and simple.',
             phases: [
                 {
                     id: 'general_morning',
                     label: 'Morning Check',
                     window: '09:30-11:00 AM',
-                    summary: 'Start from Today and follow the short checklist.',
+                    summary: 'Start from Today and follow the short checklist. One step at a time.',
                     action: { id: 'general_open_today', label: 'Open Today', tab: 'today' },
                 },
                 {
                     id: 'general_execution',
                     label: 'Execution',
                     window: '11:00 AM-06:30 PM',
-                    summary: 'Use your role tab and keep updates short.',
+                    summary: 'Use your role tab and keep updates short. You are on track.',
                     action: { id: 'general_open_workboard', label: 'Open Workboard', tab: 'workboard' },
                 },
                 {
                     id: 'general_evening',
                     label: 'Evening Closure',
                     window: '07:00-09:00 PM',
-                    summary: 'Close open loops and set tomorrow’s next actions.',
+                    summary: 'Close open loops and set tomorrow’s next actions. Thank you.',
                     action: { id: 'general_open_daily', label: 'Open Daily Command', tab: 'daily_command' },
                 },
             ],
@@ -1001,7 +1001,7 @@ export default function CRM() {
                                     <div>
                                         <p className="text-xs text-gray-500">Today</p>
                                         <h2 className="text-lg font-bold text-gray-900 mt-1">{riderDefinition.title}</h2>
-                                        <p className="text-xs text-gray-500 mt-1">Start here. Tick these items. Keep it simple.</p>
+                                        <p className="text-xs text-gray-500 mt-1">Start here. Tick these items. Keep it simple. You are on track.</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-gray-500">Date</p>
