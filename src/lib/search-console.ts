@@ -61,7 +61,7 @@ function readJsonServiceAccount() {
   }
 }
 
-function normalizeSiteUrl(value: string) {
+export function normalizeSiteUrl(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return "";
   if (trimmed.startsWith("sc-domain:")) {

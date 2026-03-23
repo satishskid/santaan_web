@@ -83,8 +83,8 @@ export default function SettingsManagement() {
       for (const setting of dirtySettings) {
         await saveSetting(setting.key, setting.value);
       }
+      await fetchSettings();
       setNotice(`Saved ${dirtySettings.length} setting(s).`);
-      setSettings((prev) => prev.map((item) => ({ ...item, dirty: false })));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
@@ -108,9 +108,7 @@ export default function SettingsManagement() {
     setNotice(null);
     try {
       await saveSetting(key, newValue);
-      setSettings((prev) =>
-        [...prev, { key, value: newValue, dirty: false }].sort((a, b) => a.key.localeCompare(b.key))
-      );
+      await fetchSettings();
       setNewKey("");
       setNewValue("");
       setNotice("Setting added.");

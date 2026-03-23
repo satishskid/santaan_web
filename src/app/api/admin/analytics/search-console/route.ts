@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAuthorizedOpsUser } from "@/lib/auth-helper";
-import { fetchSearchConsoleSnapshot, readSearchConsoleConfig } from "@/lib/search-console";
+import { fetchSearchConsoleSnapshot, normalizeSiteUrl, readSearchConsoleConfig } from "@/lib/search-console";
+import { db } from "@/lib/db";
+import { settings } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -31,6 +34,21 @@ function parseDays(request: NextRequest) {
   return rounded;
 }
 
+async function resolveSiteUrlOverride() {
+  const rows = await db
+    .select({ key: settings.key, value: settings.value })
+    .from(settings)
+    .where(
+      inArray(settings.key, [
+        "SEARCH_CONSOLE_SITE_URL",
+        "GOOGLE_SEARCH_CONSOLE_SITE_URL",
+      ])
+    );
+  const override = rows.find((row) => row.value && row.value.trim().length > 0)?.value || "";
+  const normalized = normalizeSiteUrl(override);
+  return normalized || "";
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -47,6 +65,11 @@ export async function GET(request: NextRequest) {
         configured: false,
         message: "Search Console service account credentials are missing",
       });
+    }
+
+    const overrideSiteUrl = await resolveSiteUrlOverride();
+    if (overrideSiteUrl) {
+      config.siteUrl = overrideSiteUrl;
     }
 
     const days = parseDays(request);
