@@ -57,6 +57,21 @@ export default function SettingsManagement() {
     );
   }
 
+  function upsertSetting(key: string, value: string) {
+    setSettings((prev) => {
+      const existing = prev.find((item) => item.key === key);
+      if (!existing) {
+        return [...prev, { key, value, dirty: true }].sort((a, b) => a.key.localeCompare(b.key));
+      }
+      return prev.map((item) => (item.key === key ? { ...item, value, dirty: true } : item));
+    });
+  }
+
+  const searchConsoleUrl =
+    settings.find((item) => item.key === "SEARCH_CONSOLE_SITE_URL")?.value ||
+    settings.find((item) => item.key === "GOOGLE_SEARCH_CONSOLE_SITE_URL")?.value ||
+    "";
+
   async function saveSetting(key: string, value: string) {
     const response = await fetch("/api/admin/settings", {
       method: "POST",
@@ -129,6 +144,46 @@ export default function SettingsManagement() {
         <p className="text-sm text-gray-600 mt-1">
           Configure operational keys used by the admin platform and growth workflows.
         </p>
+
+        <div className="mt-4 rounded-lg border border-santaan-teal/20 bg-santaan-teal/5 p-4">
+          <p className="text-sm font-semibold text-gray-900">Search Console setup</p>
+          <p className="text-xs text-gray-600 mt-1">
+            Paste the verified property URL here so data flows into the CRM. Use the exact property you verified.
+          </p>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
+            <Input
+              value={searchConsoleUrl}
+              onChange={(event) => upsertSetting("SEARCH_CONSOLE_SITE_URL", event.target.value)}
+              placeholder="https://www.santaan.in/"
+            />
+            <Button
+              variant="outline"
+              onClick={() => upsertSetting("SEARCH_CONSOLE_SITE_URL", "https://www.santaan.in/")}
+            >
+              Use www
+            </Button>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => upsertSetting("SEARCH_CONSOLE_SITE_URL", "https://santaan.in/")}
+            >
+              Use non-www
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => upsertSetting("SEARCH_CONSOLE_SITE_URL", "sc-domain:santaan.in")}
+            >
+              Use sc-domain
+            </Button>
+          </div>
+          <p className="text-xs text-gray-600 mt-3">
+            Verification file already present: `googledb99843631bff895.html` at `/googledb99843631bff895.html`.
+          </p>
+          <p className="text-xs text-gray-600 mt-1">
+            After adding this setting, click “Save Changes” below.
+          </p>
+        </div>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <Input value={newKey} onChange={(event) => setNewKey(event.target.value)} placeholder="setting_key" />
