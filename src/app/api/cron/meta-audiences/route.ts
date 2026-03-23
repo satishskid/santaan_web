@@ -3,7 +3,17 @@ import { syncMetaAudiences } from "@/lib/meta-audiences";
 
 export const runtime = "nodejs";
 
+function isVercelCron(req: NextRequest) {
+  const cronHeader = req.headers.get("x-vercel-cron");
+  if (cronHeader) return true;
+  const scheduledHeader = req.headers.get("x-vercel-scheduled");
+  if (scheduledHeader) return true;
+  const userAgent = (req.headers.get("user-agent") || "").toLowerCase();
+  return userAgent.includes("vercel-cron");
+}
+
 function isAuthorized(req: NextRequest) {
+  if (isVercelCron(req)) return true;
   const secret = String(process.env.META_AUDIENCE_SYNC_SECRET || "").trim();
   if (!secret) return false;
   const header = req.headers.get("x-cron-secret") || req.headers.get("authorization");
