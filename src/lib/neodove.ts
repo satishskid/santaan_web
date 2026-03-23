@@ -105,16 +105,43 @@ function readBoolean(record: Record<string, unknown>, keys: string[]) {
   return undefined;
 }
 
-function candidateNodes(body: Record<string, unknown>) {
-  const nodes: Record<string, unknown>[] = [body];
-  const nestedKeys = ["lead", "data", "payload", "body", "result"];
+function parseEmbeddedJson(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return null;
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return null;
+  }
+}
 
-  for (const key of nestedKeys) {
-    const node = body[key];
-    if (isRecord(node)) nodes.push(node);
+function collectNodes(value: unknown, nodes: Record<string, unknown>[]) {
+  if (isRecord(value)) {
+    nodes.push(value);
+    return;
   }
 
-  return nodes;
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectNodes(entry, nodes));
+    return;
+  }
+
+  const parsed = parseEmbeddedJson(value);
+  if (parsed) collectNodes(parsed, nodes);
+}
+
+function candidateNodes(body: Record<string, unknown>) {
+  const nodes: Record<string, unknown>[] = [];
+  const nestedKeys = ["lead", "data", "payload", "body", "result", "response", "request"];
+
+  collectNodes(body, nodes);
+  for (const key of nestedKeys) {
+    collectNodes(body[key], nodes);
+  }
+
+  return nodes.length ? nodes : [body];
 }
 
 function resolveNeoDoveEndpoint() {
@@ -219,18 +246,32 @@ export function parseNeoDoveWebhookLead(body: unknown): NeoDoveWebhookLead | nul
 
   const name = nodes.map((node) => readString(node, ["name", "lead_name", "full_name", "customer_name"])).find(Boolean);
   const mobile = nodes
-    .map((node) => readString(node, ["mobile", "mobile_number", "phone", "phone_number", "customer_mobile", "contact_number"]))
+    .map((node) =>
+      readString(node, [
+        "mobile",
+        "mobile_number",
+        "mobile_no",
+        "phone",
+        "phone_number",
+        "phoneNumber",
+        "customer_mobile",
+        "contact_number",
+        "whatsapp_number",
+        "whatsapp",
+        "tel",
+      ])
+    )
     .map((value) => normalizeIndianMobile(value))
     .find((value): value is string => Boolean(value));
   const email = nodes
-    .map((node) => readString(node, ["email", "lead_email", "customer_email", "mail"]))
+    .map((node) => readString(node, ["email", "lead_email", "customer_email", "mail", "email_id", "mail_id"]))
     .find((value): value is string => Boolean(value));
 
   if (!mobile && !email) return null;
 
-  const leadId = nodes.map((node) => readString(node, ["lead_id", "id", "leadid"])).find(Boolean);
+  const leadId = nodes.map((node) => readString(node, ["lead_id", "leadId", "leadID", "id", "leadid"])).find(Boolean);
   const campaignId = nodes
-    .map((node) => readString(node, ["campaign_id", "campaignid"]))
+    .map((node) => readString(node, ["campaign_id", "campaignid", "campaignId", "campaignID"]))
     .find(Boolean);
   const campaign = nodes
     .map((node) => readString(node, ["campaign", "campaign_name", "campaign_id", "campaignid"]))

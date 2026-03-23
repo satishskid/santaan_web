@@ -53,6 +53,40 @@ function eventTimeForLead(updatedAt?: string, createdAt?: string) {
   return normalizeTimestamp(updatedAt) || normalizeTimestamp(createdAt) || new Date().toISOString();
 }
 
+function safeJsonParse(raw: string) {
+  try {
+    return { ok: true, value: JSON.parse(raw) as unknown };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Invalid JSON" };
+  }
+}
+
+function parseRawBody(rawBody: string, contentType: string | null) {
+  const trimmed = rawBody.trim();
+  if (!trimmed) return { body: null, error: "empty_body" };
+
+  const asJson = safeJsonParse(trimmed);
+  if (asJson.ok) return { body: asJson.value, error: undefined };
+
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    return { body: null, error: asJson.error || "invalid_json" };
+  }
+
+  if (contentType?.includes("application/x-www-form-urlencoded") || trimmed.includes("=")) {
+    const params = new URLSearchParams(trimmed);
+    const payloadKeys = ["payload", "data", "body", "request"];
+    for (const key of payloadKeys) {
+      const value = params.get(key);
+      if (!value) continue;
+      const parsed = safeJsonParse(value);
+      if (parsed.ok) return { body: parsed.value, error: undefined };
+    }
+    return { body: Object.fromEntries(params.entries()), error: asJson.error || undefined };
+  }
+
+  return { body: { raw: trimmed }, error: asJson.error || "unsupported_payload" };
+}
+
 function buildEventKey(rawPayload: unknown, webhookLead: ReturnType<typeof parseNeoDoveWebhookLead>) {
   const seed = JSON.stringify({
     leadId: webhookLead?.leadId || "",
@@ -74,6 +108,11 @@ function buildEventKey(rawPayload: unknown, webhookLead: ReturnType<typeof parse
     notes: webhookLead?.notes || "",
     rawPayload,
   });
+  return createHash("sha1").update(seed).digest("hex");
+}
+
+function buildIgnoredEventKey(rawPayload: string) {
+  const seed = rawPayload || `ignored_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   return createHash("sha1").update(seed).digest("hex");
 }
 
@@ -125,11 +164,21 @@ export async function POST(req: NextRequest) {
     }
 
     rawBody = await req.text();
-    const body = JSON.parse(rawBody) as unknown;
-    const webhookLead = parseNeoDoveWebhookLead(body);
+    const { body, error: parseError } = parseRawBody(rawBody, req.headers.get("content-type"));
+    const webhookLead = body ? parseNeoDoveWebhookLead(body) : null;
 
     if (!webhookLead) {
-      return NextResponse.json({ success: true, message: "Ignored non-lead payload" });
+      const now = new Date().toISOString();
+      await db.insert(neodoveEvents).values({
+        eventKey: buildIgnoredEventKey(rawBody),
+        eventName: "ignored_payload",
+        rawPayload: rawBody || "raw body unavailable",
+        receivedAt: now,
+        processedAt: now,
+        processStatus: "ignored",
+        errorMessage: parseError ? `Ignored payload: ${parseError}` : "Ignored payload: missing lead identifiers",
+      });
+      return NextResponse.json({ success: true, ignored: true });
     }
 
     const center = resolveCenter({
