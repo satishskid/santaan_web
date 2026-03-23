@@ -12,6 +12,8 @@ interface SettingEntry {
   dirty?: boolean;
 }
 
+type HealthState = "idle" | "checking" | "ok" | "error";
+
 export default function SettingsManagement() {
   const [settings, setSettings] = useState<SettingEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,6 +22,12 @@ export default function SettingsManagement() {
   const [newValue, setNewValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchConsoleHealth, setSearchConsoleHealth] = useState<{
+    state: HealthState;
+    message?: string;
+    siteUrl?: string;
+    generatedAt?: string;
+  }>({ state: "idle" });
 
   async function fetchSettings() {
     setLoading(true);
@@ -71,6 +79,45 @@ export default function SettingsManagement() {
     settings.find((item) => item.key === "SEARCH_CONSOLE_SITE_URL")?.value ||
     settings.find((item) => item.key === "GOOGLE_SEARCH_CONSOLE_SITE_URL")?.value ||
     "";
+
+  async function checkSearchConsoleHealth() {
+    setSearchConsoleHealth({ state: "checking" });
+    try {
+      const response = await fetch("/api/admin/analytics/search-console?days=7", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || payload?.error) {
+        setSearchConsoleHealth({
+          state: "error",
+          message: payload?.message || payload?.error || "Search Console health check failed.",
+        });
+        return;
+      }
+      if (!payload?.configured) {
+        setSearchConsoleHealth({
+          state: "error",
+          message: payload?.message || "Search Console credentials are missing.",
+        });
+        return;
+      }
+      setSearchConsoleHealth({
+        state: "ok",
+        message: "Search Console is connected and returning data.",
+        siteUrl: payload?.siteUrl,
+        generatedAt: payload?.generatedAt,
+      });
+    } catch (err) {
+      setSearchConsoleHealth({
+        state: "error",
+        message: err instanceof Error ? err.message : "Search Console health check failed.",
+      });
+    }
+  }
+
+  useEffect(() => {
+    if (settings.length > 0) {
+      checkSearchConsoleHealth();
+    }
+  }, [settings.length]);
 
   async function saveSetting(key: string, value: string) {
     const response = await fetch("/api/admin/settings", {
@@ -183,6 +230,41 @@ export default function SettingsManagement() {
           <p className="text-xs text-gray-600 mt-1">
             After adding this setting, click “Save Changes” below.
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                searchConsoleHealth.state === "ok"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : searchConsoleHealth.state === "checking"
+                  ? "bg-amber-100 text-amber-700"
+                  : searchConsoleHealth.state === "error"
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {searchConsoleHealth.state === "ok"
+                ? "Verified"
+                : searchConsoleHealth.state === "checking"
+                ? "Checking"
+                : searchConsoleHealth.state === "error"
+                ? "Needs Attention"
+                : "Not Checked"}
+            </span>
+            <Button variant="outline" onClick={checkSearchConsoleHealth}>
+              Test Now
+            </Button>
+          </div>
+          {searchConsoleHealth.message ? (
+            <p className="text-xs text-gray-600 mt-2">{searchConsoleHealth.message}</p>
+          ) : null}
+          {searchConsoleHealth.siteUrl ? (
+            <p className="text-xs text-gray-600 mt-1">Property: {searchConsoleHealth.siteUrl}</p>
+          ) : null}
+          {searchConsoleHealth.generatedAt ? (
+            <p className="text-xs text-gray-500 mt-1">
+              Last check: {new Date(searchConsoleHealth.generatedAt).toLocaleString()}
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
