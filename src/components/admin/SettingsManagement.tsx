@@ -28,6 +28,12 @@ export default function SettingsManagement() {
     siteUrl?: string;
     generatedAt?: string;
   }>({ state: "idle" });
+  const [integrationHealth, setIntegrationHealth] = useState<{
+    state: HealthState;
+    services?: Record<string, any>;
+    generatedAt?: string;
+    message?: string;
+  }>({ state: "idle" });
 
   async function fetchSettings() {
     setLoading(true);
@@ -113,11 +119,50 @@ export default function SettingsManagement() {
     }
   }
 
+  async function checkIntegrationHealth() {
+    setIntegrationHealth({ state: "checking" });
+    try {
+      const response = await fetch("/api/admin/analytics/integrations", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || payload?.error) {
+        setIntegrationHealth({
+          state: "error",
+          message: payload?.error || "Integration health check failed.",
+        });
+        return;
+      }
+      setIntegrationHealth({
+        state: "ok",
+        services: payload?.services || {},
+        generatedAt: payload?.generatedAt,
+      });
+    } catch (err) {
+      setIntegrationHealth({
+        state: "error",
+        message: err instanceof Error ? err.message : "Integration health check failed.",
+      });
+    }
+  }
+
   useEffect(() => {
     if (settings.length > 0) {
       checkSearchConsoleHealth();
+      checkIntegrationHealth();
     }
   }, [settings.length]);
+
+  const integrationSummary = useMemo(() => {
+    const services = integrationHealth.services || {};
+    const entries = Object.values(services);
+    if (integrationHealth.state !== "ok" || entries.length === 0) {
+      return { label: "Not Checked", tone: "neutral" };
+    }
+    const hasMissing = entries.some((item: any) => !item?.configured || item?.status === "missing");
+    const hasWarning = entries.some((item: any) => item?.status === "warning");
+    if (hasMissing) return { label: "Needs Attention", tone: "error" };
+    if (hasWarning) return { label: "Attention", tone: "warning" };
+    return { label: "All Green", tone: "ok" };
+  }, [integrationHealth]);
 
   async function saveSetting(key: string, value: string) {
     const response = await fetch("/api/admin/settings", {
@@ -264,6 +309,75 @@ export default function SettingsManagement() {
             <p className="text-xs text-gray-500 mt-1">
               Last check: {new Date(searchConsoleHealth.generatedAt).toLocaleString()}
             </p>
+          ) : null}
+        </div>
+
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50/40 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Integration health</p>
+              <p className="text-xs text-gray-600 mt-1">
+                Quick check that all keys, tokens, and webhooks are responding.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  integrationSummary.tone === "ok"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : integrationSummary.tone === "warning"
+                    ? "bg-amber-100 text-amber-700"
+                    : integrationSummary.tone === "error"
+                    ? "bg-rose-100 text-rose-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {integrationHealth.state === "checking" ? "Checking" : integrationSummary.label}
+              </span>
+              <Button variant="outline" onClick={checkIntegrationHealth}>
+                Test Now
+              </Button>
+            </div>
+          </div>
+
+          {integrationHealth.message ? (
+            <p className="text-xs text-gray-600 mt-2">{integrationHealth.message}</p>
+          ) : null}
+
+          {integrationHealth.services ? (
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Object.entries(integrationHealth.services).map(([key, service]: [string, any]) => {
+                const status = service?.status || (service?.configured ? "ready" : "missing");
+                const tone =
+                  status === "ready" ? "emerald" : status === "warning" ? "amber" : "rose";
+                const toneClasses =
+                  tone === "emerald"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : tone === "amber"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-rose-100 text-rose-700";
+                return (
+                  <div key={key} className="rounded-lg border border-gray-200 bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-gray-900">{key}</p>
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${toneClasses}`}>
+                        {status === "ready" ? "OK" : status === "warning" ? "Check" : "Missing"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">{service?.message || "Status updated."}</p>
+                    {service?.lastSpendAt ? (
+                      <p className="text-[11px] text-gray-500 mt-1">Last spend: {service.lastSpendAt}</p>
+                    ) : null}
+                    {service?.lastConversionAt ? (
+                      <p className="text-[11px] text-gray-500 mt-1">Last conversion: {service.lastConversionAt}</p>
+                    ) : null}
+                    {service?.lastEventAt ? (
+                      <p className="text-[11px] text-gray-500 mt-1">Last event: {service.lastEventAt}</p>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
           ) : null}
         </div>
 
