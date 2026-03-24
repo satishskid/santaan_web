@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import CampaignAnalytics from './CampaignAnalytics';
 import CeoCommandCenter from './CeoCommandCenter';
@@ -138,7 +139,23 @@ function toStoredStatus(value: unknown) {
 
 export default function CRM() {
     const { data: session } = useSession();
-    const currentRole = String((session?.user as { role?: string } | undefined)?.role || '').trim().toLowerCase();
+    const searchParams = useSearchParams();
+    const currentEmail = String(session?.user?.email || '').trim().toLowerCase();
+    const rawRole = String((session?.user as { role?: string } | undefined)?.role || '').trim().toLowerCase();
+    const adminEmailSet = useMemo(
+        () =>
+            new Set([
+                'raghab.panda@santaan.in',
+                'satish.rath@santaan.in',
+                'digi.social@skids.health',
+                'satsh@skids.health',
+                'satish@skids.health',
+                'satish.rath@gmail.com',
+                'demo@santaan.com',
+            ]),
+        []
+    );
+    const currentRole = rawRole || (adminEmailSet.has(currentEmail) ? 'admin' : '');
     const leadershipRoles = new Set(['admin', 'ceo', 'crm_ops_admin']);
     const opsInputRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'field_exec']);
     const contactRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager', 'telecaller', 'counselor']);
@@ -404,7 +421,7 @@ export default function CRM() {
             if (canAccessCeoCommand) nextTabs.push({ id: 'ceo_command', label: 'CEO Command', icon: Clock });
             if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Clock });
             nextTabs.push(
-                { id: 'team', label: 'Team', icon: UserPlus },
+                { id: 'team', label: 'User Access', icon: UserPlus },
                 { id: 'centers', label: 'Centers', icon: MapPin },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'settings', label: 'Settings', icon: Search }
@@ -480,6 +497,14 @@ export default function CRM() {
         if (tabs.some((tab) => tab.id === activeTab)) return;
         setActiveTab(tabs[0]?.id || 'workboard');
     }, [activeTab, tabs]);
+
+    useEffect(() => {
+        const requestedTab = searchParams.get('tab')?.trim().toLowerCase() as FilterTab | undefined;
+        if (!requestedTab) return;
+        if (!tabs.some((tab) => tab.id === requestedTab)) return;
+        if (requestedTab === activeTab) return;
+        setActiveTab(requestedTab);
+    }, [activeTab, searchParams, tabs]);
 
     const statusOptions = ['all', 'new', 'contacted', 'qualified', 'converted', 'lost'];
     const channelOptions = ['all', 'seminar', 'newsletter', 'whatsapp', 'telegram'];

@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Eye, EyeOff, Lock, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
+import { betterAuthClient } from "@/lib/better-auth-client";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -16,6 +17,9 @@ export default function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [magicLinkStatus, setMagicLinkStatus] = useState("");
+    const [magicLinkError, setMagicLinkError] = useState("");
+    const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,6 +43,31 @@ export default function AdminLoginPage() {
             setError("An error occurred. Please try again.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleMagicLink = async () => {
+        setMagicLinkStatus("");
+        setMagicLinkError("");
+
+        if (!email || !email.includes("@")) {
+            setMagicLinkError("Please enter your full email address for a magic link.");
+            return;
+        }
+
+        setIsMagicLinkLoading(true);
+        try {
+            await betterAuthClient.signIn.magicLink({
+                email,
+                callbackURL: "/admin/dashboard",
+                errorCallbackURL: "/login",
+            });
+            setMagicLinkStatus("Magic link sent to the Santaan staff Cliq channel.");
+        } catch (err) {
+            console.error("Magic link error:", err);
+            setMagicLinkError("Unable to send magic link. Please try again.");
+        } finally {
+            setIsMagicLinkLoading(false);
         }
     };
 
@@ -131,6 +160,37 @@ export default function AdminLoginPage() {
                             {isLoading ? "Signing in..." : "Sign In"}
                         </Button>
                     </form>
+
+                    <div className="mt-6 border-t border-gray-100 pt-5">
+                        <p className="text-xs text-gray-500 text-center mb-1">
+                            Backup login (if PIN fails)
+                        </p>
+                        <p className="text-xs text-gray-400 text-center mb-3">
+                            Sends a one-time magic link to the Santaan staff Cliq channel.
+                        </p>
+
+                        {magicLinkStatus && (
+                            <div className="bg-green-50 text-green-700 text-xs p-2 rounded-md mb-3 text-center">
+                                {magicLinkStatus}
+                            </div>
+                        )}
+
+                        {magicLinkError && (
+                            <div className="bg-red-50 text-red-600 text-xs p-2 rounded-md mb-3 text-center">
+                                {magicLinkError}
+                            </div>
+                        )}
+
+                        <Button
+                            type="button"
+                            fullWidth
+                            variant="outline"
+                            disabled={isMagicLinkLoading}
+                            onClick={handleMagicLink}
+                        >
+                            {isMagicLinkLoading ? "Sending magic link..." : "Send Magic Link"}
+                        </Button>
+                    </div>
 
                     {/* Footer */}
                     <p className="text-center text-xs text-gray-400 mt-6">

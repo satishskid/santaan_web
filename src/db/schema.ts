@@ -179,16 +179,55 @@ export const admins = sqliteTable('admins', {
 export const settings = sqliteTable('settings', {
     key: text('key').primaryKey(),
     value: text('value').notNull(),
-    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at'),
 });
 
 export const users = sqliteTable('users', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     name: text('name'),
     email: text('email').notNull().unique(),
+    emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
+    image: text('image'),
     password: text('password').notNull(),
     role: text('role').default('user'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const authSessions = sqliteTable('auth_sessions', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    expiresAt: text('expires_at').notNull(),
+    token: text('token').notNull().unique(),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+});
+
+export const authAccounts = sqliteTable('auth_accounts', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: text('access_token_expires_at'),
+    refreshTokenExpiresAt: text('refresh_token_expires_at'),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const authVerifications = sqliteTable('auth_verifications', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 // Centers/Locations - Admin-manageable clinic locations

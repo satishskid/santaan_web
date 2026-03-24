@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import CRM from "@/components/admin/CRM";
 
 export const metadata = {
@@ -16,7 +17,9 @@ export default function AdminDashboardPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Dashboard</h1>
                     <p className="text-gray-500">Manage your patient relationships and seminars.</p>
                 </div>
-                <CRM />
+                <Suspense fallback={<div className="text-sm text-gray-500">Loading dashboard...</div>}>
+                    <CRM />
+                </Suspense>
             </div>
         </div>
     );

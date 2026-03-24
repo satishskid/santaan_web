@@ -44,6 +44,16 @@ const USERS = [
   { email: "counselor.bbsr@santaan.in", expectedRole: "counselor", pinType: "staff" },
   { email: "counselor.bam@santaan.in", expectedRole: "counselor", pinType: "staff" },
   { email: "counselor.blr@santaan.in", expectedRole: "counselor", pinType: "staff" },
+  { email: "anitakumaripatra143@gmail.com", expectedRole: "field_exec", pinType: "staff" },
+  { email: "bam@santaan.in", expectedRole: "counselor", pinType: "staff" },
+  { email: "bramhotri.p.sahoo@gmail.com", expectedRole: "field_exec", pinType: "staff" },
+  { email: "bbsr@santaan.in", expectedRole: "counselor", pinType: "staff" },
+  { email: "csmsantaanbbsr@gmail.com", expectedRole: "counselor", pinType: "staff" },
+  { email: "mousamkumarp@gmail.com", expectedRole: "field_exec", pinType: "staff" },
+  { email: "drpratichi@skids.health", expectedRole: "counselor", pinType: "staff" },
+  { email: "swainr951@gmail.com", expectedRole: "field_exec", pinType: "staff" },
+  { email: "mohanty.ritesh@gmail.com", expectedRole: "field_exec", pinType: "staff" },
+  { email: "team@rabbitm.in", expectedRole: "agency_ops", pinType: "staff" },
 ];
 
 async function checkUser(user) {

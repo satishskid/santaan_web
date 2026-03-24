@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
-import { isAuthorizedAdmin } from "@/lib/auth-helper";
+import { requireSpendAccess } from "@/lib/spend-auth";
 
 type IncomingSpendRow = {
   spendDate?: string;
@@ -38,14 +37,10 @@ function parseAmount(value: unknown) {
   return Math.round(amount * 100) / 100;
 }
 
-async function requireAdmin() {
-  const session = await auth();
-  return isAuthorizedAdmin(session?.user?.email);
-}
-
 export async function POST(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized } = await requireSpendAccess();
+    if (!authorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

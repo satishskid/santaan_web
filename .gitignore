@@ -51,3 +51,4 @@ netlify/*
 santaan.db
 tmp/
 output/
+.env*.local

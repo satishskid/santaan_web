@@ -125,6 +125,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "registrations cannot be greater than leads" }, { status: 400 });
     }
 
+    const existing = await db
+      .select()
+      .from(agencyPerformanceLogs)
+      .where(
+        and(
+          eq(agencyPerformanceLogs.reportDate, reportDate),
+          eq(agencyPerformanceLogs.platform, platform),
+          eq(agencyPerformanceLogs.center, center),
+          eq(agencyPerformanceLogs.campaignId, campaignId),
+          eq(agencyPerformanceLogs.utmCampaign, utmCampaign),
+        ),
+      )
+      .get();
+
+    if (existing?.id) {
+      const updated = await db
+        .update(agencyPerformanceLogs)
+        .set({
+          campaignName,
+          utmSource,
+          utmMedium,
+          spend,
+          impressions,
+          clicks,
+          leads,
+          qualifiedLeads,
+          registrations,
+          notes: typeof body?.notes === "string" ? body.notes.trim() : null,
+        })
+        .where(eq(agencyPerformanceLogs.id, existing.id))
+        .returning();
+
+      return NextResponse.json({ success: true, row: updated[0], deduped: true }, { status: 200 });
+    }
+
     const inserted = await db
       .insert(agencyPerformanceLogs)
       .values({

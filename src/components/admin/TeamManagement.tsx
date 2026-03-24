@@ -528,6 +528,9 @@ export default function TeamManagement() {
         <p className="text-sm text-gray-600 mt-1">
           Create and manage role-based usernames like telecaller1.bbsr with 6-digit PINs.
         </p>
+        <p className="text-xs text-gray-500 mt-2">
+          Magic link access uses the same list: enter an email address here to whitelist that staff member for backup login.
+        </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <Input

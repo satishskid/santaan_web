@@ -48,6 +48,16 @@ const STAFF_USERS = [
   { email: "counselor.bbsr@santaan.in", name: "Counselor Bhubaneswar", role: "counselor", pinType: "staff" },
   { email: "counselor.bam@santaan.in", name: "Counselor Berhampur", role: "counselor", pinType: "staff" },
   { email: "counselor.blr@santaan.in", name: "Counselor Bangalore", role: "counselor", pinType: "staff" },
+  { email: "anitakumaripatra143@gmail.com", name: "Anita Kumari", role: "field_exec", pinType: "staff" },
+  { email: "bam@santaan.in", name: "Balakrushna", role: "counselor", pinType: "staff" },
+  { email: "bramhotri.p.sahoo@gmail.com", name: "Bramhotri", role: "field_exec", pinType: "staff" },
+  { email: "bbsr@santaan.in", name: "Dibya", role: "counselor", pinType: "staff" },
+  { email: "csmsantaanbbsr@gmail.com", name: "Dipti", role: "counselor", pinType: "staff" },
+  { email: "mousamkumarp@gmail.com", name: "Mousam Kumar", role: "field_exec", pinType: "staff" },
+  { email: "drpratichi@skids.health", name: "Pratichi", role: "counselor", pinType: "staff" },
+  { email: "swainr951@gmail.com", name: "Rashmita", role: "field_exec", pinType: "staff" },
+  { email: "mohanty.ritesh@gmail.com", name: "Ritesh", role: "field_exec", pinType: "staff" },
+  { email: "team@rabbitm.in", name: "Team RabbitM", role: "agency_ops", pinType: "staff" },
 ];
 
 async function upsertUser(user) {
@@ -61,13 +71,13 @@ async function upsertUser(user) {
 
   if (!existing.rows.length) {
     await client.execute({
-      sql: "INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)",
-      args: [crypto.randomUUID(), user.name, user.email, hashedPassword, user.role],
+      sql: "INSERT INTO users (id, name, email, password, role, email_verified, updated_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+      args: [crypto.randomUUID(), user.name, user.email, hashedPassword, user.role, 1],
     });
     console.log(`✅ Created user: ${user.email}`);
   } else {
     await client.execute({
-      sql: "UPDATE users SET name = ?, password = ?, role = ? WHERE email = ?",
+      sql: "UPDATE users SET name = ?, password = ?, role = ?, email_verified = 1, updated_at = CURRENT_TIMESTAMP WHERE email = ?",
       args: [user.name, hashedPassword, user.role, user.email],
     });
     console.log(`🔄 Updated user: ${user.email}`);

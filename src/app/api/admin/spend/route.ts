@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
-import { isAuthorizedAdmin } from "@/lib/auth-helper";
+import { requireSpendAccess } from "@/lib/spend-auth";
 
 export const dynamic = "force-dynamic";
-
-async function requireAdmin() {
-  const session = await auth();
-  return isAuthorizedAdmin(session?.user?.email);
-}
 
 function normalizeToken(value?: string | null, fallback = "") {
   if (!value) return fallback;
@@ -38,7 +32,8 @@ function parseDate(value?: string | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized } = await requireSpendAccess();
+    if (!authorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -82,7 +77,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized } = await requireSpendAccess();
+    if (!authorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -123,7 +119,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized } = await requireSpendAccess();
+    if (!authorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -186,7 +183,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await requireAdmin())) {
+    const { authorized } = await requireSpendAccess();
+    if (!authorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

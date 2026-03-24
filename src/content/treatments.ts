@@ -52,9 +52,9 @@ export const treatmentPages: Record<string, TreatmentPage> = {
       'Emotional and time commitment across cycles',
     ],
     faqs: [
-      { question: 'How long does one IVF cycle take?', answer: '— (Writer to add timeline and center-specific details)' },
-      { question: 'Do you recommend IVF or ICSI for male factor?', answer: '— (Writer to add criteria and explanation)' },
-      { question: 'Can embryos be frozen for later use?', answer: '— (Writer to add policy and storage details)' },
+      { question: 'How long does one IVF cycle take?', answer: 'Most IVF cycles take about 4–6 weeks from day‑2 evaluation to pregnancy test. Stimulation is usually 10–12 days, followed by retrieval and either a fresh transfer (3–5 days later) or a frozen transfer in a later cycle. Your doctor will personalize the timeline.' },
+      { question: 'Do you recommend IVF or ICSI for male factor?', answer: 'It depends on semen analysis and prior fertilization history. IVF can be enough for mild male‑factor cases, while ICSI is preferred for low count/motility, severe morphology issues, or past fertilization failure. We decide after reviewing reports.' },
+      { question: 'Can embryos be frozen for later use?', answer: 'Yes. Embryos can be vitrified and stored for future transfer. Storage duration depends on clinic policy, consent renewal, and applicable guidelines. We explain storage terms clearly before freezing.' },
     ],
   },
   iui: {
@@ -80,9 +80,9 @@ export const treatmentPages: Record<string, TreatmentPage> = {
     ],
     risksAndConsiderations: ['Multiple pregnancy risk with stimulation medicines', 'Not suitable for blocked tubes or severe male factor'],
     faqs: [
-      { question: 'How many IUI cycles should we try?', answer: '— (Writer to add guideline and personalization)' },
-      { question: 'Is IUI painful?', answer: '— (Writer to add patient expectation)' },
-      { question: 'Can IUI be done with donor sperm?', answer: '— (Writer to add program details)' },
+      { question: 'How many IUI cycles should we try?', answer: 'Many couples try 3–4 well‑timed cycles before moving to IVF, but this depends on age, diagnosis, and response. We review results cycle‑by‑cycle and recommend the next step.' },
+      { question: 'Is IUI painful?', answer: 'IUI is usually quick and causes mild cramping at most. Most patients describe it as similar to a routine pelvic exam.' },
+      { question: 'Can IUI be done with donor sperm?', answer: 'Yes. Donor‑sperm IUI is an option with appropriate counseling, screening, and consent. We’ll guide you through the eligibility and legal requirements.' },
     ],
   },
   icsi: {
@@ -107,8 +107,8 @@ export const treatmentPages: Record<string, TreatmentPage> = {
     ],
     risksAndConsiderations: ['ICSI is not needed for every IVF cycle', 'Add-on costs and lab steps should be explained'],
     faqs: [
-      { question: 'Is ICSI always better than IVF?', answer: '— (Writer to add evidence-based comparison)' },
-      { question: 'When is ICSI recommended?', answer: '— (Writer to add criteria and examples)' },
+      { question: 'Is ICSI always better than IVF?', answer: 'No. ICSI is not routinely better for everyone. It is most useful when there are male‑factor issues or prior fertilization failure. If semen parameters are normal, standard IVF can achieve similar outcomes.' },
+      { question: 'When is ICSI recommended?', answer: 'ICSI is commonly recommended for severe male‑factor infertility, surgically retrieved sperm, or a history of poor fertilization in prior IVF cycles. The decision is individualized after lab review.' },
     ],
   },
   'egg-freezing': {
@@ -134,8 +134,8 @@ export const treatmentPages: Record<string, TreatmentPage> = {
     ],
     risksAndConsiderations: ['Response varies by age and ovarian reserve', 'Storage policies and annual fees should be explicit'],
     faqs: [
-      { question: 'How many eggs should I freeze?', answer: '— (Writer to add age-based guidance)' },
-      { question: 'How long can eggs be stored?', answer: '— (Writer to add policy)' },
+      { question: 'How many eggs should I freeze?', answer: 'It depends on age and ovarian reserve. Younger patients typically need fewer eggs, while patients in their late 30s may need more to achieve similar outcomes. We give a personalized target after baseline tests.' },
+      { question: 'How long can eggs be stored?', answer: 'Eggs can be stored for several years with periodic consent renewal. We follow current guidelines and explain storage duration and annual renewal terms before freezing.' },
     ],
   },
   pgt: {
@@ -160,8 +160,8 @@ export const treatmentPages: Record<string, TreatmentPage> = {
     ],
     risksAndConsiderations: ['Not every embryo reaches biopsy stage', 'Testing does not guarantee pregnancy or a healthy baby'],
     faqs: [
-      { question: 'Does PGT guarantee success?', answer: '— (Writer to add clear disclaimer)' },
-      { question: 'How long do results take?', answer: '— (Writer to add typical turnaround)' },
+      { question: 'Does PGT guarantee success?', answer: 'No. PGT can reduce the risk of transferring embryos with certain chromosomal issues, but it does not guarantee pregnancy or a healthy baby. It is one piece of the overall IVF plan.' },
+      { question: 'How long do results take?', answer: 'Most labs return results in about 1–3 weeks. Your doctor will plan the transfer timeline once the report is available.' },
     ],
   },
 };
@@ -171,4 +171,3 @@ export const treatmentSlugs = Object.keys(treatmentPages);
 export function getTreatmentPageBySlug(slug: string) {
   return treatmentPages[slug];
 }
-

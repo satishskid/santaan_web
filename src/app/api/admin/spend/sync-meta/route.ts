@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq, sql } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
-import { isAuthorizedAdmin } from "@/lib/auth-helper";
+import { requireSpendAccess } from "@/lib/spend-auth";
 import { fetchMetaCampaignInsights, inferCenterFromCampaignName } from "@/lib/meta-ads";
 import { normalizeToken, parseDate } from "@/lib/ops-inputs";
 
@@ -31,11 +30,6 @@ function resolveDate(request: NextRequest, bodyDate?: string | null): string {
   const queryDate = parseDate(new URL(request.url).searchParams.get("date"));
   const bodyParsedDate = parseDate(bodyDate || null);
   return queryDate || bodyParsedDate || resolveDefaultDate();
-}
-
-async function isAdminUser() {
-  const session = await auth();
-  return isAuthorizedAdmin(session?.user?.email);
 }
 
 function hasValidSyncToken(request: NextRequest): boolean {
@@ -101,7 +95,7 @@ async function runMetaSync(reportDate: string) {
 
 async function handle(request: NextRequest) {
   const tokenAuth = hasValidSyncToken(request);
-  const adminAuth = tokenAuth ? true : await isAdminUser();
+  const adminAuth = tokenAuth ? true : (await requireSpendAccess()).authorized;
   if (!adminAuth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

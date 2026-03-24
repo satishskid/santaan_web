@@ -157,7 +157,9 @@ export default function AgencyPerformanceManagement() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to save agency row");
 
-      setNotice("Agency daily row added.");
+      const savedRow = payload?.row as AgencyRow | undefined;
+      const deduped = Boolean(payload?.deduped);
+      setNotice(deduped ? "Agency daily row updated (existing entry refreshed)." : "Agency daily row added.");
       const nextMedium = form.platform === "google" ? "cpc" : form.platform === "youtube" ? "video" : "paid_social";
       setForm({
         ...initialForm,
@@ -167,6 +169,12 @@ export default function AgencyPerformanceManagement() {
         utmSource: form.platform,
         utmMedium: nextMedium,
       });
+      if (savedRow?.id) {
+        setRows((prev) => {
+          const next = [savedRow, ...prev.filter((row) => row.id !== savedRow.id)];
+          return next;
+        });
+      }
       await fetchRows();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save agency row");
@@ -182,6 +190,7 @@ export default function AgencyPerformanceManagement() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to delete row");
       setNotice("Agency row deleted.");
+      setRows((prev) => prev.filter((row) => row.id !== id));
       await fetchRows();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete row");
