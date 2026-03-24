@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { campaignSpend } from "@/db/schema";
 import { isAuthorizedAdmin } from "@/lib/auth-helper";
 
+export const dynamic = "force-dynamic";
+
 async function requireAdmin() {
   const session = await auth();
   return isAuthorizedAdmin(session?.user?.email);

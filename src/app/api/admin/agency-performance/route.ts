@@ -15,6 +15,8 @@ import {
   parseNonNegativeInteger,
 } from "@/lib/ops-inputs";
 
+export const dynamic = "force-dynamic";
+
 const READ_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
 const WRITE_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
 

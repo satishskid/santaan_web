@@ -98,7 +98,7 @@ export default function AgencyPerformanceManagement() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/admin/agency-performance");
+      const response = await fetch("/api/admin/agency-performance", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to fetch agency rows");
       setRows(payload.rows || []);

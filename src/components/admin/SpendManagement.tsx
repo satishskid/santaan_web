@@ -153,7 +153,7 @@ export default function SpendManagement() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/admin/spend");
+      const response = await fetch("/api/admin/spend", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) {
         throw new Error(payload?.error || "Failed to fetch spend entries");
