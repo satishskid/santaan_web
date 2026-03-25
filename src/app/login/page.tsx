@@ -62,10 +62,11 @@ export default function AdminLoginPage() {
                 callbackURL: "/admin/dashboard",
                 errorCallbackURL: "/login",
             });
-            setMagicLinkStatus("Magic link sent to the Santaan staff Cliq channel.");
+            setMagicLinkStatus("Magic link sent to your email. It expires in 10 minutes.");
         } catch (err) {
             console.error("Magic link error:", err);
-            setMagicLinkError("Unable to send magic link. Please try again.");
+            const message = err instanceof Error ? err.message : "";
+            setMagicLinkError(message || "Unable to send magic link. Please try again.");
         } finally {
             setIsMagicLinkLoading(false);
         }
@@ -166,7 +167,7 @@ export default function AdminLoginPage() {
                             Backup login (if PIN fails)
                         </p>
                         <p className="text-xs text-gray-400 text-center mb-3">
-                            Sends a one-time magic link to the Santaan staff Cliq channel.
+                            Sends a one-time magic link to your whitelisted email address.
                         </p>
 
                         {magicLinkStatus && (

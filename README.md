@@ -118,6 +118,12 @@ This project is deployed on Vercel.
    - `GA4_PROPERTY_ID`
    - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
    - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+   - `EMAIL_SMTP_HOST`
+   - `EMAIL_SMTP_PORT`
+   - `EMAIL_SMTP_USER`
+   - `EMAIL_SMTP_PASSWORD`
+   - `EMAIL_SMTP_SECURE` (optional, set to `true` for port 465)
+   - `EMAIL_FROM` (example: `Santaan CRM <noreply@santaan.in>`)
    - `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
    - `NEXT_PUBLIC_GROQ_API_KEY`
 
