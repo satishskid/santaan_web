@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,22 +9,6 @@ import { Eye, EyeOff, Lock, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { betterAuthClient } from "@/lib/better-auth-client";
-
-const ROLE_PRESETS = [
-    { label: "Admin (Raghab)", value: "raghab.panda@santaan.in" },
-    { label: "Content Manager + Paid Ads", value: "content.manager@santaan.in" },
-    { label: "Agency Ops", value: "santaandigital.ops@santaan.in" },
-    { label: "Field Exec - Bhubaneswar", value: "field.bbsr@santaan.in" },
-    { label: "Field Exec - Berhampur", value: "field.bam@santaan.in" },
-    { label: "Field Exec - Bangalore", value: "field.blr@santaan.in" },
-    { label: "IVR / Telecalling Lead", value: "ivr.lead@santaan.in" },
-    { label: "Telecaller 1 (Bhubaneswar)", value: "tele.bbsr@santaan.in" },
-    { label: "Telecaller 2 (Berhampur)", value: "tele.bam@santaan.in" },
-    { label: "Telecaller 3 (Bangalore)", value: "tele.blr@santaan.in" },
-    { label: "Counselor - Bhubaneswar", value: "counselor.bbsr@santaan.in" },
-    { label: "Counselor - Berhampur", value: "counselor.bam@santaan.in" },
-    { label: "Counselor - Bangalore", value: "counselor.blr@santaan.in" },
-];
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -37,6 +21,33 @@ export default function AdminLoginPage() {
     const [magicLinkError, setMagicLinkError] = useState("");
     const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false);
     const [rolePreset, setRolePreset] = useState("");
+    const [rolePresets, setRolePresets] = useState<Array<{ label: string; value: string }>>([]);
+    const [rolePresetError, setRolePresetError] = useState("");
+
+    useEffect(() => {
+        let active = true;
+
+        const loadPresets = async () => {
+            try {
+                const response = await fetch("/api/public/login-presets", { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error("Unable to load role presets");
+                }
+                const data = await response.json();
+                if (!active) return;
+                setRolePresets(Array.isArray(data?.presets) ? data.presets : []);
+            } catch (err) {
+                if (!active) return;
+                console.error("Failed to load role presets:", err);
+                setRolePresetError("Role list unavailable. Type your username or email.");
+            }
+        };
+
+        loadPresets();
+        return () => {
+            active = false;
+        };
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -142,13 +153,18 @@ export default function AdminLoginPage() {
                                 }}
                                 className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-santaan-teal focus:outline-none focus:ring-2 focus:ring-santaan-teal/30"
                             >
-                                <option value="">Choose a role</option>
-                                {ROLE_PRESETS.map((preset) => (
+                                <option value="">
+                                    {rolePresets.length > 0 ? "Choose your role" : "Type your username below"}
+                                </option>
+                                {rolePresets.map((preset) => (
                                     <option key={preset.value} value={preset.value}>
                                         {preset.label}
                                     </option>
                                 ))}
                             </select>
+                            {rolePresetError ? (
+                                <p className="text-xs text-gray-400 mt-2">{rolePresetError}</p>
+                            ) : null}
                         </div>
 
                         <div>
