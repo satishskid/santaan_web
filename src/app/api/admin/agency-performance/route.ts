@@ -16,6 +16,7 @@ import {
 } from "@/lib/ops-inputs";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const READ_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
 const WRITE_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
@@ -60,7 +61,14 @@ export async function GET(request: NextRequest) {
       .where(whereClause)
       .orderBy(desc(agencyPerformanceLogs.reportDate), desc(agencyPerformanceLogs.id));
 
-    return NextResponse.json({ rows });
+    return NextResponse.json(
+      { rows },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (error) {
     console.error("Agency performance GET error:", error);
     return NextResponse.json({ error: "Failed to fetch agency performance rows" }, { status: 500 });

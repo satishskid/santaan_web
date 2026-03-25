@@ -16,6 +16,9 @@ import {
 const READ_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
 const WRITE_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "marketing_manager", "agency_ops", "performance_marketer"]);
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function normalizeRole(role?: string | null) {
   return String(role || "").trim().toLowerCase();
 }
@@ -61,7 +64,14 @@ export async function GET(request: NextRequest) {
       .where(whereClause)
       .orderBy(desc(tvAdLogs.airingDate), desc(tvAdLogs.id));
 
-    return NextResponse.json({ rows });
+    return NextResponse.json(
+      { rows },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (error) {
     console.error("TV ads GET error:", error);
     return NextResponse.json({ error: "Failed to fetch TV ad rows" }, { status: 500 });

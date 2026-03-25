@@ -17,6 +17,9 @@ import {
 const READ_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "field_exec", "marketing_manager", "agency_ops"]);
 const WRITE_ROLES = new Set(["admin", "ceo", "crm_ops_admin", "field_exec", "marketing_manager", "agency_ops"]);
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function normalizeRole(role?: string | null) {
   return String(role || "").trim().toLowerCase();
 }
@@ -64,7 +67,14 @@ export async function GET(request: NextRequest) {
       .where(whereClause)
       .orderBy(desc(fieldActivityLogs.activityDate), desc(fieldActivityLogs.id));
 
-    return NextResponse.json({ rows });
+    return NextResponse.json(
+      { rows },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (error) {
     console.error("Field activities GET error:", error);
     return NextResponse.json({ error: "Failed to fetch field activity rows" }, { status: 500 });
