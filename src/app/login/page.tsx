@@ -197,6 +197,9 @@ export default function AdminLoginPage() {
                     <p className="text-center text-xs text-gray-400 mt-6">
                         Authorized personnel only. All access is logged.
                     </p>
+                    <p className="text-center text-[10px] text-gray-300 mt-2">
+                        Santaan CRM is powered by Greybrain.ai
+                    </p>
                 </div>
 
                 {/* Copyright */}
