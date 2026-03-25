@@ -10,6 +10,22 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { betterAuthClient } from "@/lib/better-auth-client";
 
+const ROLE_PRESETS = [
+    { label: "Admin (Raghab)", value: "raghab.panda@santaan.in" },
+    { label: "Content Manager + Paid Ads", value: "content.manager@santaan.in" },
+    { label: "Agency Ops", value: "santaandigital.ops@santaan.in" },
+    { label: "Field Exec - Bhubaneswar", value: "field.bbsr@santaan.in" },
+    { label: "Field Exec - Berhampur", value: "field.bam@santaan.in" },
+    { label: "Field Exec - Bangalore", value: "field.blr@santaan.in" },
+    { label: "IVR / Telecalling Lead", value: "ivr.lead@santaan.in" },
+    { label: "Telecaller 1 (Bhubaneswar)", value: "tele.bbsr@santaan.in" },
+    { label: "Telecaller 2 (Berhampur)", value: "tele.bam@santaan.in" },
+    { label: "Telecaller 3 (Bangalore)", value: "tele.blr@santaan.in" },
+    { label: "Counselor - Bhubaneswar", value: "counselor.bbsr@santaan.in" },
+    { label: "Counselor - Berhampur", value: "counselor.bam@santaan.in" },
+    { label: "Counselor - Bangalore", value: "counselor.blr@santaan.in" },
+];
+
 export default function AdminLoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -20,6 +36,7 @@ export default function AdminLoginPage() {
     const [magicLinkStatus, setMagicLinkStatus] = useState("");
     const [magicLinkError, setMagicLinkError] = useState("");
     const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false);
+    const [rolePreset, setRolePreset] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -109,6 +126,31 @@ export default function AdminLoginPage() {
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label htmlFor="rolePreset" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                Select your role (optional)
+                            </label>
+                            <select
+                                id="rolePreset"
+                                value={rolePreset}
+                                onChange={(e) => {
+                                    const selected = e.target.value;
+                                    setRolePreset(selected);
+                                    if (selected) {
+                                        setEmail(selected);
+                                    }
+                                }}
+                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-santaan-teal focus:outline-none focus:ring-2 focus:ring-santaan-teal/30"
+                            >
+                                <option value="">Choose a role</option>
+                                {ROLE_PRESETS.map((preset) => (
+                                    <option key={preset.value} value={preset.value}>
+                                        {preset.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                                 Username or Email
