@@ -36,6 +36,13 @@
       "when": 1770708407928,
       "tag": "0004_redundant_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1774534221231,
+      "tag": "0005_illegal_vision",
+      "breakpoints": true
     }
   ]
 }

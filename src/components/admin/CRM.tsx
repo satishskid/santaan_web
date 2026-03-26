@@ -18,6 +18,7 @@ import DailyActionBoard from './action-board/DailyActionBoard';
 import NeoDoveOpsDashboard from './NeoDoveOpsDashboard';
 import MetaLaunchPanel from './MetaLaunchPanel';
 import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows } from 'lucide-react';
+import { AIInsightWidget } from './AIInsightWidget';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import {
@@ -1518,6 +1519,13 @@ export default function CRM() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[80px] focus:ring-2 focus:ring-santaan-teal focus:border-transparent outline-none"
                                 />
                             </div>
+                            
+                            {/* AI Insights Widget */}
+                            <AIInsightWidget 
+                                contactId={editingContact.id} 
+                                conversationText={editForm.notes}
+                                className="mt-4"
+                            />
                         </div>
                         <div className="flex gap-2 mt-6">
                             <Button onClick={() => handleContactUpdate({ ...editingContact, ...editForm })}>

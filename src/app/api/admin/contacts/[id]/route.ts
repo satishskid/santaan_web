@@ -94,6 +94,9 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
             'lastMessageAt',
             'conversationCount',
             'submittedAt',
+            'lossReason',
+            'sentiment',
+            'notes',
         ];
 
         for (const key of allowedFields) {

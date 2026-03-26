@@ -34,6 +34,11 @@ export const contacts = sqliteTable('contacts', {
     ownerEmail: text('owner_email'),
     nextFollowUpAt: text('next_follow_up_at'),
 
+    // AI Analysis
+    lossReason: text('loss_reason'),
+    sentiment: text('sentiment'),
+    notes: text('notes'),
+
     // Structured NeoDove sync fields
     neodoveLeadId: text('neodove_lead_id'),
     neodoveCampaignId: text('neodove_campaign_id'),
