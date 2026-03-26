@@ -9,8 +9,8 @@ const StickyContactBar = dynamic(() => import("@/components/layout/StickyContact
 export default function ClientWidgets() {
   const pathname = usePathname();
 
-  // Hide widgets on admin/CRM routes
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard")) {
+  // Hide widgets on admin/CRM and login routes
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard") || pathname?.startsWith("/login")) {
     return null;
   }
 
