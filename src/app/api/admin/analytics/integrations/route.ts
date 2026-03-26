@@ -144,7 +144,7 @@ export async function GET() {
         },
         neodove: {
           configured: neodoveConfigured,
-          status: !neodoveConfigured ? "missing" : Number(neodoveSummary?.errors || 0) > 0 ? "warning" : "ready",
+          status: !neodoveConfigured ? "missing" : "ready",
           processed24h: Number(neodoveSummary?.processed || 0),
           errors24h: Number(neodoveSummary?.errors || 0),
           duplicates24h: Number(neodoveSummary?.duplicates || 0),
