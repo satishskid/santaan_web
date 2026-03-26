@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    // 5. Meta Performance Insight (Spend > ₹3k, Leads = 0)
+    // 5. Agency Challenger: Meta Performance Insight (Spend vs Actual Conversions)
     try {
       const metaConfig = readMetaAdsConfig();
       if (metaConfig) {
@@ -158,18 +158,50 @@ export async function GET(req: NextRequest) {
           windowDays: 7,
         });
 
-        const underperforming = snapshot.campaigns.filter(c => c.spend > 3000 && c.leads === 0);
+        // Get actual conversions from DB for these campaigns
+        const campaignNames = snapshot.campaigns.map(c => c.campaignName).filter(Boolean) as string[];
+        const dbConversions = await db
+          .select({
+            campaign: contacts.utmCampaign,
+            convertedCount: sql<number>`SUM(CASE WHEN ${contacts.neodoveMappedStatus} = 'Converted' THEN 1 ELSE 0 END)`,
+            qualifiedCount: sql<number>`SUM(CASE WHEN ${contacts.neodoveMappedStatus} = 'Qualified' THEN 1 ELSE 0 END)`,
+          })
+          .from(contacts)
+          .where(sql`${contacts.utmCampaign} IN ${campaignNames}`)
+          .groupBy(contacts.utmCampaign)
+          .all();
+
+        const conversionMap = new Map(dbConversions.map(c => [c.campaign, c]));
+
+        const underperforming = snapshot.campaigns.filter(c => c.spend > 3000);
+        
         underperforming.forEach(c => {
-          tasks.push({
-            id: `meta_perf_${c.campaignId || 'unknown'}`,
-            type: "marketing",
-            priority: "medium",
-            title: "Underperforming Ad Campaign",
-            description: `Campaign '${c.campaignName || 'Unknown'}' has spent ₹${Math.round(c.spend)} with 0 leads in 7 days.`,
-            status: "pending",
-            actionLabel: "Review Budget",
-            metadata: { campaignId: c.campaignId, spend: c.spend },
-          });
+          const dbData = conversionMap.get(c.campaignName || '');
+          const actualConverted = dbData?.convertedCount || 0;
+          const actualQualified = dbData?.qualifiedCount || 0;
+          
+          // Rule: If spend > 3k and (Leads are 0 OR actual Converted is 0)
+          if (c.leads === 0 || actualConverted === 0) {
+            const reason = c.leads === 0 
+              ? `This campaign spent ₹${Math.round(c.spend)} but generated 0 leads in the last 7 days.`
+              : `This campaign got ${c.leads} leads in Meta, but 0 have converted to patients in NeoDove. The lead quality is poor.`;
+
+            tasks.push({
+              id: `agency_challenge_${c.campaignId || 'unknown'}`,
+              type: "marketing",
+              priority: actualConverted === 0 && c.spend > 5000 ? "high" : "medium",
+              title: "Agency Challenger: Poor ROI",
+              description: reason,
+              reasoning: `Proof of the Pudding: Meta spent ₹${Math.round(c.spend)} on '${c.campaignName}', but NeoDove shows ${actualConverted} conversions and ${actualQualified} qualified leads.`,
+              status: "pending",
+              actionLabel: "Challenge Agency",
+              guidedAction: {
+                type: "copy_message",
+                message: `Hi Team, I'm reviewing the '${c.campaignName}' campaign. It has spent ₹${Math.round(c.spend)} this week but we have ${actualConverted} patient conversions in our CRM. Let's pause this and shift the budget to our better performing campaigns.`,
+              },
+              metadata: { campaignId: c.campaignId, spend: c.spend },
+            });
+          }
         });
       }
     } catch (metaErr) {
