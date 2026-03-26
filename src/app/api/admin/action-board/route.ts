@@ -5,6 +5,7 @@ import { isAuthorizedOpsUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
 import { contacts, neodoveEvents, metaConversionEvents } from "@/db/schema";
 import { fetchMetaDashboardSnapshot, readMetaAdsConfig } from "@/lib/meta-ads";
+import { fetchSearchConsoleSnapshot, readSearchConsoleConfig } from "@/lib/search-console";
 
 export const runtime = "nodejs";
 
@@ -151,7 +152,56 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 5. Agency Challenger: Meta Performance Insight (Spend vs Actual Conversions)
+    // 6. Content Idea Generator (NeoDove Lost Reasons + Search Console)
+    try {
+      const gscConfig = readSearchConsoleConfig();
+      if (gscConfig) {
+        // Find the top reasons leads were lost in the last 7 days
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const lostReasons = await db
+          .select({
+            reason: contacts.neodoveDisposeReason,
+            count: sql<number>`count(*)`,
+          })
+          .from(contacts)
+          .where(
+            and(
+              eq(contacts.status, "Lost"),
+              gte(contacts.createdAt, sevenDaysAgo),
+              sql`${contacts.neodoveDisposeReason} IS NOT NULL`
+            )
+          )
+          .groupBy(contacts.neodoveDisposeReason)
+          .orderBy(desc(sql`count(*)`))
+          .limit(3)
+          .all();
+
+        if (lostReasons.length > 0) {
+          const topReason = lostReasons[0].reason;
+          
+          // Get trending search queries from GSC to align with content creation
+          const gscSnapshot = await fetchSearchConsoleSnapshot(gscConfig, 7);
+          const topQueries = gscSnapshot.topQueries.slice(0, 3).map((q: any) => q.query).join(", ");
+
+          tasks.push({
+            id: `content_idea_${Date.now()}`,
+            type: "marketing",
+            priority: "medium",
+            title: "Content Idea: Address Patient Objections",
+            description: `We lost ${lostReasons[0].count} leads this week due to: '${topReason}'.`,
+            reasoning: `Your telecallers are struggling with the objection '${topReason}'. Meanwhile, patients are actively searching Google for: '${topQueries}'. Creating content that addresses this objection using these keywords will capture high-intent traffic and give your sales team a resource to send to hesitant patients.`,
+            status: "pending",
+            actionLabel: "Generate Brief",
+            guidedAction: {
+              type: "copy_message",
+              message: `Draft a blog post brief addressing the patient concern: "${topReason}". Ensure the content includes the following keywords that are currently trending on our Google Search Console: ${topQueries}. The goal is to provide a reassuring answer that our telecallers can share via WhatsApp when patients raise this objection.`,
+            },
+          });
+        }
+      }
+    } catch (gscErr) {
+      console.error("Action board GSC check error:", gscErr);
+    }
     try {
       const metaConfig = readMetaAdsConfig();
       if (metaConfig) {
