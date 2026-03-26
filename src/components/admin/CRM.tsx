@@ -1411,44 +1411,111 @@ export default function CRM() {
                                 ))}
                             </select>
 
-                            {/* One-Click Quick Notes for Telecallers */}
-                            <div className="pt-2 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Quick Action Note</p>
-                                <div className="flex flex-wrap gap-2">
+                            {/* Advanced One-Click Lead Qualification for Telecallers */}
+                            <div className="pt-3 mt-3 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider flex items-center gap-1">
+                                    <Target className="w-3 h-3 text-santaan-teal" />
+                                    One-Click Qualification
+                                </p>
+                                <div className="grid grid-cols-2 gap-2 mb-3">
                                     <button 
                                         type="button"
-                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Call] No Answer' })}
-                                        className="text-[11px] px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                                        onClick={() => {
+                                            const now = new Date();
+                                            now.setHours(now.getHours() + 4);
+                                            setEditForm({ 
+                                                ...editForm, 
+                                                status: 'contacted',
+                                                nextFollowUpAt: now.toISOString().slice(0, 16),
+                                                notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Call] No Answer - Follow up in 4h' 
+                                            });
+                                        }}
+                                        className="text-xs text-left px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-colors border border-gray-200"
                                     >
-                                        📞 No Answer
+                                        <div className="font-semibold mb-0.5">📞 No Answer</div>
+                                        <div className="text-[10px] text-gray-500">Sets 4h follow-up</div>
                                     </button>
+
                                     <button 
                                         type="button"
-                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Objection] Price too high' })}
-                                        className="text-[11px] px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full transition-colors"
+                                        onClick={() => {
+                                            const tomorrow = new Date();
+                                            tomorrow.setDate(tomorrow.getDate() + 1);
+                                            tomorrow.setHours(10, 0, 0, 0);
+                                            setEditForm({ 
+                                                ...editForm, 
+                                                status: 'contacted',
+                                                nextFollowUpAt: tomorrow.toISOString().slice(0, 16),
+                                                notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Call] Asked to call back later' 
+                                            });
+                                        }}
+                                        className="text-xs text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors border border-blue-200"
                                     >
-                                        💰 Price Objection
+                                        <div className="font-semibold mb-0.5">⏱️ Call Back Later</div>
+                                        <div className="text-[10px] text-blue-500">Sets follow-up to tomorrow 10am</div>
                                     </button>
+
                                     <button 
                                         type="button"
-                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Objection] Distance/Location issue' })}
-                                        className="text-[11px] px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-full transition-colors"
+                                        onClick={() => setEditForm({ 
+                                            ...editForm, 
+                                            status: 'qualified',
+                                            leadScore: 80,
+                                            notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Status] Qualified Hot Lead - Ready to visit clinic' 
+                                        })}
+                                        className="text-xs text-left px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors border border-emerald-200"
                                     >
-                                        📍 Distance Issue
+                                        <div className="font-semibold mb-0.5">🔥 Hot Lead (Qualified)</div>
+                                        <div className="text-[10px] text-emerald-500">Marks Qualified & increases score</div>
                                     </button>
+
                                     <button 
                                         type="button"
-                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Status] Ready to visit clinic' })}
-                                        className="text-[11px] px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-full transition-colors"
+                                        onClick={() => setEditForm({ 
+                                            ...editForm, 
+                                            status: 'lost',
+                                            leadScore: 0,
+                                            notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Lost] Price Objection / Too Expensive' 
+                                        })}
+                                        className="text-xs text-left px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg transition-colors border border-rose-200"
                                     >
-                                        ✅ Ready to Visit
+                                        <div className="font-semibold mb-0.5">💰 Price Objection</div>
+                                        <div className="text-[10px] text-rose-500">Marks Lost</div>
+                                    </button>
+
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ 
+                                            ...editForm, 
+                                            status: 'lost',
+                                            leadScore: 0,
+                                            notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Lost] Distance Issue / Too far' 
+                                        })}
+                                        className="text-xs text-left px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg transition-colors border border-amber-200"
+                                    >
+                                        <div className="font-semibold mb-0.5">📍 Distance Issue</div>
+                                        <div className="text-[10px] text-amber-500">Marks Lost</div>
+                                    </button>
+
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ 
+                                            ...editForm, 
+                                            status: 'lost',
+                                            leadScore: 0,
+                                            notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Lost] Wrong Number / Invalid' 
+                                        })}
+                                        className="text-xs text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors border border-gray-300"
+                                    >
+                                        <div className="font-semibold mb-0.5">🚫 Wrong Number</div>
+                                        <div className="text-[10px] text-gray-500">Marks Lost</div>
                                     </button>
                                 </div>
                                 <textarea
-                                    placeholder="Or type custom notes here..."
+                                    placeholder="Additional custom notes..."
                                     value={editForm.notes || ''}
                                     onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[80px]"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[80px] focus:ring-2 focus:ring-santaan-teal focus:border-transparent outline-none"
                                 />
                             </div>
                         </div>
