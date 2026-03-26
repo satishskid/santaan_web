@@ -152,6 +152,29 @@ export function readMetaAdsConfig(): MetaAdsConfig | null {
   };
 }
 
+export async function validateMetaToken(): Promise<{ ok: true } | { ok: false; error: string }> {
+  const config = readMetaAdsConfig();
+  if (!config) return { ok: false, error: "Meta configuration missing" };
+
+  try {
+    const url = new URL(`https://graph.facebook.com/${config.apiVersion}/me`);
+    url.searchParams.set("access_token", config.accessToken);
+    const proof = createAppSecretProof(config.accessToken);
+    if (proof) {
+      url.searchParams.set("appsecret_proof", proof);
+    }
+
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      return { ok: false, error: data?.error?.message || "Invalid Meta access token" };
+    }
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Failed to validate Meta token" };
+  }
+}
+
 function leadActionsCount(actions?: Array<{ action_type?: string; value?: string }>) {
   if (!actions?.length) return 0;
   return actions.reduce((sum, action) => {

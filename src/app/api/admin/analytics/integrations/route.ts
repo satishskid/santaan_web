@@ -5,7 +5,7 @@ import { isAuthorizedOpsUser } from "@/lib/auth-helper";
 import { db } from "@/lib/db";
 import { campaignSpend, contacts, metaConversionEvents, neodoveEvents } from "@/db/schema";
 import { readGa4Config } from "@/lib/ga4";
-import { readMetaAdsConfig } from "@/lib/meta-ads";
+import { readMetaAdsConfig, validateMetaToken } from "@/lib/meta-ads";
 import { readMetaConversionsConfig } from "@/lib/meta-conversions";
 import { readSearchConsoleConfig } from "@/lib/search-console";
 import { readZohoCliqConfig } from "@/lib/zoho-cliq";
@@ -93,6 +93,7 @@ export async function GET() {
     const ga4Config = readGa4Config();
     const searchConsoleConfig = readSearchConsoleConfig();
     const metaConfig = readMetaAdsConfig();
+    const metaTokenValidation = metaConfig ? await validateMetaToken() : null;
     const metaConversionsConfig = readMetaConversionsConfig();
     const zohoCliqConfig = readZohoCliqConfig();
     const neodoveConfigured = Boolean(
@@ -119,7 +120,7 @@ export async function GET() {
         },
         meta: {
           configured: Boolean(metaConfig),
-          status: metaConfig ? "ready" : "missing",
+          status: !metaConfig ? "missing" : metaTokenValidation?.ok ? "ready" : "warning",
           accountCount: metaConfig?.accountIds.length || 0,
           appSecretConfigured: Boolean(metaConfig?.appSecretConfigured),
           conversionsConfigured: Boolean(metaConversionsConfig),
@@ -132,7 +133,11 @@ export async function GET() {
           qualifiedSignals24h: Number(metaSignalSummary?.qualified || 0),
           convertedSignals24h: Number(metaSignalSummary?.converted || 0),
           lastConversionAt: metaSignalLastEvent?.receivedAt || null,
-          message: metaConfig ? "Meta API credentials are configured." : "Meta access token or account ids are missing.",
+          message: !metaConfig 
+            ? "Meta access token or account ids are missing."
+            : !metaTokenValidation?.ok
+            ? `Meta Token Error: ${metaTokenValidation?.error}`
+            : "Meta API credentials are configured.",
         },
         zohoCliq: {
           configured: Boolean(zohoCliqConfig),
