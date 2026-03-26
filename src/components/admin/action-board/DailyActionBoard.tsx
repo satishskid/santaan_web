@@ -20,51 +20,27 @@ export default function DailyActionBoard() {
   const [tasks, setTasks] = useState<ActionTask[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock fetching dynamic tasks - we will replace this with a real API call later
   useEffect(() => {
-    // Simulating API load time
-    const timer = setTimeout(() => {
-      setTasks([
-        {
-          id: "t1",
-          type: "call",
-          priority: "high",
-          title: "Hot Lead: Priority Call",
-          description: "Priya spent 5 mins on IVF Pricing page but didn't call. Score: 85.",
-          status: "pending",
-          actionLabel: "Call Now",
-        },
-        {
-          id: "t2",
-          type: "followup",
-          priority: "medium",
-          title: "Missing Follow-up Date",
-          description: "Rahul was marked 'Qualified' in NeoDove but has no next follow-up date.",
-          status: "pending",
-          actionLabel: "Set Date",
-        },
-        {
-          id: "t3",
-          type: "marketing",
-          priority: "high",
-          title: "Review Underperforming Ad",
-          description: "Campaign 'Bangalore IVF Broad' spent ₹4,500 this week with 0 leads.",
-          status: "pending",
-          actionLabel: "Review in Meta",
-        },
-        {
-          id: "t4",
-          type: "system",
-          priority: "low",
-          title: "Sync Error: NeoDove",
-          description: "Failed to push 1 lead to NeoDove due to invalid phone format.",
-          status: "pending",
-          actionLabel: "Fix Phone Number",
+    let mounted = true;
+    
+    async function fetchTasks() {
+      try {
+        const response = await fetch('/api/admin/action-board');
+        if (!response.ok) throw new Error('Failed to fetch action tasks');
+        const data = await response.json();
+        
+        if (mounted && data.ok) {
+          setTasks(data.tasks);
         }
-      ]);
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+      } catch (error) {
+        console.error('Error fetching action tasks:', error);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchTasks();
+    return () => { mounted = false; };
   }, []);
 
   const completeTask = (id: string) => {
