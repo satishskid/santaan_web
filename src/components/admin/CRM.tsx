@@ -410,13 +410,10 @@ export default function CRM() {
         const followupCount = contacts.filter((c) => Boolean(c.nextFollowUpAt)).length;
 
         if (isCeoPortal) {
+            nextTabs.push({ id: 'ceo_command', label: 'Command Center', icon: Target }); // Consolidated top-level view
             nextTabs.push({ id: 'action_board', label: 'Action Board', icon: CheckCircle });
-            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
-            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
-            if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
-            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
-            nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
-            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+            
+            // Core Operational Tabs
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -424,36 +421,31 @@ export default function CRM() {
                     { id: 'all', label: 'All Contacts', icon: Search }
                 );
             }
-            if (canAccessCeoCommand) nextTabs.push({ id: 'ceo_command', label: 'CEO Command', icon: Clock });
-            if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Clock });
+
+            // Move settings and configs to the end
             nextTabs.push(
                 { id: 'team', label: 'User Access', icon: UserPlus },
                 { id: 'centers', label: 'Centers', icon: MapPin },
-                { id: 'announcements', label: 'Announcements', icon: Megaphone },
                 { id: 'settings', label: 'Settings', icon: Search }
             );
             return nextTabs;
         }
 
         if (isAdsPortal) {
-            if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
-            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
-            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
-            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
-            if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Clock });
+            nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
+            if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend Management', icon: IndianRupee });
+            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Performance Analytics', icon: Search });
             return nextTabs;
         }
 
         if (isContentPortal) {
-            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
-            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
-            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
+            nextTabs.push({ id: 'meta_launch', label: 'Draft Content', icon: Megaphone });
+            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Content Insights', icon: Search });
             return nextTabs;
         }
 
         if (isTelecallerManagerPortal) {
-            nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
-            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+            nextTabs.push({ id: 'action_board', label: 'Action Queue', icon: Target }); // Give managers an action queue
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -475,9 +467,8 @@ export default function CRM() {
             return nextTabs;
         }
 
-        nextTabs.push({ id: 'workboard', label: 'Workboard', icon: Clock });
-        nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Target });
-        if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+        // Fallback for custom roles (Streamlined)
+        nextTabs.push({ id: 'action_board', label: 'Action Queue', icon: CheckCircle });
         if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
         if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
         if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
@@ -1231,10 +1222,6 @@ export default function CRM() {
                 ) : activeTab === 'centers' ? (
                     <div className="p-6">
                         <CentersManagement />
-                    </div>
-                ) : activeTab === 'announcements' ? (
-                    <div className="p-6">
-                        <AnnouncementsManagement />
                     </div>
                 ) : activeTab === 'spend' ? (
                     <div className="p-6">
