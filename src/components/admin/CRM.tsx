@@ -14,6 +14,7 @@ import SpendManagement from './SpendManagement';
 import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
 import DailyCommandCenter from './DailyCommandCenter';
+import DailyActionBoard from './action-board/DailyActionBoard';
 import NeoDoveOpsDashboard from './NeoDoveOpsDashboard';
 import MetaLaunchPanel from './MetaLaunchPanel';
 import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows } from 'lucide-react';
@@ -78,6 +79,7 @@ type FilterTab =
     | 'at_home_test'
     | 'hot_leads'
     | 'followups'
+    | 'action_board'
     | 'team'
     | 'analytics'
     | 'meta_launch'
@@ -405,6 +407,7 @@ export default function CRM() {
         const followupCount = contacts.filter((c) => Boolean(c.nextFollowUpAt)).length;
 
         if (isCeoPortal) {
+            nextTabs.push({ id: 'action_board', label: 'Action Board', icon: CheckCircle });
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
             if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
@@ -1193,6 +1196,10 @@ export default function CRM() {
                 ) : activeTab === 'daily_command' ? (
                     <div className="p-6">
                         <DailyCommandCenter />
+                    </div>
+                ) : activeTab === 'action_board' ? (
+                    <div className="p-6 bg-gray-50">
+                        <DailyActionBoard />
                     </div>
                 ) : activeTab === 'analytics' ? (
                     <div className="p-6">
