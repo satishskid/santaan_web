@@ -87,10 +87,11 @@ Respond in JSON format:
           content: prompt
         }
       ],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
       max_tokens: 300,
-    });
+                response_format: { type: 'json_object' }
+            });
 
     const responseContent = completion.choices[0]?.message?.content;
     if (!responseContent) {

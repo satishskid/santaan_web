@@ -8,7 +8,6 @@ export default {
     dialect: 'sqlite', // 'postgresql' | 'mysql' | 'sqlite'
     dbCredentials: {
         url: process.env.TURSO_DATABASE_URL || 'file:santaan.db',
-        // @ts-expect-error - authToken is required for Turso but valid types are missing it
-        authToken: process.env.TURSO_AUTH_TOKEN,
+        token: process.env.TURSO_AUTH_TOKEN,
     },
 } satisfies Config;

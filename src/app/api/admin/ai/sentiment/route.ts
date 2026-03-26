@@ -55,13 +55,14 @@ Respond in JSON format:
 
         const completion = await groq.chat.completions.create({
             messages: [
-                { role: 'system', content: 'You are a CRM AI assistant that analyzes customer conversations to determine sentiment and reasons for lead loss.' },
+                { role: 'system', content: 'You are a CRM AI assistant that analyzes customer conversations to determine sentiment and reasons for lead loss. Return ONLY valid JSON and nothing else.' },
                 { role: 'user', content: prompt }
             ],
-            model: 'llama3-70b-8192',
+            model: 'llama-3.3-70b-versatile',
             temperature: 0.3,
             max_tokens: 300,
-        });
+                response_format: { type: 'json_object' }
+            });
 
         const responseText = completion.choices[0]?.message?.content || '{}';
         let analysis;

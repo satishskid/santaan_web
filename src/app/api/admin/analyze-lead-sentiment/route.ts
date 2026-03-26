@@ -66,7 +66,7 @@ Respond only with the JSON object, no additional text.`;
         { role: 'system', content: 'You are a sales conversation analyst. Respond only with valid JSON.' },
         { role: 'user', content: prompt }
       ],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
       max_tokens: 200,
     });

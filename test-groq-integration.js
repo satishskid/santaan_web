@@ -53,7 +53,7 @@ Respond in JSON format:
           { role: 'system', content: 'You are a CRM AI assistant that analyzes customer conversations to determine sentiment and reasons for lead loss.' },
           { role: 'user', content: prompt }
         ],
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
         max_tokens: 300,
       });

@@ -33,7 +33,7 @@ export const sendMessageToGroq = async (
     try {
         const completion = await groq.chat.completions.create({
             messages,
-            model: "llama3-70b-8192", // High performance, good free tier limits
+            model: "llama-3.3-70b-versatile", // High performance, good free tier limits
             temperature: 0.7,
             max_tokens: 1024,
         });

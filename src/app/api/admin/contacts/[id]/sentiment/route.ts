@@ -55,7 +55,7 @@ Only use the exact values provided. If not lost, set lossReason to "None".`;
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
       max_tokens: 150,
     });

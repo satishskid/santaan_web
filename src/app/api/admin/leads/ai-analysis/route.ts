@@ -71,10 +71,11 @@ export async function POST(request: NextRequest) {
     // Analyze with Groq
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: buildPrompt(contact) }],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
       max_tokens: 300,
-    });
+                response_format: { type: 'json_object' }
+            });
 
     const aiResponse = completion.choices[0]?.message?.content;
     if (!aiResponse) {

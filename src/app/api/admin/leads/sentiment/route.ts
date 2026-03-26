@@ -19,7 +19,7 @@ async function requireOpsAccess() {
   return { authorized, role: sessionRole };
 }
 
-const SYSTEM_PROMPT = `You are an AI assistant that analyzes lead interactions to determine sentiment and reasons for lead loss.
+const SYSTEM_PROMPT = `You are an AI assistant that analyzes lead interactions to determine sentiment and reasons for lead loss. Return ONLY valid JSON and nothing else.
 
 Given a lead's notes and conversation history, provide:
 1. Sentiment: "positive", "negative", or "neutral"
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: `Analyze this lead interaction: "${notes}"` }
       ],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.3,
       max_tokens: 150,
     });
