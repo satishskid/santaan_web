@@ -66,6 +66,7 @@ interface Contact {
     lastMessageAt?: string;
     conversationCount?: number;
     submittedAt?: number;
+    createdAt?: string;
 }
 
 type FilterTab =
