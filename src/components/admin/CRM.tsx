@@ -56,6 +56,7 @@ interface Contact {
     ownerName?: string;
     ownerEmail?: string;
     nextFollowUpAt?: string;
+    notes?: string;
     utmSource?: string;
     utmMedium?: string;
     utmCampaign?: string;
@@ -64,7 +65,7 @@ interface Contact {
     landingPath?: string;
     lastMessageAt?: string;
     conversationCount?: number;
-    createdAt?: string;
+    submittedAt?: number;
 }
 
 type FilterTab =
@@ -1408,6 +1409,47 @@ export default function CRM() {
                                     <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1)}</option>
                                 ))}
                             </select>
+
+                            {/* One-Click Quick Notes for Telecallers */}
+                            <div className="pt-2 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Quick Action Note</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Call] No Answer' })}
+                                        className="text-[11px] px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                                    >
+                                        📞 No Answer
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Objection] Price too high' })}
+                                        className="text-[11px] px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full transition-colors"
+                                    >
+                                        💰 Price Objection
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Objection] Distance/Location issue' })}
+                                        className="text-[11px] px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-full transition-colors"
+                                    >
+                                        📍 Distance Issue
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditForm({ ...editForm, notes: (editForm.notes ? editForm.notes + '\n' : '') + '[Status] Ready to visit clinic' })}
+                                        className="text-[11px] px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-full transition-colors"
+                                    >
+                                        ✅ Ready to Visit
+                                    </button>
+                                </div>
+                                <textarea
+                                    placeholder="Or type custom notes here..."
+                                    value={editForm.notes || ''}
+                                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm min-h-[80px]"
+                                />
+                            </div>
                         </div>
                         <div className="flex gap-2 mt-6">
                             <Button onClick={() => handleContactUpdate({ ...editingContact, ...editForm })}>

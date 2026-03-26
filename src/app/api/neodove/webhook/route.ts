@@ -12,6 +12,7 @@ import {
   parseNeoDoveWebhookLead,
   toNeoDoveCampaignTag,
 } from "@/lib/neodove";
+import { analyzeTelecallerNote } from "@/lib/ai/note-analyzer";
 
 const MAX_MESSAGE_LENGTH = 1800;
 const ACTIVE_STATUSES = new Set(["New", "Contacted", "Qualified"]);
@@ -334,6 +335,29 @@ export async function POST(req: NextRequest) {
       existing = await findByPhone(mobile);
     }
 
+    // AI Sentiment Analysis for Notes
+    let aiTags: string[] = [];
+    let mappedDisposeReason = webhookLead.disposeReason;
+    
+    if (webhookLead.notes) {
+      try {
+        const analysis = await analyzeTelecallerNote(webhookLead.notes);
+        if (analysis) {
+          aiTags = analysis.tags.map(t => `ai_${t}`);
+          aiTags.push(`ai_sentiment_${analysis.sentiment.toLowerCase()}`);
+          
+          // If telecaller didn't provide a reason but AI found one, use the AI's reason
+          if (!mappedDisposeReason && analysis.reason !== "Unknown") {
+            mappedDisposeReason = `[AI Extracted] ${analysis.reason}`;
+          }
+        }
+      } catch (err) {
+        console.error("AI Note analysis failed:", err);
+      }
+    }
+
+    const finalTags = mergeTags(existing?.tags || "", [...tags, ...aiTags]);
+
     if (existing) {
       const updatedRows = await db
         .update(contacts)
@@ -344,7 +368,7 @@ export async function POST(req: NextRequest) {
           preferredChannel: "phone",
           leadSource: "neodove_webhook",
           status: mappedStatus,
-          tags: mergeTags(existing.tags, tags),
+          tags: finalTags,
           message: appendMessage(existing.message, note),
           ownerName: webhookLead.assignedTo || existing.ownerName || null,
           neodoveLeadId: webhookLead.leadId || existing.neodoveLeadId || null,
@@ -354,7 +378,7 @@ export async function POST(req: NextRequest) {
           neodoveRawStatus: webhookLead.status || existing.neodoveRawStatus || null,
           neodoveMappedStatus: mappedStatus,
           neodoveDisposition: webhookLead.disposition || existing.neodoveDisposition || null,
-          neodoveDisposeReason: webhookLead.disposeReason || existing.neodoveDisposeReason || null,
+          neodoveDisposeReason: mappedDisposeReason || existing.neodoveDisposeReason || null,
           neodovePipeline: webhookLead.pipeline || existing.neodovePipeline || null,
           neodoveOwnerId: webhookLead.assignedToId || existing.neodoveOwnerId || null,
           neodoveOwnerName: webhookLead.assignedTo || existing.neodoveOwnerName || null,
@@ -409,7 +433,7 @@ export async function POST(req: NextRequest) {
         status: mappedStatus,
         preferredChannel: "phone",
         leadSource: "neodove_webhook",
-        tags: tags.join(","),
+        tags: finalTags,
         message: note,
         leadScore: Math.min(100, 30 + scoreDelta(mappedStatus, webhookLead.callConnected, webhookLead.callDurationSec)),
         ownerName: webhookLead.assignedTo || null,
@@ -420,7 +444,7 @@ export async function POST(req: NextRequest) {
         neodoveRawStatus: webhookLead.status || null,
         neodoveMappedStatus: mappedStatus,
         neodoveDisposition: webhookLead.disposition || null,
-        neodoveDisposeReason: webhookLead.disposeReason || null,
+        neodoveDisposeReason: mappedDisposeReason || null,
         neodovePipeline: webhookLead.pipeline || null,
         neodoveOwnerId: webhookLead.assignedToId || null,
         neodoveOwnerName: webhookLead.assignedTo || null,
