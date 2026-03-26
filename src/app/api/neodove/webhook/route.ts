@@ -401,6 +401,7 @@ export async function POST(req: NextRequest) {
           lastMessageAt: now,
           conversationCount: (existing.conversationCount || 0) + 1,
           leadScore: Math.min(100, (existing.leadScore || 0) + scoreDelta(mappedStatus, webhookLead.callConnected, webhookLead.callDurationSec)),
+          submittedAt: existing.submittedAt || Math.floor(Date.now() / 1000),
         })
         .where(eq(contacts.id, existing.id))
         .returning();
@@ -466,7 +467,7 @@ export async function POST(req: NextRequest) {
         lastContact: eventAt,
         lastMessageAt: now,
         conversationCount: 1,
-        submittedAt: Date.now(),
+        submittedAt: Math.floor(Date.now() / 1000), // Note: SQLite max integer is large enough, but using seconds prevents overflow if configured as int32 elsewhere
       }).returning();
 
       if (createdRows[0]) {
