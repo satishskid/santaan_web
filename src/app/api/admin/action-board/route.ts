@@ -109,30 +109,47 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    // 4. Hot Leads Needing Immediate Action
-    const hotLeads = await db
-      .select()
+    // 4. Leakage Detective: High-Intent Leads Breaching 24h SLA
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const leakedLeads = await db
+      .select({
+        id: contacts.id,
+        name: contacts.name,
+        phone: contacts.phone,
+        utmCampaign: contacts.utmCampaign,
+        createdAt: contacts.createdAt,
+      })
       .from(contacts)
       .where(
         and(
-          sql`${contacts.leadScore} >= 80`,
-          gte(contacts.lastContact, last24h)
+          // Created more than 24 hours ago
+          sql`${contacts.createdAt} < ${twentyFourHoursAgo}`,
+          // But still in 'New' status (meaning telecallers haven't touched them)
+          eq(contacts.status, "New")
         )
       )
-      .limit(5);
+      .limit(10);
 
-    hotLeads.forEach((contact) => {
+    if (leakedLeads.length > 0) {
+      // Group them by campaign to give better context
+      const campaignsAffected = [...new Set(leakedLeads.map(l => l.utmCampaign || 'Organic/Direct'))].join(', ');
+      
       tasks.push({
-        id: `hot_lead_${contact.id}`,
-        type: "call",
+        id: `leakage_alert_${Date.now()}`,
+        type: "system",
         priority: "high",
-        title: "Hot Lead: Instant Follow-up",
-        description: `${contact.name || contact.phone} has a high lead score (${contact.leadScore}). Engage immediately.`,
+        title: "SLA Leakage: Leads Ignored > 24h",
+        description: `${leakedLeads.length} new leads have been sitting untouched for over 24 hours.`,
+        reasoning: `Marketing spent money to acquire these leads from campaigns like '${campaignsAffected}', but they are going cold because the sales team hasn't initiated the first call. Speed to lead is critical for conversion.`,
         status: "pending",
-        actionLabel: "Call Now",
-        contactId: contact.id,
+        actionLabel: "Nudge Sales Team",
+        guidedAction: {
+          type: "copy_message",
+          message: `Hi Team, we currently have ${leakedLeads.length} leads in the CRM that were generated over 24 hours ago but haven't been called yet. Let's prioritize these immediately before they go cold!`,
+        },
       });
-    });
+    }
 
     // 5. Agency Challenger: Meta Performance Insight (Spend vs Actual Conversions)
     try {
