@@ -4,7 +4,8 @@ import { blogPosts } from '@/db/schema';
 import { LEGACY_BLOG_SEEDS } from '@/content/legacyBlogSeeds';
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@santaanIVF';
-const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(MEDIUM_FEED_URL)}`;
+// Add a random cache-busting parameter to bypass rss2json's heavy caching
+const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(MEDIUM_FEED_URL)}&api_key=${process.env.RSS2JSON_API_KEY || ''}&_cacheBust=${Date.now()}`;
 
 export type BlogType = 'blog' | 'news' | 'doctor';
 
@@ -379,7 +380,10 @@ async function ensureBlogPostsTable() {
 }
 
 async function fetchMediumFeedPosts(options?: { limit?: number; type?: BlogType }): Promise<SantaanBlogPost[]> {
-  const response = await fetch(RSS2JSON_URL, {
+  // Use a dynamic cache-buster so each fetch gets the latest if possible
+  const dynamicUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(MEDIUM_FEED_URL)}&api_key=${process.env.RSS2JSON_API_KEY || ''}&_t=${Date.now()}`;
+  
+  const response = await fetch(dynamicUrl, {
     next: { revalidate: 3600 },
     headers: { Accept: 'application/json' },
   });
