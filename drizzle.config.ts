@@ -1,13 +1,15 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-export default {
+export default defineConfig({
     schema: './src/db/schema.ts',
     out: './drizzle',
-    dialect: 'sqlite', // 'postgresql' | 'mysql' | 'sqlite'
+    dialect: 'turso',
     dbCredentials: {
         url: process.env.TURSO_DATABASE_URL || 'file:santaan.db',
-        token: process.env.TURSO_AUTH_TOKEN,
+        authToken: process.env.TURSO_AUTH_TOKEN,
     },
-} satisfies Config;
+    verbose: true,
+    strict: true,
+});

@@ -17,7 +17,7 @@ import DailyCommandCenter from './DailyCommandCenter';
 import DailyActionBoard from './action-board/DailyActionBoard';
 import NeoDoveOpsDashboard from './NeoDoveOpsDashboard';
 import MetaLaunchPanel from './MetaLaunchPanel';
-import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows } from 'lucide-react';
+import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Megaphone, Trash2, Edit, Save, X, BookOpen, IndianRupee, Target, Copy, GitCompareArrows, Send } from 'lucide-react';
 import { AIInsightWidget } from './AIInsightWidget';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +71,7 @@ interface Contact {
 }
 
 type FilterTab =
+    | 'publish'
     | 'today'
     | 'daily_command'
     | 'workboard'
@@ -141,6 +142,8 @@ function toStoredStatus(value: unknown) {
     if (!normalized) return 'New';
     return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
+
+import ContentPublisher from './ContentPublisher';
 
 export default function CRM() {
     const { data: session } = useSession();
@@ -439,6 +442,7 @@ export default function CRM() {
         }
 
         if (isContentPortal) {
+            nextTabs.push({ id: 'publish', label: 'Publish Content', icon: Send }); // Replaced Draft Content
             nextTabs.push({ id: 'meta_launch', label: 'Draft Content', icon: Megaphone });
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Content Insights', icon: Search });
             return nextTabs;
@@ -1206,6 +1210,10 @@ export default function CRM() {
                 ) : activeTab === 'neodove_ops' ? (
                     <div className="p-6">
                         <NeoDoveOpsDashboard />
+                    </div>
+                ) : activeTab === 'publish' ? (
+                    <div className="p-6">
+                        <ContentPublisher />
                     </div>
                 ) : activeTab === 'ceo_command' ? (
                     <div className="p-6">
