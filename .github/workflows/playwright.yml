@@ -42,8 +42,8 @@ jobs:
     - name: Run Build
       run: npm run build
       
-    - name: Apply Database Migrations
-      run: npm run db:migrate
+    - name: Initialize Test Database
+      run: npm run db:push -- --force
       
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps chromium
