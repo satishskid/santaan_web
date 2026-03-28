@@ -1,6 +1,9 @@
 import Groq from "groq-sdk";
 import { SYSTEM_INSTRUCTION } from "@/services/chat/prompts";
 import { PRIMARY_CALL_NUMBER } from "@/data/centers";
+import { db } from "@/lib/db";
+import { chatMessages } from "@/db/schema";
+import { eq, desc, and } from "drizzle-orm";
 
 type CompanionTurn = {
   role: "user" | "assistant";
@@ -8,6 +11,26 @@ type CompanionTurn = {
 };
 
 type CompanionChannel = "web" | "whatsapp";
+
+export async function getChatHistory(phone: string, limit = 10): Promise<CompanionTurn[]> {
+  try {
+    const messages = await db
+      .select()
+      .from(chatMessages)
+      .where(and(eq(chatMessages.phone, phone), eq(chatMessages.channel, "whatsapp")))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(limit)
+      .all();
+
+    return messages.reverse().map((msg) => ({
+      role: msg.role as "user" | "assistant",
+      text: msg.content,
+    }));
+  } catch (e) {
+    console.error("History fetch failed:", e);
+    return [];
+  }
+}
 
 const COST_KEYWORDS = [
   "cost",
@@ -181,6 +204,60 @@ const policyRedirectReply = (channel: CompanionChannel) => {
   return channel === "whatsapp" ? guidedReply : guidedReply;
 };
 
+const sendToClaude = async (message: string, history: CompanionTurn[]) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY || "";
+  if (!apiKey) throw new Error("Anthropic API key missing");
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-3-5-sonnet-20240620",
+      max_tokens: 1024,
+      system: SYSTEM_INSTRUCTION,
+      messages: history.map(turn => ({
+        role: turn.role === "assistant" ? "assistant" : "user",
+        content: turn.text
+      })).concat([{ role: "user", content: message }]),
+    }),
+  });
+
+  if (!response.ok) throw new Error(`Claude API error ${response.status}`);
+  const data = await response.json();
+  return data.content[0].text;
+};
+
+const sendToOpenRouter = async (message: string, history: CompanionTurn[]) => {
+  const apiKey = process.env.OPENROUTER_API_KEY || "";
+  if (!apiKey) throw new Error("OpenRouter API key missing");
+
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://santaan.in",
+      "X-Title": "Santaan AI Agent",
+    },
+    body: JSON.stringify({
+      model: "anthropic/claude-3.5-sonnet",
+      messages: [
+        { role: "system", content: SYSTEM_INSTRUCTION },
+        ...history.map(turn => ({ role: turn.role, content: turn.text })),
+        { role: "user", content: message }
+      ],
+    }),
+  });
+
+  if (!response.ok) throw new Error(`OpenRouter error ${response.status}`);
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
+
 export async function generateCompanionReply(input: {
   message: string;
   history?: CompanionTurn[];
@@ -193,17 +270,41 @@ export async function generateCompanionReply(input: {
   if (!message) return localFallback("empty", channel);
   if (isCostOrSuccessRateQuery(message)) return policyRedirectReply(channel);
 
+  // Try Groq first as the primary production AI Agent (requested by user)
+  if (process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY) {
+    try {
+      const reply = await sendToGroq(message, history);
+      if (!responseContainsDisallowedClaims(reply)) return channel === "whatsapp" ? compactForWhatsapp(reply) : reply;
+    } catch (e) {
+      console.error("Groq Agent failed:", e);
+    }
+  }
+
+  // Fallback to Claude/OpenRouter
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      const reply = await sendToOpenRouter(message, history);
+      if (!responseContainsDisallowedClaims(reply)) return channel === "whatsapp" ? compactForWhatsapp(reply) : reply;
+    } catch (e) {
+      console.error("OpenRouter Agent failed:", e);
+    }
+  }
+
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const reply = await sendToClaude(message, history);
+      if (!responseContainsDisallowedClaims(reply)) return channel === "whatsapp" ? compactForWhatsapp(reply) : reply;
+    } catch (e) {
+      console.error("Claude Agent failed:", e);
+    }
+  }
+
+  // Final fallback to Gemini
   try {
-    const reply = await sendToGroq(message, history);
+    const reply = await sendToGemini(message, history);
     if (responseContainsDisallowedClaims(reply)) return policyRedirectReply(channel);
     return channel === "whatsapp" ? compactForWhatsapp(reply) : reply;
   } catch {
-    try {
-      const reply = await sendToGemini(message, history);
-      if (responseContainsDisallowedClaims(reply)) return policyRedirectReply(channel);
-      return channel === "whatsapp" ? compactForWhatsapp(reply) : reply;
-    } catch {
-      return localFallback(message, channel);
-    }
+    return localFallback(message, channel);
   }
 }

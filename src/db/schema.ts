@@ -440,3 +440,14 @@ export const blogPosts = sqliteTable('blog_posts', {
     syncedAt: text('synced_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const chatMessages = sqliteTable('chat_messages', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    contactId: integer('contact_id').references(() => contacts.id, { onDelete: 'cascade' }),
+    phone: text('phone').notNull(),
+    role: text('role').notNull(), // user | assistant
+    content: text('content').notNull(),
+    channel: text('channel').default('whatsapp'), // whatsapp | web
+    metadata: text('metadata'), // JSON string for extra info
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});

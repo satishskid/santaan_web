@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { contacts } from "@/db/schema";
+import { contacts, chatMessages } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { generateCompanionReply } from "@/lib/companion";
+import { generateCompanionReply, getChatHistory } from "@/lib/companion";
 import { sendWhatsAppTextMessage } from "@/services/whatsapp";
 import { PRIMARY_CALL_NUMBER } from "@/data/centers";
+import { analyzeTelecallerNote } from "@/lib/ai/note-analyzer";
+import { pushLeadToNeoDove } from "@/lib/neodove";
 
 type NormalizedWebhookMessage = {
   from: string;
   name: string;
   text: string;
-  provider: "meta" | "twilio" | "gupshup" | "interakt";
+  provider: "meta" | "twilio" | "gupshup" | "interakt" | "bhash";
 };
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "santaan_verify_token_2026";
 
 const DEFAULT_GREETING = [
-  "Namaste from Santaan IVF. I am Santaan Companion.",
+  "Namaste from Santaan IVF. I am your Santaan AI Agent.",
   "How can we help you today?",
   "1) At-home fertility test",
   "2) Book doctor consultation",
@@ -168,6 +170,18 @@ function normalizeWebhookPayload(body: unknown): NormalizedWebhookMessage | null
     };
   }
 
+  // BhashSMS format (Estimated based on common patterns)
+  const bhashPhone = getString(payload, "mobile") || getString(payload, "phone") || getString(payload, "sender");
+  const bhashText = getString(payload, "msg") || getString(payload, "message") || getString(payload, "text");
+  if (bhashPhone && bhashText) {
+    return {
+      provider: "bhash",
+      from: normalizePhone(bhashPhone),
+      name: getString(payload, "name") || "WhatsApp User",
+      text: bhashText,
+    };
+  }
+
   if (value) {
     // no-op; keeps type checker happy for meta probing
   }
@@ -216,10 +230,30 @@ export async function POST(req: NextRequest) {
     if (isAtHomeIntent) baseTags.push("at_home_test");
     if (isTreatmentIntent) baseTags.push("treatment");
 
+    // AI Analysis for Chips
+    let aiSentiment: string | null = null;
+    let aiReason: string | null = null;
+    let aiTags: string[] = [];
+    
+    try {
+      const analysis = await analyzeTelecallerNote(text);
+      if (analysis) {
+        aiSentiment = analysis.sentiment;
+        aiReason = analysis.reason;
+        aiTags = analysis.tags.map(t => `wa_chip_${t.toLowerCase().replace(/\s+/g, "_")}`);
+        baseTags.push(...aiTags);
+      }
+    } catch (e) {
+      console.error("WhatsApp AI chip extraction failed:", e);
+    }
+
     const leadBoost = (isConsultIntent ? 25 : 10) + (isTreatmentIntent ? 20 : 0) + (isAtHomeIntent ? 15 : 0);
+    let contactId: number;
+    let finalContact: any;
 
     if (existing) {
-      await db
+      contactId = existing.id;
+      const updated = await db
         .update(contacts)
         .set({
           whatsappOptIn: true,
@@ -228,6 +262,8 @@ export async function POST(req: NextRequest) {
           tags: dedupeTags(existing.tags, baseTags),
           leadScore: Math.min(100, (existing.leadScore || 0) + leadBoost),
           status: existing.status || "New",
+          sentiment: aiSentiment || existing.sentiment,
+          lossReason: aiReason || existing.lossReason,
           message: text,
           utmSource: existing.utmSource || "whatsapp",
           utmMedium: existing.utmMedium || "chat",
@@ -237,9 +273,11 @@ export async function POST(req: NextRequest) {
           lastContact: now,
           conversationCount: (existing.conversationCount || 0) + 1,
         })
-        .where(eq(contacts.id, existing.id));
+        .where(eq(contacts.id, existing.id))
+        .returning();
+      finalContact = updated[0];
     } else {
-      await db.insert(contacts).values({
+      const inserted = await db.insert(contacts).values({
         name: messageData.name || "WhatsApp User",
         email: `whatsapp_${from}@pending.santaan.in`,
         phone: from,
@@ -250,6 +288,8 @@ export async function POST(req: NextRequest) {
         tags: baseTags.join(","),
         leadScore: Math.min(90, 20 + leadBoost),
         status: "Hot Lead",
+        sentiment: aiSentiment,
+        lossReason: aiReason,
         message: text,
         utmSource: "whatsapp",
         utmMedium: "chat",
@@ -259,19 +299,70 @@ export async function POST(req: NextRequest) {
         lastMessageAt: now,
         lastContact: now,
         conversationCount: 1,
-      });
+      }).returning({ id: contacts.id });
+      contactId = inserted[0].id;
+      const created = await db.select().from(contacts).where(eq(contacts.id, contactId)).get();
+      finalContact = created;
     }
 
+    // Sync to NeoDove with AI Chips
+    if (finalContact) {
+      try {
+        await pushLeadToNeoDove({
+          name: finalContact.name,
+          mobile: finalContact.whatsappNumber || finalContact.phone || "",
+          email: finalContact.email,
+          source: "whatsapp_ai_agent",
+          campaign: finalContact.utmCampaign || "WHATSAPP AGENT",
+          center: center,
+          status: "OPEN",
+          notes: `[WA AI AGENT] Sentiment: ${aiSentiment || "Neutral"} | Intent: ${aiReason || "General Inquiry"} | Message: ${text}`,
+          tags: baseTags,
+          utm: {
+            utm_source: finalContact.utmSource || "whatsapp",
+            utm_medium: finalContact.utmMedium || "chat",
+            utm_campaign: finalContact.utmCampaign || "wa_agent",
+          }
+        });
+      } catch (e) {
+        console.error("NeoDove sync from WA agent failed:", e);
+      }
+    }
+
+    // Log user message
+    await db.insert(chatMessages).values({
+      contactId,
+      phone: from,
+      role: "user",
+      content: text,
+      channel: "whatsapp",
+    });
+
     const quickReply = getQuickReply(text);
+    
+    // Prepare history for the AI Agent (Brain) - Now using full history!
+    const history = await getChatHistory(from);
+
     const companionReply = quickReply
       ? quickReply
       : await generateCompanionReply({
           message: text,
-          history: [],
+          history: history,
           channel: "whatsapp",
         });
 
     const finalReply = `${companionReply}\n\nNeed a human callback? Reply 9.`;
+
+    // Log assistant message
+    await db.insert(chatMessages).values({
+      contactId,
+      phone: from,
+      role: "assistant",
+      content: finalReply,
+      channel: "whatsapp",
+    });
+    
+    // Send response back via WhatsApp
     await sendWhatsAppTextMessage({
       phone: from,
       text: finalReply,
