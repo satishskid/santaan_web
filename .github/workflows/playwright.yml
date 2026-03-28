@@ -14,8 +14,10 @@ jobs:
     # For a real deployment, these should be added to GitHub Secrets
     env:
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
-      DATABASE_URL: "file:santaan.db" # Using a local sqlite for CI testing
+      TURSO_DATABASE_URL: "file:santaan.db" # Using a local sqlite for CI testing
       BETTER_AUTH_SECRET: "ci-dummy-secret-key-do-not-use-in-prod"
+      NEXTAUTH_SECRET: "ci-dummy-nextauth-secret"
+      NEXTAUTH_URL: "http://localhost:3000"
       
     steps:
     - uses: actions/checkout@v4
@@ -29,6 +31,9 @@ jobs:
       
     - name: Run Build
       run: npm run build
+      
+    - name: Apply Database Migrations
+      run: npm run db:migrate
       
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps chromium

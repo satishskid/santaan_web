@@ -10,15 +10,17 @@ const defaultRemoteUrl = 'libsql://santaan-hope-satishskid.aws-ap-south-1.turso.
 
 let client;
 
-if (process.env.NODE_ENV === 'development') {
-    // In development, use the local client with file: protocol
-    // We use require here to avoid bundling better-sqlite3 in production
+const isLocal = !url || url.startsWith('file:');
+
+if (process.env.NODE_ENV === 'development' || isLocal) {
+    // Use the local client for file: protocol or if no URL provided
     const { createClient: createLocalClient } = require('@libsql/client');
-    client = url
-        ? createClient({ url, authToken })
-        : createLocalClient({ url: 'file:santaan.db' });
+    client = createLocalClient({ 
+        url: url || 'file:santaan.db',
+        authToken: authToken
+    });
 } else {
-    // In production/edge, use the web client
+    // In production/edge with a remote URL, use the web client
     client = createClient({
         url: url || defaultRemoteUrl,
         authToken: authToken || ''

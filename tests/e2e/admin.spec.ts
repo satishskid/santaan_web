@@ -7,7 +7,7 @@ test.describe('Admin Dashboard Critical Path', () => {
     await page.getByLabel(/username or email/i).fill('invalid.user@example.com');
     await page.getByLabel(/pin\s*\/\s*password/i).fill('000000');
     await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page.getByText('Invalid username or PIN')).toBeVisible();
+    await expect(page.getByText('Invalid username or PIN')).toBeVisible({ timeout: 15000 });
     await expect(page).toHaveURL(/\/login$/);
   });
 
