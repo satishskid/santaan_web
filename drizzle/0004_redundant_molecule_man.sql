@@ -9,12 +9,6 @@ ALTER TABLE `contacts` ADD `tags` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `lead_source` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `lead_score` integer DEFAULT 0;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `message` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `utm_source` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `utm_medium` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `utm_campaign` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `utm_term` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `utm_content` text;--> statement-breakpoint
-ALTER TABLE `contacts` ADD `landing_path` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `last_message_at` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `conversation_count` integer DEFAULT 0;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `submitted_at` integer;

@@ -14,9 +14,9 @@
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
-    "db:migrate": "npx tsx src/scripts/migrate.ts",
-    "db:migrate:prod": "npx tsx src/scripts/migrate-prod.ts",
-    "migrate:blogs": "npx tsx src/scripts/migrate-blog-posts.ts",
+    "db:migrate": "node --import tsx src/scripts/migrate.ts",
+    "db:migrate:prod": "node --import tsx src/scripts/migrate-prod.ts",
+    "migrate:blogs": "node --import tsx src/scripts/migrate-blog-posts.ts",
     "migrate:spend": "node src/scripts/migrate-spend.mjs",
     "migrate:ops-inputs": "node src/scripts/migrate-ops-inputs.mjs",
     "migrate:ops-workboard": "node src/scripts/migrate-ops-workboard.mjs",
@@ -24,8 +24,8 @@
     "migrate:meta-launch": "node src/scripts/migrate-meta-launch-drafts.mjs",
     "migrate:meta-conversions": "node src/scripts/migrate-meta-conversion-events.mjs",
     "migrate:meta-audiences": "node src/scripts/migrate-meta-audiences.mjs",
-    "seed:ceo-week1-kpis": "npx tsx src/scripts/seed-ceo-week1-kpis.ts",
-    "test:content-draft": "npx tsx src/scripts/test-content-draft.ts"
+    "seed:ceo-week1-kpis": "node --import tsx src/scripts/seed-ceo-week1-kpis.ts",
+    "test:content-draft": "node --import tsx src/scripts/test-content-draft.ts"
   },
   "dependencies": {
     "@better-auth/infra": "^0.1.13",
@@ -67,6 +67,7 @@
     "eslint-config-next": "16.1.6",
     "playwright": "^1.58.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
