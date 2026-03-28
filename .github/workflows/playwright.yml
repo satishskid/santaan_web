@@ -14,10 +14,20 @@ jobs:
     # For a real deployment, these should be added to GitHub Secrets
     env:
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
-      TURSO_DATABASE_URL: "file:santaan.db" # Using a local sqlite for CI testing
+      TURSO_DATABASE_URL: "file:santaan.db"
+      TURSO_AUTH_TOKEN: "ci-dummy-token"
       BETTER_AUTH_SECRET: "ci-dummy-secret-key-do-not-use-in-prod"
       NEXTAUTH_SECRET: "ci-dummy-nextauth-secret"
       NEXTAUTH_URL: "http://localhost:3000"
+      ANTHROPIC_API_KEY: "ci-dummy-anthropic-key"
+      OPENROUTER_API_KEY: "ci-dummy-openrouter-key"
+      GROQ_API_KEY: "ci-dummy-groq-key"
+      GOOGLE_AI_API_KEY: "ci-dummy-google-key"
+      NEXT_PUBLIC_GROQ_API_KEY: "ci-dummy-groq-key"
+      NEXT_PUBLIC_GOOGLE_AI_API_KEY: "ci-dummy-google-key"
+      BHASH_USER: "ci-user"
+      BHASH_PASS: "ci-pass"
+      BHASH_SENDER: "ci-sender"
       
     steps:
     - uses: actions/checkout@v4
