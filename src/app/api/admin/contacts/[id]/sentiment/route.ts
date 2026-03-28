@@ -6,7 +6,7 @@ import { auth } from '@/auth';
 import { isAuthorizedOpsUser } from '@/lib/auth-helper';
 import Groq from 'groq-sdk';
 
-const GROQ_API_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
 
 function normalizeRole(role?: string | null) {
   return String(role || '').trim().toLowerCase();

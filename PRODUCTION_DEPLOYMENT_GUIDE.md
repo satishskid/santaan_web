@@ -53,7 +53,7 @@ GOOGLE_CLIENT_SECRET="<your-google-client-secret>"
 NEXT_PUBLIC_GOOGLE_AI_API_KEY="<your-google-ai-api-key>"
 
 # Groq AI
-NEXT_PUBLIC_GROQ_API_KEY="<your-groq-api-key>"
+GROQ_API_KEY="<your-groq-api-key>"
 
 # Turso Database (Production)
 TURSO_DATABASE_URL="<your-turso-database-url>"
@@ -61,6 +61,8 @@ TURSO_AUTH_TOKEN="<your-turso-auth-token>"
 ```
 
 **Note:** Copy the actual values from your `.env.local` file. Only change `NEXTAUTH_URL` to the production domain.
+
+If you intentionally use Groq directly in the browser for a separate client feature, add `NEXT_PUBLIC_GROQ_API_KEY` as well. For server routes and webhooks, `GROQ_API_KEY` is the canonical production key.
 
 **⚠️ IMPORTANT CHANGES FOR PRODUCTION:**
 - Update `NEXTAUTH_URL` from `http://localhost:3000` to `https://www.santaan.in`

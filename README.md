@@ -41,7 +41,7 @@ This is the main web application for Santaan, built with Next.js, Drizzle ORM, a
     TURSO_DATABASE_URL=your_turso_url
     TURSO_AUTH_TOKEN=your_turso_token
     NEXT_PUBLIC_GOOGLE_AI_API_KEY=your_key
-    NEXT_PUBLIC_GROQ_API_KEY=your_key
+    GROQ_API_KEY=your_key
     BLOG_SYNC_SECRET=choose_a_strong_secret
     META_AD_ACCOUNT_IDS=act_1234567890,act_0987654321
     META_ACCESS_TOKEN=your_meta_long_lived_ads_read_token
@@ -125,7 +125,7 @@ This project is deployed on Vercel.
    - `EMAIL_SMTP_SECURE` (optional, set to `true` for port 465)
    - `EMAIL_FROM` (example: `Santaan CRM <noreply@santaan.in>`)
    - `NEXT_PUBLIC_GOOGLE_AI_API_KEY`
-   - `NEXT_PUBLIC_GROQ_API_KEY`
+   - `GROQ_API_KEY`
 
 Once connected, a `git push` to `main` triggers a production deployment automatically.
 
