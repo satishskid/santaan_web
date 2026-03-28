@@ -414,7 +414,9 @@ export default function CRM() {
 
         if (isCeoPortal) {
             nextTabs.push({ id: 'ceo_command', label: 'Command Center', icon: Target }); // Consolidated top-level view
+            nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Clock });
             nextTabs.push({ id: 'action_board', label: 'Action Board', icon: CheckCircle });
+            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: BookOpen });
             
             // Core Operational Tabs
             if (canAccessContacts) {
@@ -426,6 +428,10 @@ export default function CRM() {
             }
 
             // Move settings and configs to the end
+            if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
+            if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
+            if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
+            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
             nextTabs.push(
                 { id: 'team', label: 'User Access', icon: UserPlus },
                 { id: 'centers', label: 'Centers', icon: MapPin },
@@ -438,6 +444,8 @@ export default function CRM() {
             nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend Management', icon: IndianRupee });
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Performance Analytics', icon: Search });
+            if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Edit });
+            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: BookOpen });
             return nextTabs;
         }
 
@@ -445,11 +453,14 @@ export default function CRM() {
             nextTabs.push({ id: 'publish', label: 'Publish Content', icon: Send }); // Replaced Draft Content
             nextTabs.push({ id: 'meta_launch', label: 'Draft Content', icon: Megaphone });
             if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Content Insights', icon: Search });
+            nextTabs.push({ id: 'workboard', label: 'Workboard', icon: BookOpen });
             return nextTabs;
         }
 
         if (isTelecallerManagerPortal) {
             nextTabs.push({ id: 'action_board', label: 'Action Queue', icon: Target }); // Give managers an action queue
+            nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Clock });
+            if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -476,6 +487,10 @@ export default function CRM() {
         if (canAccessAnalytics) nextTabs.push({ id: 'analytics', label: 'Analytics', icon: Search });
         if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
         if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
+        if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Edit });
+        if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+        nextTabs.push({ id: 'workboard', label: 'Workboard', icon: BookOpen });
+        nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Clock });
         if (canAccessContacts) nextTabs.push({ id: 'all', label: 'All Contacts', icon: Search });
         return nextTabs;
     }, [
