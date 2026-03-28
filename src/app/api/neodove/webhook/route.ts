@@ -45,7 +45,23 @@ function toTag(input: string, value?: string) {
 
 function normalizeTimestamp(value?: string) {
   if (!value) return null;
-  const parsed = Date.parse(value);
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (/^\d{10,13}$/.test(trimmed)) {
+    const epoch = trimmed.length === 13 ? Number(trimmed) : Number(trimmed) * 1000;
+    if (Number.isFinite(epoch)) return new Date(epoch).toISOString();
+  }
+
+  const dmyMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dmyMatch) {
+    const [, day, month, year] = dmyMatch;
+    const parsed = Date.UTC(Number(year), Number(month) - 1, Number(day));
+    if (!Number.isNaN(parsed)) return new Date(parsed).toISOString();
+  }
+
+  const parsed = Date.parse(trimmed);
   if (!Number.isNaN(parsed)) return new Date(parsed).toISOString();
   return null;
 }

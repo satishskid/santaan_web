@@ -75,6 +75,8 @@ function readString(record: Record<string, unknown>, keys: string[]) {
   for (const key of keys) {
     const value = record[key];
     if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    if (typeof value === "boolean") return value ? "true" : "false";
   }
   return undefined;
 }
@@ -134,7 +136,18 @@ function collectNodes(value: unknown, nodes: Record<string, unknown>[]) {
 
 function candidateNodes(body: Record<string, unknown>) {
   const nodes: Record<string, unknown>[] = [];
-  const nestedKeys = ["lead", "data", "payload", "body", "result", "response", "request"];
+  const nestedKeys = [
+    "lead",
+    "data",
+    "payload",
+    "body",
+    "result",
+    "response",
+    "request",
+    "contact",
+    "contact_custom_properties",
+    "custom_properties",
+  ];
 
   collectNodes(body, nodes);
   for (const key of nestedKeys) {
@@ -277,36 +290,48 @@ export function parseNeoDoveWebhookLead(body: unknown): NeoDoveWebhookLead | nul
     .map((node) => readString(node, ["campaign", "campaign_name", "campaign_id", "campaignid"]))
     .find(Boolean);
   const stageName = nodes
-    .map((node) => readString(node, ["lead_stage_name", "stage_name", "lead_stage", "status_name"]))
+    .map((node) => readString(node, ["lead_stage_name", "lead_status_name", "stage_name", "lead_stage", "status_name"]))
     .find(Boolean);
   const statusCode = nodes
     .map((node) => readString(node, ["lead_status", "status_code", "lead_state_code", "lead_status_code"]))
     .find(Boolean);
   const disposition = nodes
-    .map((node) => readString(node, ["disposition", "dispose_status", "lead_disposition"]))
+    .map((node) => readString(node, ["disposition", "dispose_status", "lead_disposition", "call_disposition"]))
     .find(Boolean);
   const disposeReason = nodes
-    .map((node) => readString(node, ["dispose_reason", "lost_reason", "reason"]))
+    .map((node) => readString(node, ["dispose_reason", "dispose_remark", "lost_reason", "reason", "remarks", "comment"]))
     .find(Boolean);
   const leadStatus = nodes
-    .map((node) => readString(node, ["status", "disposition", "stage", "lead_status", "lead_state"]))
+    .map((node) => readString(node, ["status", "disposition", "stage", "lead_status", "lead_state", "lead_status_name"]))
     .find(Boolean);
   const status = stageName || leadStatus;
   const pipeline = nodes.map((node) => readString(node, ["pipeline", "pipeline_name", "pipeline_id"])).find(Boolean);
-  const center = nodes.map((node) => readString(node, ["center", "center_name", "branch", "location", "clinic"])).find(Boolean);
+  const center = nodes.map((node) => readString(node, ["center", "center_name", "branch", "branch_name", "location", "clinic"])).find(Boolean);
   const assignedToId = nodes.map((node) => readString(node, ["assigned_to_id", "agent_id", "owner_id"])).find(Boolean);
   const assignedTo = nodes.map((node) => readString(node, ["assigned_to", "agent_name", "owner", "owner_name"])).find(Boolean);
   const callConnected = nodes.map((node) => readBoolean(node, ["call_connected", "connected"])).find((value) => value !== undefined);
   const callDurationSec = nodes
-    .map((node) => readNumber(node, ["call_duration", "call_duration_sec", "duration"]))
+    .map((node) => readNumber(node, ["call_duration", "call_duration_sec", "duration", "talk_time", "call_time"]))
     .find((value) => value !== undefined);
   const followUpAt = nodes
-    .map((node) => readString(node, ["follow_up_date", "follow_up_time", "next_follow_up", "next_followup", "followup_at"]))
+    .map((node) =>
+      readString(node, [
+        "follow_up_date",
+        "follow_up_time",
+        "next_follow_up",
+        "next_followup",
+        "next_follow_up_date",
+        "followup_date",
+        "followup_at",
+      ])
+    )
     .find(Boolean);
-  const createdAt = nodes.map((node) => readString(node, ["created_at", "lead_created_at", "creation_time"])).find(Boolean);
+  const createdAt = nodes
+    .map((node) => readString(node, ["created_at", "lead_created_at", "creation_time", "lead_creation_date"]))
+    .find(Boolean);
   const updatedAt = nodes.map((node) => readString(node, ["updated_at", "lead_updated_at", "time", "timestamp"])).find(Boolean);
   const notes = nodes
-    .map((node) => readString(node, ["notes", "comment", "remarks", "lead_notes", "dispose_reason"]))
+    .map((node) => readString(node, ["notes", "comment", "remarks", "lead_notes", "dispose_reason", "dispose_remark"]))
     .find(Boolean);
 
   return {
