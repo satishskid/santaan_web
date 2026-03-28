@@ -351,5 +351,4 @@ ALTER TABLE `contacts` ADD `neodove_last_event_at` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `neodove_last_sync_at` text;--> statement-breakpoint
 ALTER TABLE `contacts` ADD `neodove_sync_status` text DEFAULT 'pending';--> statement-breakpoint
 ALTER TABLE `users` ADD `email_verified` integer DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE `users` ADD `image` text;--> statement-breakpoint
-ALTER TABLE `users` ADD `updated_at` text DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `users` ADD `image` text;
