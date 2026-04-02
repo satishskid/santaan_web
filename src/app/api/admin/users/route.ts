@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/db/schema';
 import { auth } from '@/auth';
 import { isAuthorizedLeadership } from '@/lib/auth-helper';
+import { LEADERSHIP_ROLES, SUPER_ADMIN_EMAILS } from '@/lib/access-control';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
@@ -10,14 +11,8 @@ import { z } from 'zod';
 const USERNAME_REGEX = /^[a-z0-9._-]{3,40}$/;
 const PIN_REGEX = /^\d{6}$/;
 
-const SUPER_ADMIN_EMAILS = new Set([
-  'raghab.panda@santaan.in',
-  'satish.rath@santaan.in',
-  'digi.social@skids.health',
-  'satsh@skids.health',
-]);
-
-const LEADERSHIP_ROLES = new Set(['admin', 'ceo', 'crm_ops_admin']);
+const SUPER_ADMIN_EMAIL_SET = new Set<string>(SUPER_ADMIN_EMAILS);
+const LEADERSHIP_ROLE_SET = new Set<string>(LEADERSHIP_ROLES);
 
 const ALLOWED_ROLES = new Set([
   'admin',
@@ -79,7 +74,7 @@ export async function GET() {
       .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
     return NextResponse.json({ users: safeUsers });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }
@@ -190,7 +185,7 @@ export async function POST(request: Request) {
         ? { id: created.id, username: created.email, name: created.name ?? '', role: created.role ?? 'user', createdAt: created.createdAt ?? '' }
         : null,
     });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
 }
@@ -223,8 +218,8 @@ export async function PATCH(request: Request) {
       const targets = allUsers.filter((user) => {
         const loginId = String(user.email || '').trim().toLowerCase();
         const role = String(user.role || '').trim().toLowerCase();
-        const isSuperAdmin = SUPER_ADMIN_EMAILS.has(loginId);
-        const isLeadership = LEADERSHIP_ROLES.has(role);
+        const isSuperAdmin = SUPER_ADMIN_EMAIL_SET.has(loginId);
+        const isLeadership = LEADERSHIP_ROLE_SET.has(role);
         const isDisabled = role === 'disabled';
         const isAdminGroup = isSuperAdmin || isLeadership;
 
@@ -286,7 +281,7 @@ export async function PATCH(request: Request) {
         ? { id: updated.id, username: updated.email, name: updated.name ?? '', role: updated.role ?? 'user', createdAt: updated.createdAt ?? '' }
         : null,
     });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
@@ -307,7 +302,7 @@ export async function DELETE(request: Request) {
     if (!existing) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const loginId = String(existing.email || '').trim().toLowerCase();
-    if (SUPER_ADMIN_EMAILS.has(loginId) || loginId.includes('@')) {
+    if (SUPER_ADMIN_EMAIL_SET.has(loginId) || loginId.includes('@')) {
       return NextResponse.json({ error: 'Cannot delete admin/email users. Disable instead.' }, { status: 403 });
     }
 
@@ -318,7 +313,7 @@ export async function DELETE(request: Request) {
 
     await db.delete(users).where(eq(users.id, id));
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }
 }

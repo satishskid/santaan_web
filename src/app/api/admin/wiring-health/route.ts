@@ -54,6 +54,7 @@ function sourceBucket(contact: {
   const hay = `${leadSource} ${utmSource} ${preferredChannel} ${tags.join(" ")}`.trim();
 
   if (leadSource === "neodove_webhook" || hay.includes("neodove")) return "neodove";
+  if (leadSource === "voice_ai_inbound" || hay.includes("voice_ai")) return "voice_ai";
   if (leadSource === "call_inbound" || hay.includes("call")) return "calls";
   if (leadSource.startsWith("cta_") || hay.includes("cta_")) return "website_cta";
   if (leadSource === "whatsapp_inbound" || preferredChannel === "whatsapp" || hay.includes("whatsapp")) return "whatsapp";
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
       { total: 0, count: 0, lastSeenAt: null as number | null }
     );
 
-    const requiredBuckets = ["neodove", "calls", "website_cta", "whatsapp", "telegram", "at_home", "newsletter", "seminar"];
+    const requiredBuckets = ["neodove", "voice_ai", "calls", "website_cta", "whatsapp", "telegram", "at_home", "newsletter", "seminar"];
     requiredBuckets.forEach((key) => ensureBucket(key));
 
     return NextResponse.json({
@@ -157,4 +158,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to load wiring health" }, { status: 500 });
   }
 }
-

@@ -110,6 +110,52 @@ export const neodoveEvents = sqliteTable('neodove_events', {
     errorMessage: text('error_message'),
 });
 
+export const voiceCallLogs = sqliteTable(
+    'voice_call_logs',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        eventKey: text('event_key').notNull(),
+        externalCallId: text('external_call_id'),
+        contactId: integer('contact_id'),
+        provider: text('provider').notNull().default('bolna'),
+        agentName: text('agent_name').default('Swara'),
+        fromNumber: text('from_number'),
+        toNumber: text('to_number'),
+        entryPoint: text('entry_point'), // main | tv
+        sourceCampaign: text('source_campaign'),
+        callStatus: text('call_status'),
+        startedAt: text('started_at'),
+        endedAt: text('ended_at'),
+        durationSec: integer('duration_sec'),
+        language: text('language'),
+        callerName: text('caller_name'),
+        callerType: text('caller_type'),
+        city: text('city'),
+        preferredCentre: text('preferred_centre'),
+        tryingDuration: text('trying_duration'),
+        knownCondition: text('known_condition'),
+        priorTreatment: text('prior_treatment'),
+        callbackWindow: text('callback_window'),
+        whatsappNumber: text('whatsapp_number'),
+        transcriptUrl: text('transcript_url'),
+        summary: text('summary'),
+        transferRequested: integer('transfer_requested', { mode: 'boolean' }).default(false),
+        transferCompleted: integer('transfer_completed', { mode: 'boolean' }).default(false),
+        intentScore: integer('intent_score').default(0),
+        intentBucket: text('intent_bucket'), // hot | warm | cool
+        neodovePushStatus: text('neodove_push_status').default('pending'), // pending | pushed | skipped | error
+        whatsappPushStatus: text('whatsapp_push_status').default('pending'), // pending | sent | skipped | error
+        rawPayload: text('raw_payload').notNull(),
+        receivedAt: text('received_at').default(sql`CURRENT_TIMESTAMP`),
+        processedAt: text('processed_at'),
+        processStatus: text('process_status').default('received'), // received | processing | processed | ignored | duplicate | error
+        errorMessage: text('error_message'),
+    },
+    (table) => ({
+        uniqueEventKey: uniqueIndex('voice_call_logs_event_key_unique').on(table.eventKey),
+    })
+);
+
 export const metaConversionEvents = sqliteTable(
     'meta_conversion_events',
     {

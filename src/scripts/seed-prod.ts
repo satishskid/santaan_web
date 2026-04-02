@@ -24,6 +24,7 @@ const db = drizzle(client, { schema });
 
 const DEFAULT_PASSWORD = process.env.SANTAAN_SEED_PASSWORD;
 const ADMINS = [
+    { email: "ceo.crmops@santaan.in", name: "CEO CRM Ops" },
     { email: "raghab.panda@santaan.in", name: "Raghab Panda" },
     { email: "satish.rath@santaan.in", name: "Satish Rath" },
     { email: "satish@skids.health", name: "Satish Rath (Skids)" },

@@ -93,6 +93,34 @@ type WiringHealthPayload = {
   };
 };
 
+type CrmHealthPayload = {
+  status: "healthy" | "warning" | "critical";
+  generatedAt: string;
+  summary: {
+    openAlerts: number;
+    criticalAlerts: number;
+    warningAlerts: number;
+    pendingOlderThan24h: number;
+    hotLeadSlaBreaches: number;
+    overdueFollowUps: number;
+    attributionCoverage7d: number;
+    voiceCalls24h: number;
+    voiceWebhookErrors24h: number;
+    voiceNeoDoveFailures24h: number;
+    integrationsReady: number;
+    integrationsTotal: number;
+    opsCompletionRate: number;
+  };
+  alerts: Array<{
+    id: string;
+    severity: "critical" | "warning" | "info";
+    title: string;
+    detail: string;
+    owner: string;
+    actionHint: string;
+  }>;
+};
+
 const pendingStatuses = new Set(["new", "contacted", "qualified"]);
 const statusOrder = ["new", "contacted", "qualified", "converted", "lost"];
 const referenceTime = Date.now();
@@ -193,6 +221,8 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
   const [spendEntries, setSpendEntries] = useState<SpendEntry[]>([]);
   const [wiringHealth, setWiringHealth] = useState<WiringHealthPayload | null>(null);
   const [wiringHealthLoading, setWiringHealthLoading] = useState(true);
+  const [crmHealth, setCrmHealth] = useState<CrmHealthPayload | null>(null);
+  const [crmHealthLoading, setCrmHealthLoading] = useState(true);
   const [opsSubmission, setOpsSubmission] = useState({
     loading: true,
     agencyToday: 0,
@@ -236,6 +266,32 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     loadSettings();
     return () => {
       active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCrmHealth() {
+      setCrmHealthLoading(true);
+      try {
+        const response = await fetch("/api/admin/crm-health", { cache: "no-store" });
+        const payload = (await response.json()) as CrmHealthPayload;
+        if (!active || !response.ok) return;
+        setCrmHealth(payload);
+      } catch {
+        if (!active) return;
+        setCrmHealth(null);
+      } finally {
+        if (active) setCrmHealthLoading(false);
+      }
+    }
+
+    loadCrmHealth();
+    const interval = window.setInterval(loadCrmHealth, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
     };
   }, []);
 
@@ -806,6 +862,13 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
     });
   }, [metrics.centerPerformance, weekTargets]);
 
+  const crmHealthTone =
+    crmHealth?.status === "critical"
+      ? "bg-rose-50 border-rose-200 text-rose-700"
+      : crmHealth?.status === "warning"
+        ? "bg-amber-50 border-amber-200 text-amber-700"
+        : "bg-emerald-50 border-emerald-200 text-emerald-700";
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 border border-slate-700">
@@ -823,6 +886,125 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
             <p className="text-xs mt-1 text-slate-200">
               Lead to patient conversion from {formatNumber(metrics.totalLeads)} tracked leads
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">CRM Health Monitor</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              One Codex-ready feed for pipeline risk, integration failures, and daily ops misses.
+            </p>
+          </div>
+          <div className={`px-3 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wide ${crmHealthTone}`}>
+            {crmHealthLoading ? "Checking" : crmHealth?.status || "unknown"}
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Open alerts</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {crmHealthLoading ? "..." : formatNumber(crmHealth?.summary.openAlerts || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {crmHealthLoading
+                ? "Checking..."
+                : `${formatNumber(crmHealth?.summary.criticalAlerts || 0)} critical · ${formatNumber(crmHealth?.summary.warningAlerts || 0)} warning`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Hot-lead SLA</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {crmHealthLoading ? "..." : formatNumber(crmHealth?.summary.hotLeadSlaBreaches || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {crmHealthLoading ? "Checking..." : "Call and WhatsApp leads pending > 2h"}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Overdue follow-ups</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {crmHealthLoading ? "..." : formatNumber(crmHealth?.summary.overdueFollowUps || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {crmHealthLoading ? "Checking..." : "Past-due callbacks still open"}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Voice AI intake</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {crmHealthLoading ? "..." : formatNumber(crmHealth?.summary.voiceCalls24h || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {crmHealthLoading
+                ? "Checking..."
+                : `${formatNumber(crmHealth?.summary.voiceWebhookErrors24h || 0)} webhook errors · ${formatNumber(
+                    crmHealth?.summary.voiceNeoDoveFailures24h || 0
+                  )} NeoDove push failures`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Ops completion</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {crmHealthLoading ? "..." : formatPercent(crmHealth?.summary.opsCompletionRate || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {crmHealthLoading
+                ? "Checking..."
+                : `${formatNumber(crmHealth?.summary.integrationsReady || 0)} / ${formatNumber(crmHealth?.summary.integrationsTotal || 0)} integrations configured`}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-gray-900">Top Issues for Codex</p>
+            <p className="text-xs text-gray-500">
+              {crmHealth?.generatedAt ? `Updated ${formatTimeAgo(Date.parse(crmHealth.generatedAt))}` : ""}
+            </p>
+          </div>
+
+          <div className="mt-3 space-y-3">
+            {crmHealthLoading ? (
+              <div className="rounded-lg border border-gray-200 p-4 text-sm text-gray-500">Loading CRM health alerts...</div>
+            ) : crmHealth?.alerts?.length ? (
+              crmHealth.alerts.slice(0, 5).map((alert) => (
+                <div key={alert.id} className="rounded-lg border border-gray-200 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${
+                        alert.severity === "critical"
+                          ? "bg-rose-50 text-rose-700 border-rose-200"
+                          : alert.severity === "warning"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-slate-50 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {alert.severity}
+                    </span>
+                    <p className="text-sm font-semibold text-gray-900">{alert.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">{alert.detail}</p>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Owner: <span className="font-medium text-gray-700">{alert.owner}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Codex check: <span className="font-medium text-gray-700">{alert.actionHint}</span>
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+                No active CRM health alerts. The system looks stable right now.
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -925,7 +1107,7 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
           <div className="text-xs text-gray-500">{wiringHealth?.last24h?.since ? `Since ${wiringHealth.last24h.since}` : ""}</div>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="rounded-lg border border-gray-200 p-4">
             <p className="text-xs text-gray-500">NeoDove Sync</p>
             <p className="mt-1 text-xl font-semibold text-gray-900">
@@ -950,6 +1132,20 @@ export default function CeoCommandCenter({ contacts }: CeoCommandCenterProps) {
                 ? "Checking..."
                 : `${formatNumber(wiringHealth?.last24h?.buckets?.calls?.converted24h || 0)} converted · ${formatTimeAgo(
                     wiringHealth?.last24h?.buckets?.calls?.lastSeenAt ?? null
+                  )}`}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">Voice AI Webhook</p>
+            <p className="mt-1 text-xl font-semibold text-gray-900">
+              {wiringHealthLoading ? "..." : formatNumber(wiringHealth?.last24h?.buckets?.voice_ai?.total24h || 0)}
+            </p>
+            <p className="text-xs mt-1 text-gray-500">
+              {wiringHealthLoading
+                ? "Checking..."
+                : `${formatNumber(wiringHealth?.last24h?.buckets?.voice_ai?.converted24h || 0)} converted · ${formatTimeAgo(
+                    wiringHealth?.last24h?.buckets?.voice_ai?.lastSeenAt ?? null
                   )}`}
             </p>
           </div>

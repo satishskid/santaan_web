@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
+import { hasOpsRole, isSuperAdminEmail, normalizeAccessRole } from "@/lib/access-control"
 
 const providers: NonNullable<NextAuthConfig["providers"]> = [];
 
@@ -31,35 +32,12 @@ export const authConfig = {
             const isOnProfile = nextUrl.pathname.startsWith('/profile');
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
             const userEmail = auth?.user?.email?.toLowerCase();
-            const userRole = (auth?.user as { role?: string } | undefined)?.role;
-            const adminEmails = [
-                'raghab.panda@santaan.in',
-                'satish.rath@santaan.in',
-                'digi.social@skids.health',
-                'satsh@skids.health',
-                'satish@skids.health',
-                'satish.rath@gmail.com',
-                'demo@santaan.com',
-            ];
+            const userRole = normalizeAccessRole((auth?.user as { role?: string } | undefined)?.role);
             const isAdminRole = userRole === 'admin';
-            const operationalRoles = new Set([
-                'admin',
-                'ceo',
-                'crm_ops_admin',
-                'marketing_manager',
-                'agency_ops',
-                'performance_marketer',
-                'content_manager',
-                'field_exec',
-                'ivr_manager',
-                'telecaller_manager',
-                'telecaller',
-                'counselor',
-            ]);
-            const hasOperationalRole = !!userRole && operationalRoles.has(userRole);
+            const hasOperationalRole = hasOpsRole(userRole);
 
             if (isOnAdmin) {
-                if (isLoggedIn && ((userEmail && adminEmails.includes(userEmail)) || isAdminRole || hasOperationalRole)) return true;
+                if (isLoggedIn && (isSuperAdminEmail(userEmail) || isAdminRole || hasOperationalRole)) return true;
                 return false;
             }
 

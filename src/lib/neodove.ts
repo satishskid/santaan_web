@@ -22,6 +22,7 @@ export interface NeoDoveLeadPayload {
   notes?: string;
   tags?: string[];
   utm?: NeoDoveUtm;
+  customFields?: Record<string, string | number | boolean | null | undefined>;
 }
 
 export interface NeoDovePushResult {
@@ -219,6 +220,11 @@ export async function pushLeadToNeoDove(payload: NeoDoveLeadPayload): Promise<Ne
     integration_source: "santaan_growth_os",
     timestamp: new Date().toISOString(),
   };
+
+  for (const [key, value] of Object.entries(payload.customFields || {})) {
+    if (value === undefined || value === null) continue;
+    requestBody[key] = typeof value === "string" ? value : String(value);
+  }
 
   try {
     const response = await fetch(endpoint, {

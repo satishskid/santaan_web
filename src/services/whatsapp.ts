@@ -1,13 +1,20 @@
-const BHASH_API_URL = "http://bhashsms.com/api/sendmsg.php";
+const DEFAULT_BHASH_API_URL = "http://bhashsms.com/api/sendmsg.php";
 
 type BaseWhatsAppPayload = {
   phone: string;
   imageUrl?: string;
 };
 
+type WhatsAppAttachment = {
+  type: "document" | "image" | "video";
+  url: string;
+  fileName?: string;
+};
+
 type WhatsAppTemplateMessage = BaseWhatsAppPayload & {
   template: string;
   params?: string[];
+  attachment?: WhatsAppAttachment;
 };
 
 type WhatsAppTextMessage = BaseWhatsAppPayload & {
@@ -18,12 +25,13 @@ const getBhashCredentials = () => {
   const user = process.env.BHASH_USER;
   const pass = process.env.BHASH_PASS;
   const sender = process.env.BHASH_SENDER || "BUZWAP";
+  const apiUrl = process.env.BHASH_API_URL || DEFAULT_BHASH_API_URL;
 
   if (!user || !pass) {
     throw new Error("BHASH_USER/BHASH_PASS are required");
   }
 
-  return { user, pass, sender };
+  return { user, pass, sender, apiUrl };
 };
 
 const normalizePhoneList = (phone: string) => {
@@ -43,7 +51,7 @@ const normalizePhoneList = (phone: string) => {
 };
 
 const sendViaBhash = async (payload: Record<string, string>) => {
-  const { user, pass, sender } = getBhashCredentials();
+  const { user, pass, sender, apiUrl } = getBhashCredentials();
   const finalPayload: Record<string, string> = {
     user,
     pass,
@@ -53,7 +61,7 @@ const sendViaBhash = async (payload: Record<string, string>) => {
     ...payload,
   };
 
-  const fullUrl = `${BHASH_API_URL}?${new URLSearchParams(finalPayload).toString()}`;
+  const fullUrl = `${apiUrl}?${new URLSearchParams(finalPayload).toString()}`;
   const response = await fetch(fullUrl);
   const result = await response.text();
 
@@ -64,25 +72,40 @@ const sendViaBhash = async (payload: Record<string, string>) => {
   };
 };
 
+const applyAttachmentPayload = (payload: Record<string, string>, attachment?: WhatsAppAttachment) => {
+  if (!attachment?.url) return;
+
+  payload.htype = attachment.type;
+  payload.url = attachment.url;
+
+  if (attachment.type === "document" && attachment.fileName) {
+    payload.fname = attachment.fileName;
+  }
+};
+
+export async function sendBhashTemplateMessage(data: WhatsAppTemplateMessage) {
+  const payload: Record<string, string> = {
+    phone: normalizePhoneList(data.phone),
+    text: data.template,
+  };
+
+  if (data.params?.length) {
+    payload.Params = data.params.map((value) => String(value ?? "").trim()).join(",");
+  }
+
+  if (data.attachment) {
+    applyAttachmentPayload(payload, data.attachment);
+  } else if (data.imageUrl) {
+    applyAttachmentPayload(payload, { type: "image", url: data.imageUrl });
+  }
+
+  return sendViaBhash(payload);
+}
+
 // Backward-compatible API for existing routes.
 export async function sendWhatsAppMessage(data: WhatsAppTemplateMessage) {
   try {
-    const payload: Record<string, string> = {
-      phone: normalizePhoneList(data.phone),
-      text: data.template,
-      htype: "normal",
-    };
-
-    if (data.params && data.params.length) {
-      payload.Params = data.params.join(",");
-    }
-
-    if (data.imageUrl) {
-      payload.htype = "image";
-      payload.url = data.imageUrl;
-    }
-
-    return await sendViaBhash(payload);
+    return await sendBhashTemplateMessage(data);
   } catch (error) {
     return {
       success: false,
@@ -97,12 +120,10 @@ export async function sendWhatsAppTextMessage(data: WhatsAppTextMessage) {
     const payload: Record<string, string> = {
       phone: normalizePhoneList(data.phone),
       text: data.text,
-      htype: "normal",
     };
 
     if (data.imageUrl) {
-      payload.htype = "image";
-      payload.url = data.imageUrl;
+      applyAttachmentPayload(payload, { type: "image", url: data.imageUrl });
     }
 
     return await sendViaBhash(payload);

@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Phone, MessageCircle, CalendarCheck } from 'lucide-react';
-import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+import { PRACTO_BOOKING_URL, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
 const hiddenPrefixes = ['/admin', '/login', '/profile'];
 
@@ -41,16 +40,18 @@ export default function StickyContactBar() {
           WhatsApp
         </a>
 
-        <Link
-          href="/at-home-fertility-testing"
+        <a
+          href={PRACTO_BOOKING_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           data-cta-kind="book"
           data-center="Network"
-          data-cta-target="/at-home-fertility-testing"
+          data-cta-target={PRACTO_BOOKING_URL}
           className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs md:text-sm font-semibold bg-santaan-amber text-white hover:bg-[#E08E45] transition-colors"
         >
           <CalendarCheck className="w-4 h-4" />
           Book
-        </Link>
+        </a>
       </div>
     </div>
   );

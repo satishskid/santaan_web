@@ -58,10 +58,13 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         const name = String(body?.name || '').trim();
-        const email = String(body?.email || '').trim().toLowerCase();
+        const phone = String(body?.phone || '').trim();
+        const cleanPhone = phone.replace(/\D/g, '');
+        const emailInput = String(body?.email || '').trim().toLowerCase();
+        const email = emailInput || (cleanPhone ? `no-email-${cleanPhone.slice(-10)}@santaan.in` : '');
 
-        if (!name || !email) {
-            return NextResponse.json({ error: 'Name and Email are required' }, { status: 400 });
+        if (!name || (!email && !phone)) {
+            return NextResponse.json({ error: 'Name and at least one of Email or Phone are required' }, { status: 400 });
         }
 
         const existing = await db.select().from(contacts).where(eq(contacts.email, email)).get();
@@ -74,7 +77,7 @@ export async function POST(request: Request) {
             .values({
                 name,
                 email,
-                phone: body?.phone ? String(body.phone) : null,
+                phone: phone || null,
                 role: body?.role ? String(body.role) : 'Patient',
                 status: body?.status ? String(body.status) : 'New',
             })

@@ -9,9 +9,32 @@ Add the following to your `.env.local` file (on Netlify or local).
 ```bash
 BHASH_USER=Santaan_01
 BHASH_SENDER=BUZWAP
-BHASH_PASS=123456
+BHASH_PASS=your_real_bhash_password
+BHASH_API_URL=http://bhashsms.com/api/sendmsg.php
 next_public_admin_wa_phone=9742100448
 ```
+
+### **Voice Post-Call Template**
+Use these when Santaan's post-call template name and variable order are confirmed by Bhash.
+```bash
+BHASH_VOICE_POST_CALL_TEMPLATE=your_approved_template_name
+BHASH_VOICE_POST_CALL_PARAM_ORDER=caller_name,education_link
+BHASH_VOICE_POST_CALL_ATTACHMENT_TYPE=
+BHASH_VOICE_POST_CALL_ATTACHMENT_URL=
+BHASH_VOICE_POST_CALL_ATTACHMENT_NAME=
+```
+
+Supported `BHASH_VOICE_POST_CALL_PARAM_ORDER` tokens:
+- `caller_name`
+- `education_link`
+- `city`
+- `preferred_centre`
+- `callback_window`
+- `agent_name`
+- `entry_point`
+- `known_condition`
+- `trying_duration`
+- `source_campaign`
 
 ### **AI Agent Brain (Choose one)**
 The system will prioritize **Groq** for high-speed performance, then fallback to OpenRouter/Claude.
@@ -54,3 +77,12 @@ npx tsx scripts/test-whatsapp-integration.ts
 
 To test the **AI Agent**, send a message to your business number and check the CRM "WhatsApp" tab.
 
+## 5. Bhash Template Notes
+
+- Bhash expects the approved template identifier in the `text` parameter
+- template variables go in `Params` as comma-separated values in exact order
+- media can be attached with:
+  - `htype=document|image|video`
+  - `url=https://...`
+  - `fname=...` for documents only
+- if your password was ever shared in plain text, rotate it before production use

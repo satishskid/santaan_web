@@ -16,6 +16,7 @@ import { VideoTestimonials } from "@/components/sections/VideoTestimonials";
 import { SocialCarousel } from "@/components/sections/SocialCarousel";
 import { Doctors } from "@/components/sections/Doctors";
 import { Locations } from "@/components/sections/Locations";
+import { PractoBookingSection } from "@/components/sections/PractoBookingSection";
 import { FAQ } from "@/components/sections/FAQ";
 import { NewsAnnouncements } from "@/components/sections/NewsAnnouncements";
 import Script from "next/script";
@@ -95,6 +96,7 @@ export default function Home() {
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <FertilityReadinessAssessment />
       <FertilityJourneyMap />
+      <PractoBookingSection />
       
       {/* 4. Educate - Knowledge Building */}
       <Insights />

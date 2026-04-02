@@ -1,48 +1,14 @@
 import { db } from '@/lib/db';
 import { admins, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-
-const SUPER_ADMINS = [
-    'raghab.panda@santaan.in',
-    'satish.rath@santaan.in',
-    'digi.social@skids.health',
-    'satsh@skids.health',
-    'satish@skids.health',
-    'satish.rath@gmail.com',
-    'demo@santaan.com',
-];
-const OPS_ROLES = new Set([
-    'admin',
-    'ceo',
-    'crm_ops_admin',
-    'marketing_manager',
-    'agency_ops',
-    'performance_marketer',
-    'content_manager',
-    'field_exec',
-    'ivr_manager',
-    'telecaller_manager',
-    'telecaller',
-    'counselor',
-]);
-
-function hasOpsRole(role?: string | null) {
-    if (!role) return false;
-    return OPS_ROLES.has(role.trim().toLowerCase());
-}
-
-function hasLeadershipRole(role?: string | null) {
-    if (!role) return false;
-    const normalized = role.trim().toLowerCase();
-    return normalized === 'admin' || normalized === 'ceo' || normalized === 'crm_ops_admin';
-}
+import { hasLeadershipRole, hasOpsRole, isSuperAdminEmail, normalizeAccessEmail, normalizeAccessRole } from '@/lib/access-control';
 
 export async function isAuthorizedAdmin(email: string | null | undefined): Promise<boolean> {
     if (!email) return false;
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeAccessEmail(email);
 
     // Check hardcoded super admins first
-    if (SUPER_ADMINS.includes(normalizedEmail)) return true;
+    if (isSuperAdminEmail(normalizedEmail)) return true;
 
     try {
         // Check users table role
@@ -63,9 +29,9 @@ export async function isAuthorizedLeadership(
     sessionRole?: string | null | undefined
 ): Promise<boolean> {
     if (!email) return false;
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeAccessEmail(email);
 
-    if (SUPER_ADMINS.includes(normalizedEmail)) return true;
+    if (isSuperAdminEmail(normalizedEmail)) return true;
     if (hasLeadershipRole(sessionRole)) return true;
 
     try {
@@ -85,9 +51,9 @@ export async function isAuthorizedOpsUser(
     sessionRole?: string | null | undefined
 ): Promise<boolean> {
     if (!email) return false;
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeAccessEmail(email);
 
-    if (SUPER_ADMINS.includes(normalizedEmail)) return true;
+    if (isSuperAdminEmail(normalizedEmail)) return true;
     if (hasOpsRole(sessionRole)) return true;
 
     try {
@@ -98,6 +64,32 @@ export async function isAuthorizedOpsUser(
         return Boolean(dbAdmin);
     } catch (error) {
         console.error('Ops auth check error:', error);
+        return false;
+    }
+}
+
+const VOICE_OPS_EDITOR_ROLES = new Set(['ivr_manager', 'telecaller_manager']);
+
+export async function isAuthorizedVoiceOpsEditor(
+    email: string | null | undefined,
+    sessionRole?: string | null | undefined
+): Promise<boolean> {
+    if (!email) return false;
+    const normalizedEmail = normalizeAccessEmail(email);
+    const normalizedRole = normalizeAccessRole(sessionRole);
+
+    if (isSuperAdminEmail(normalizedEmail)) return true;
+    if (hasLeadershipRole(normalizedRole) || VOICE_OPS_EDITOR_ROLES.has(normalizedRole)) return true;
+
+    try {
+        const dbUser = await db.select().from(users).where(eq(users.email, normalizedEmail)).get();
+        const dbRole = normalizeAccessRole(dbUser?.role);
+        if (hasLeadershipRole(dbRole) || VOICE_OPS_EDITOR_ROLES.has(dbRole)) return true;
+
+        const dbAdmin = await db.select().from(admins).where(eq(admins.email, normalizedEmail)).get();
+        return Boolean(dbAdmin);
+    } catch (error) {
+        console.error('Voice ops auth check error:', error);
         return false;
     }
 }

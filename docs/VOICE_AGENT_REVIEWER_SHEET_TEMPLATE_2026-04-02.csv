@@ -1,0 +1,2 @@
+call_id,date,reviewer,route,agent_route,entry_point_detected,transparency_score,empathy_score,plain_language_score,local_naturalness_score,medical_safety_score,non_judgment_score,flow_control_score,intake_quality_score,conversion_readiness_score,brand_fit_score,total_score,hard_fail,hard_fail_reason,best_line,worst_line,what_should_change,top_failure_label
+,,,,,,,,,,,,,,,,,,,,,,,

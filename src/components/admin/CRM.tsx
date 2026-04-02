@@ -8,8 +8,8 @@ import CampaignAnalytics from './CampaignAnalytics';
 import CeoCommandCenter from './CeoCommandCenter';
 import TeamManagement from './TeamManagement';
 import SettingsManagement from './SettingsManagement';
+import VoiceOpsManagement from './VoiceOpsManagement';
 import CentersManagement from './CentersManagement';
-import AnnouncementsManagement from './AnnouncementsManagement';
 import SpendManagement from './SpendManagement';
 import OpsInputsManagement from './OpsInputsManagement';
 import OpsWorkboard from './OpsWorkboard';
@@ -21,6 +21,7 @@ import { Search, Download, UserPlus, Phone, Mail, CheckCircle, Clock, MapPin, Me
 import { AIInsightWidget } from './AIInsightWidget';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
+import { isSuperAdminEmail } from '@/lib/access-control';
 import {
     Table,
     TableBody,
@@ -89,6 +90,7 @@ type FilterTab =
     | 'meta_launch'
     | 'neodove_ops'
     | 'ceo_command'
+    | 'voice_ops'
     | 'settings'
     | 'centers'
     | 'announcements'
@@ -150,25 +152,13 @@ export default function CRM() {
     const searchParams = useSearchParams();
     const currentEmail = String(session?.user?.email || '').trim().toLowerCase();
     const rawRole = String((session?.user as { role?: string } | undefined)?.role || '').trim().toLowerCase();
-    const adminEmailSet = useMemo(
-        () =>
-            new Set([
-                'raghab.panda@santaan.in',
-                'satish.rath@santaan.in',
-                'digi.social@skids.health',
-                'satsh@skids.health',
-                'satish@skids.health',
-                'satish.rath@gmail.com',
-                'demo@santaan.com',
-            ]),
-        []
-    );
-    const currentRole = rawRole || (adminEmailSet.has(currentEmail) ? 'admin' : '');
+    const currentRole = rawRole || (isSuperAdminEmail(currentEmail) ? 'admin' : '');
     const leadershipRoles = new Set(['admin', 'ceo', 'crm_ops_admin']);
     const opsInputRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer', 'field_exec']);
     const contactRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager', 'telecaller', 'counselor']);
     const spendRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'agency_ops', 'marketing_manager', 'performance_marketer']);
     const neodoveOpsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager']);
+    const voiceOpsRoles = new Set(['admin', 'ceo', 'crm_ops_admin', 'ivr_manager', 'telecaller_manager']);
     const analyticsRoles = new Set([
         'admin',
         'ceo',
@@ -187,9 +177,9 @@ export default function CRM() {
     const canDeleteContacts = canAccessLeadership;
     const canAccessSpend = spendRoles.has(currentRole) || canAccessLeadership;
     const canAccessNeoDoveOps = neodoveOpsRoles.has(currentRole) || canAccessLeadership;
+    const canAccessVoiceOps = voiceOpsRoles.has(currentRole) || canAccessLeadership;
     const canAccessAnalytics = analyticsRoles.has(currentRole) || canAccessLeadership;
     const canAccessMetaLaunch = canAccessAnalytics;
-    const canAccessCeoCommand = canAccessLeadership;
 
     const isCeoPortal = canAccessLeadership;
     const isAdsPortal = ['agency_ops', 'marketing_manager', 'performance_marketer'].includes(currentRole);
@@ -210,6 +200,9 @@ export default function CRM() {
     const [tagFilter, setTagFilter] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
     const [newContact, setNewContact] = useState<Partial<Contact>>({});
+    const [addContactError, setAddContactError] = useState('');
+    const [editContactError, setEditContactError] = useState('');
+    const [isSavingContact, setIsSavingContact] = useState(false);
     const contactTabs: FilterTab[] = ['all', 'seminar', 'newsletter', 'whatsapp', 'telegram', 'at_home_test', 'hot_leads', 'followups'];
     const isContactTab = contactTabs.includes(activeTab);
     const shouldLoadContacts =
@@ -300,6 +293,8 @@ export default function CRM() {
     }, [filterContacts]);
 
     const handleContactUpdate = async (contact: Contact) => {
+        setEditContactError('');
+        setIsSavingContact(true);
         try {
             const payload = {
                 ...contact,
@@ -310,13 +305,20 @@ export default function CRM() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            const data = await response.json().catch(() => ({}));
             if (response.ok) {
                 fetchContacts();
                 setEditingContact(null);
                 setEditForm({});
+                setEditContactError('');
+            } else {
+                setEditContactError(String(data?.error || 'Failed to update contact'));
             }
         } catch (error) {
             console.error('Error updating contact:', error);
+            setEditContactError('Failed to update contact');
+        } finally {
+            setIsSavingContact(false);
         }
     };
 
@@ -349,19 +351,28 @@ export default function CRM() {
     };
 
     const handleAddContact = async () => {
+        setAddContactError('');
+        setIsSavingContact(true);
         try {
             const response = await fetch('/api/admin/contacts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newContact)
             });
+            const data = await response.json().catch(() => ({}));
             if (response.ok) {
                 fetchContacts();
                 setShowAddModal(false);
                 setNewContact({});
+                setAddContactError('');
+            } else {
+                setAddContactError(String(data?.error || 'Failed to add contact'));
             }
         } catch (error) {
             console.error('Error adding contact:', error);
+            setAddContactError('Failed to add contact');
+        } finally {
+            setIsSavingContact(false);
         }
     };
 
@@ -432,6 +443,7 @@ export default function CRM() {
             if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
             if (canAccessMetaLaunch) nextTabs.push({ id: 'meta_launch', label: 'Meta Launch', icon: Megaphone });
             if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+            if (canAccessVoiceOps) nextTabs.push({ id: 'voice_ops', label: 'Voice Ops', icon: Phone });
             nextTabs.push(
                 { id: 'team', label: 'User Access', icon: UserPlus },
                 { id: 'centers', label: 'Centers', icon: MapPin },
@@ -461,6 +473,7 @@ export default function CRM() {
             nextTabs.push({ id: 'action_board', label: 'Action Queue', icon: Target }); // Give managers an action queue
             nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Clock });
             if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+            if (canAccessVoiceOps) nextTabs.push({ id: 'voice_ops', label: 'Voice Ops', icon: Phone });
             if (canAccessContacts) {
                 nextTabs.push(
                     { id: 'hot_leads', label: 'Hot Leads', icon: Megaphone, count: hotLeadCount },
@@ -489,18 +502,19 @@ export default function CRM() {
         if (canAccessSpend) nextTabs.push({ id: 'spend', label: 'Spend', icon: IndianRupee });
         if (canAccessOpsInputs) nextTabs.push({ id: 'ops_inputs', label: 'Ops Inputs', icon: Edit });
         if (canAccessNeoDoveOps) nextTabs.push({ id: 'neodove_ops', label: 'NeoDove Ops', icon: GitCompareArrows });
+        if (canAccessVoiceOps) nextTabs.push({ id: 'voice_ops', label: 'Voice Ops', icon: Phone });
         nextTabs.push({ id: 'workboard', label: 'Workboard', icon: BookOpen });
         nextTabs.push({ id: 'daily_command', label: 'Daily Command', icon: Clock });
         if (canAccessContacts) nextTabs.push({ id: 'all', label: 'All Contacts', icon: Search });
         return nextTabs;
     }, [
         canAccessAnalytics,
-        canAccessCeoCommand,
         canAccessContacts,
         canAccessMetaLaunch,
         canAccessNeoDoveOps,
         canAccessOpsInputs,
         canAccessSpend,
+        canAccessVoiceOps,
         contacts,
         isAdsPortal,
         isContentPortal,
@@ -958,7 +972,13 @@ export default function CRM() {
                         </Link>
                     ) : null}
                     {isContactTab && (
-                        <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
+                        <Button
+                            onClick={() => {
+                                setAddContactError('');
+                                setShowAddModal(true);
+                            }}
+                            className="flex items-center gap-2"
+                        >
                             <UserPlus className="w-4 h-4" /> Add Contact
                         </Button>
                     )}
@@ -1242,6 +1262,10 @@ export default function CRM() {
                     <div className="p-6">
                         <SettingsManagement />
                     </div>
+                ) : activeTab === 'voice_ops' ? (
+                    <div className="p-6">
+                        <VoiceOpsManagement />
+                    </div>
                 ) : activeTab === 'centers' ? (
                     <div className="p-6">
                         <CentersManagement />
@@ -1346,6 +1370,7 @@ export default function CRM() {
                                                     onClick={() => {
                                                         setEditingContact(contact);
                                                         setEditForm(contact);
+                                                        setEditContactError('');
                                                     }}
                                                     variant="ghost"
                                                     size="sm"
@@ -1378,8 +1403,8 @@ export default function CRM() {
             </div>
 
             {editingContact && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold mb-4">Edit Contact</h2>
                         <div className="space-y-4">
                             <Input
@@ -1537,11 +1562,21 @@ export default function CRM() {
                                 className="mt-4"
                             />
                         </div>
+                        {editContactError ? (
+                            <p className="mt-4 text-sm text-red-600">{editContactError}</p>
+                        ) : null}
                         <div className="flex gap-2 mt-6">
-                            <Button onClick={() => handleContactUpdate({ ...editingContact, ...editForm })}>
+                            <Button onClick={() => handleContactUpdate({ ...editingContact, ...editForm })} disabled={isSavingContact}>
                                 <Save className="w-4 h-4 mr-2" /> Save
                             </Button>
-                            <Button onClick={() => setEditingContact(null)} variant="outline">
+                            <Button
+                                onClick={() => {
+                                    setEditingContact(null);
+                                    setEditContactError('');
+                                }}
+                                variant="outline"
+                                disabled={isSavingContact}
+                            >
                                 <X className="w-4 h-4 mr-2" /> Cancel
                             </Button>
                         </div>
@@ -1550,8 +1585,8 @@ export default function CRM() {
             )}
 
             {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold mb-4">Add New Contact</h2>
                         <div className="space-y-4">
                             <Input
@@ -1560,7 +1595,7 @@ export default function CRM() {
                                 onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
                             />
                             <Input
-                                placeholder="Email"
+                                placeholder="Email (optional if phone is present)"
                                 value={newContact.email || ''}
                                 onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
                             />
@@ -1575,11 +1610,21 @@ export default function CRM() {
                                 onChange={(e) => setNewContact({ ...newContact, role: e.target.value })}
                             />
                         </div>
+                        {addContactError ? (
+                            <p className="mt-4 text-sm text-red-600">{addContactError}</p>
+                        ) : null}
                         <div className="flex gap-2 mt-6">
-                            <Button onClick={handleAddContact}>
+                            <Button onClick={handleAddContact} disabled={isSavingContact}>
                                 <Save className="w-4 h-4 mr-2" /> Add Contact
                             </Button>
-                            <Button onClick={() => setShowAddModal(false)} variant="outline">
+                            <Button
+                                onClick={() => {
+                                    setShowAddModal(false);
+                                    setAddContactError('');
+                                }}
+                                variant="outline"
+                                disabled={isSavingContact}
+                            >
                                 <X className="w-4 h-4 mr-2" /> Cancel
                             </Button>
                         </div>

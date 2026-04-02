@@ -28,6 +28,7 @@ if (!ADMIN_PIN || !STAFF_PIN) {
 const client = createClient({ url, authToken });
 
 const USERS = [
+  { email: "ceo.crmops@santaan.in", expectedRole: "admin", pinType: "admin" },
   { email: "raghab.panda@santaan.in", expectedRole: "admin", pinType: "admin" },
   { email: "satish.rath@santaan.in", expectedRole: "admin", pinType: "admin" },
   { email: "satish.rath@gmail.com", expectedRole: "admin", pinType: "admin" },
