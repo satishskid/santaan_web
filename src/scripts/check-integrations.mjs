@@ -87,6 +87,18 @@ const GROUPS = [
     keys: ["NEODOVE_CUSTOM_INTEGRATION_URL", "NEODOVE_INTEGRATION_ID", "NEODOVE_WEBHOOK_SECRET"],
   },
   {
+    name: "Bolna Voice",
+    keys: [
+      "BOLNA_MAIN_NUMBER",
+      "BOLNA_TV_NUMBER",
+      "BOLNA_MAIN_AGENT_NAME",
+      "BOLNA_TV_AGENT_NAME",
+      "BOLNA_EXECUTION_WEBHOOK_URL",
+    ],
+    optional: ["BOLNA_MAIN_AGENT_ID", "BOLNA_TV_AGENT_ID", "BOLNA_WEBHOOK_SECRET", "BOLNA_API_KEY"],
+    note: "Agent IDs and API key are optional for config health, but required for API-based mapping and verification.",
+  },
+  {
     name: "Zoho Cliq",
     keys: ["ZOHO_CLIQ_CLIENT_ID", "ZOHO_CLIQ_CLIENT_SECRET", "ZOHO_CLIQ_REFRESH_TOKEN", "ZOHO_CLIQ_CHANNEL_UNIQUE_NAME", "ZOHO_CLIQ_COMPANY_ID", "ZOHO_CLIQ_CRON_SECRET"],
   },

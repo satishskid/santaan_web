@@ -25,6 +25,7 @@ Purpose: Single entry point for all Santaan voice-agent operating documents
 
 - [BOLNA_VOICE_AGENT_EXTRACTION_SCHEMA_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_VOICE_AGENT_EXTRACTION_SCHEMA_2026-04-02.md)
 - [BOLNA_CONFIGURATION_MAP_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_CONFIGURATION_MAP_2026-04-02.md)
+- [BOLNA_VOBIZ_GO_LIVE_RUNBOOK_2026-04-03.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_VOBIZ_GO_LIVE_RUNBOOK_2026-04-03.md)
 
 ## Testing And QA
 

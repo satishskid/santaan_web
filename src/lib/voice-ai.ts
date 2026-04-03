@@ -4,13 +4,14 @@ const CLEAN_PHONE = /[^0-9]/g;
 
 type VoiceEntryPoint = "main" | "tv";
 type VoiceIntentBucket = "hot" | "warm" | "cool";
+type VoiceProvider = "bolna" | "edesy";
 
 type VoicePayloadNode = Record<string, unknown>;
 
-export type NormalizedBolnaPayload = {
+export type NormalizedVoicePayload = {
   eventKey: string;
   externalCallId: string | null;
-  provider: "bolna";
+  provider: VoiceProvider;
   agentName: string;
   agentId: string | null;
   batchId: string | null;
@@ -43,6 +44,9 @@ export type NormalizedBolnaPayload = {
   intentScore: number;
   intentBucket: VoiceIntentBucket;
 };
+
+export type NormalizedBolnaPayload = NormalizedVoicePayload;
+export type NormalizedEdesyPayload = NormalizedVoicePayload;
 
 function isRecord(value: unknown): value is VoicePayloadNode {
   return typeof value === "object" && value !== null;
@@ -244,6 +248,15 @@ function configListMatches(candidates: Array<string | null | undefined>, configu
   return normalizedCandidates.some((candidate) => configuredList.includes(candidate));
 }
 
+function configValues(values: Array<string | null | undefined>) {
+  return values.map((value) => String(value || "").trim()).filter(Boolean).join(",");
+}
+
+function configuredPhoneMatches(candidate: string, values: Array<string | null | undefined>) {
+  const normalizedValues = values.map((value) => phoneMatch(value)).filter(Boolean);
+  return normalizedValues.includes(candidate);
+}
+
 function inferEntryPoint(input: {
   toNumber?: string | null;
   agentId?: string | null;
@@ -253,22 +266,51 @@ function inferEntryPoint(input: {
 }): VoiceEntryPoint {
   const { toNumber, agentId, agentName, callSource, campaignHint } = input;
   const normalizedTo = phoneMatch(toNumber);
-  const mainConfigured = phoneMatch(process.env.BOLNA_MAIN_NUMBER || process.env.VOICE_AI_MAIN_NUMBER || "");
-  const tvConfigured = phoneMatch(process.env.BOLNA_TV_NUMBER || process.env.VOICE_AI_TV_NUMBER || "");
+  const mainNumbers = [
+    process.env.BOLNA_MAIN_NUMBER,
+    process.env.EDESY_MAIN_NUMBER,
+    process.env.VOICE_AI_MAIN_NUMBER,
+  ];
+  const tvNumbers = [
+    process.env.BOLNA_TV_NUMBER,
+    process.env.EDESY_TV_NUMBER,
+    process.env.VOICE_AI_TV_NUMBER,
+  ];
 
-  if (normalizedTo && tvConfigured && normalizedTo === tvConfigured) return "tv";
-  if (normalizedTo && mainConfigured && normalizedTo === mainConfigured) return "main";
+  if (normalizedTo && configuredPhoneMatches(normalizedTo, tvNumbers)) return "tv";
+  if (normalizedTo && configuredPhoneMatches(normalizedTo, mainNumbers)) return "main";
+
+  const tvAgentIds = configValues([
+    process.env.BOLNA_TV_AGENT_ID,
+    process.env.EDESY_TV_AGENT_ID,
+    process.env.VOICE_AI_TV_AGENT_ID,
+  ]);
+  const tvAgentNames = configValues([
+    process.env.BOLNA_TV_AGENT_NAME,
+    process.env.EDESY_TV_AGENT_NAME,
+    process.env.VOICE_AI_TV_AGENT_NAME,
+  ]);
+  const mainAgentIds = configValues([
+    process.env.BOLNA_MAIN_AGENT_ID,
+    process.env.EDESY_MAIN_AGENT_ID,
+    process.env.VOICE_AI_MAIN_AGENT_ID,
+  ]);
+  const mainAgentNames = configValues([
+    process.env.BOLNA_MAIN_AGENT_NAME,
+    process.env.EDESY_MAIN_AGENT_NAME,
+    process.env.VOICE_AI_MAIN_AGENT_NAME,
+  ]);
 
   if (
-    configListMatches([agentId], process.env.BOLNA_TV_AGENT_ID || process.env.VOICE_AI_TV_AGENT_ID) ||
-    configListMatches([agentName], process.env.BOLNA_TV_AGENT_NAME || process.env.VOICE_AI_TV_AGENT_NAME)
+    configListMatches([agentId], tvAgentIds) ||
+    configListMatches([agentName], tvAgentNames)
   ) {
     return "tv";
   }
 
   if (
-    configListMatches([agentId], process.env.BOLNA_MAIN_AGENT_ID || process.env.VOICE_AI_MAIN_AGENT_ID) ||
-    configListMatches([agentName], process.env.BOLNA_MAIN_AGENT_NAME || process.env.VOICE_AI_MAIN_AGENT_NAME)
+    configListMatches([agentId], mainAgentIds) ||
+    configListMatches([agentName], mainAgentNames)
   ) {
     return "main";
   }
@@ -310,6 +352,29 @@ export function voiceEducationLink(condition?: string | null) {
   if (normalized.includes("male")) return "https://santaan.in/male-infertility-clinic";
   if (normalized.includes("thyroid")) return "https://santaan.in/female-fertility";
   return "https://santaan.in/treatments";
+}
+
+function deriveStartedAtFromDuration(endTimestamp: string, durationSec: number) {
+  if (!endTimestamp || !Number.isFinite(durationSec) || durationSec <= 0) return endTimestamp;
+  const millis = Date.parse(endTimestamp);
+  if (!Number.isFinite(millis)) return endTimestamp;
+  return new Date(millis - durationSec * 1000).toISOString();
+}
+
+function turnsToTranscript(turns: unknown) {
+  if (!Array.isArray(turns) || !turns.length) return null;
+
+  const lines = turns
+    .map((turn) => {
+      if (!isRecord(turn)) return null;
+      const role = readString(turn, ["role"]) || "speaker";
+      const content = readString(turn, ["content", "text", "utterance"]);
+      if (!content) return null;
+      return `${role}: ${content}`;
+    })
+    .filter(Boolean);
+
+  return lines.length ? lines.join("\n") : null;
 }
 
 export function normalizeBolnaPayload(body: unknown): NormalizedBolnaPayload | null {
@@ -470,6 +535,145 @@ export function normalizeBolnaPayload(body: unknown): NormalizedBolnaPayload | n
     endedAt,
     durationSec,
     conversationTimeSec,
+    language,
+    callerName,
+    callerType,
+    city,
+    preferredCentre,
+    tryingDuration,
+    knownCondition,
+    priorTreatment,
+    callbackWindow,
+    whatsappNumber,
+    transcriptUrl,
+    recordingUrl,
+    transcript,
+    summary,
+    transferRequested,
+    transferCompleted,
+    intentScore,
+    intentBucket: scoreToIntentBucket(intentScore),
+  };
+}
+
+export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | null {
+  if (!isRecord(body)) return null;
+
+  const event = readString(body, ["event"]) || "";
+  const timestamp = readString(body, ["timestamp"]) || new Date().toISOString();
+  const data = isRecord(body.data) ? body.data : null;
+  if (!data) return null;
+
+  const transcriptNode = isRecord(data.transcript) ? data.transcript : null;
+  const metadataNode = isRecord(data.metadata) ? data.metadata : null;
+  const contextNode = isRecord(data.context) ? data.context : null;
+
+  const nodes = [body, data, transcriptNode, metadataNode, contextNode].filter(isRecord);
+  const externalCallId = readFromNodes(nodes, ["call_id", "callId", "id", "call_sid", "stream_sid"]) || null;
+  const agentId = readFromNodes(nodes, ["agent_id", "agentId"]) || null;
+  const batchId = readFromNodes(nodes, ["workspace_id", "workspaceId"]) || null;
+  const fromNumber = normalizeIndianMobile(readFromNodes(nodes, ["from", "from_number", "phone_number"]) || null);
+  const toNumber = normalizeIndianMobile(readFromNodes(nodes, ["to", "to_number", "did", "number"]) || null);
+  const agentName =
+    readFromNodes(nodes, ["agent_name", "assistant_name", "name"]) ||
+    String(process.env.EDESY_AGENT_NAME || process.env.VOICE_AI_AGENT_NAME || "Swara").trim() ||
+    "Swara";
+  const entryPoint = inferEntryPoint({
+    toNumber,
+    agentId,
+    agentName,
+    callSource: readFromNodes(nodes, ["direction", "provider"]) || null,
+    campaignHint: readFromNodes(nodes, ["campaign", "source_campaign"]) || null,
+  });
+  const sourceCampaign = voiceCampaignForEntryPoint(entryPoint);
+  const durationSec = readNumberFromNodes(nodes, ["duration_seconds", "duration_sec", "duration"]) || 0;
+  const endedAt = event === "call.started" ? null : timestamp;
+  const startedAt =
+    readFromNodes(nodes, ["started_at", "start_time", "created_at"]) ||
+    (endedAt ? deriveStartedAtFromDuration(endedAt, durationSec) : timestamp);
+  const eventLower = event.trim().toLowerCase();
+  const failureReason = readFromNodes(nodes, ["failure_reason", "failureReason"]) || "";
+  const endReason = readFromNodes(nodes, ["end_reason", "endReason"]) || "";
+  const disposition = readFromNodes(nodes, ["disposition", "status"]) || "";
+
+  let callStatus = "completed";
+  if (eventLower === "call.failed") {
+    callStatus = normalizeStatus(failureReason || "failed");
+  } else if (eventLower === "call.transferred") {
+    callStatus = "transfer";
+  } else if (eventLower === "call.ended") {
+    callStatus = normalizeStatus(disposition === "success" ? "completed" : endReason || disposition || "completed");
+  } else {
+    callStatus = normalizeStatus(eventLower.replace(/^call\./, "") || "completed");
+  }
+
+  const city =
+    readFromNodes(nodes, ["city", "caller_city", "location_city"]) ||
+    null;
+  const preferredCentre = resolveVoiceCentre({
+    city,
+    preferredCentre:
+      readFromNodes(nodes, ["preferred_centre", "preferred_center", "centre", "center"]) || null,
+  });
+  const callerName =
+    readFromNodes(nodes, ["caller_name", "lead_name", "customer_name", "name"]) ||
+    null;
+  const callerType =
+    readFromNodes(nodes, ["caller_type", "patient_type", "relationship"]) ||
+    null;
+  const tryingDuration = readFromNodes(nodes, ["trying_duration", "trying_for", "duration_trying"]) || null;
+  const knownCondition = normalizeCondition(
+    readFromNodes(nodes, ["known_condition", "condition", "medical_condition", "diagnosis"]) || null
+  );
+  const priorTreatment = normalizePriorTreatment(
+    readFromNodes(nodes, ["prior_treatment", "previous_treatment", "had_treatment_before"]) || null
+  );
+  const callbackWindow =
+    readFromNodes(nodes, ["callback_window", "preferred_callback_time", "callback_time"]) || null;
+  const whatsappNumber =
+    normalizeIndianMobile(
+      readFromNodes(nodes, ["whatsapp_number", "alternate_whatsapp_number", "confirmed_whatsapp_number"]) || null
+    ) || null;
+  const transcript = turnsToTranscript(transcriptNode?.turns) || readFromNodes(nodes, ["transcript"]) || null;
+  const summary =
+    readFromNodes(nodes, ["summary", "call_summary", "conversation_summary"]) ||
+    (transcript ? transcript.slice(0, 1200) : null);
+  const transcriptUrl = readFromNodes(nodes, ["transcript_url", "transcriptUrl"]) || null;
+  const recordingUrl = readFromNodes(nodes, ["recording_url", "recordingUrl"]) || null;
+  const transferFlag =
+    readBooleanFromNodes(nodes, ["transfer_occurred", "transfer_completed", "transfer_success"]) || false;
+  const transferRequested =
+    eventLower === "call.transferred" ||
+    transferFlag ||
+    Boolean(readFromNodes(nodes, ["transfer_to", "transfer_target"]));
+  const transferCompleted = eventLower === "call.transferred" || transferFlag;
+  const language = readFromNodes(nodes, ["language", "lang"]) || "Odia";
+  const intentScore = calculateVoiceIntentScore({
+    tryingDuration,
+    knownCondition,
+    priorTreatment,
+  });
+
+  const eventKey =
+    externalCallId ? `edesy:${externalCallId}` : `edesy:${fromNumber || "unknown"}:${toNumber || "unknown"}:${timestamp}`;
+
+  return {
+    eventKey,
+    externalCallId,
+    provider: "edesy",
+    agentName,
+    agentId,
+    batchId,
+    fromNumber,
+    toNumber,
+    entryPoint,
+    sourceCampaign,
+    callStatus,
+    answeredByVoiceMail: false,
+    startedAt,
+    endedAt,
+    durationSec,
+    conversationTimeSec: durationSec,
     language,
     callerName,
     callerType,

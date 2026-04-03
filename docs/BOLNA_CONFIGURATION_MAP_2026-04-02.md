@@ -23,8 +23,12 @@ Recommended use:
   - future campaign experiments
 
 Current operational note:
-- in the VoBiz screenshot these numbers still showed `Link Not linked`
-- they must be linked to the correct Bolna agents before real traffic can flow
+- screenshot state on April 2, 2026 showed `Link Not linked`
+- live Bolna API verification on April 3, 2026 confirmed both production mappings are now active
+- verified live mapping:
+  - `+918065481598` -> `Santaan Main Inbound` (`5a4ada1f-b861-481a-9b84-e8521e1a24bc`)
+  - `+918065481542` -> `Santaan TV Inbound` (`0a5bad62-43dd-4cb0-9aae-24068c1cbea7`)
+  - both agents are using webhook `https://api.santaan.ai/api/webhooks/bolna/execution`
 
 ## 1) Agent Structure
 
@@ -59,6 +63,11 @@ Use these exact names if possible:
 
 - `Santaan Main Inbound`
 - `Santaan TV Inbound`
+
+Verified Bolna agent IDs:
+
+- `Santaan Main Inbound` -> `5a4ada1f-b861-481a-9b84-e8521e1a24bc`
+- `Santaan TV Inbound` -> `0a5bad62-43dd-4cb0-9aae-24068c1cbea7`
 
 Why:
 - our webhook already supports agent-name-based fallback routing
