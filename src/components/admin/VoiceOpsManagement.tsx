@@ -41,7 +41,7 @@ type VoiceFieldSection = {
 const FIELD_SECTIONS: VoiceFieldSection[] = [
   {
     title: "Live Deployment",
-    description: "Track what is live in Bolna and where the rollout stands right now.",
+    description: "Track what is live across Bolna and Edesy and where the rollout stands right now.",
     fields: [
       {
         key: "VOICE_AGENT_ROLLOUT_STATUS",
@@ -90,6 +90,42 @@ const FIELD_SECTIONS: VoiceFieldSection[] = [
         label: "TV Bolna agent name",
         description: "Human-readable fallback label, for example Santaan TV Inbound.",
         placeholder: "Santaan TV Inbound",
+      },
+      {
+        key: "VOICE_AGENT_MAIN_EDESY_NUMBER",
+        label: "Main Edesy number",
+        description: "Edesy-linked main inbound number or staging test number.",
+        placeholder: "+91XXXXXXXXXX",
+      },
+      {
+        key: "VOICE_AGENT_TV_EDESY_NUMBER",
+        label: "TV Edesy number",
+        description: "Edesy-linked TV or campaign-specific number when routed separately.",
+        placeholder: "+91XXXXXXXXXX",
+      },
+      {
+        key: "VOICE_AGENT_MAIN_EDESY_AGENT_ID",
+        label: "Main Edesy agent ID",
+        description: "Primary Edesy agent ID for main-line routing and verification.",
+        placeholder: "5614",
+      },
+      {
+        key: "VOICE_AGENT_TV_EDESY_AGENT_ID",
+        label: "TV Edesy agent ID",
+        description: "TV or alternate Edesy agent ID when campaign routing is split.",
+        placeholder: "agent_xxxxx",
+      },
+      {
+        key: "VOICE_AGENT_MAIN_EDESY_AGENT_NAME",
+        label: "Main Edesy agent name",
+        description: "Human-readable Edesy agent label, for example Swara - Santaan Odia.",
+        placeholder: "Swara - Santaan Odia",
+      },
+      {
+        key: "VOICE_AGENT_TV_EDESY_AGENT_NAME",
+        label: "TV Edesy agent name",
+        description: "Human-readable Edesy label for TV or awareness traffic if used.",
+        placeholder: "Swara TV",
       },
     ],
   },

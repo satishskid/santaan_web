@@ -107,6 +107,15 @@ function isTerminalEdesyStatus(status: string) {
   return EDESY_TERMINAL_STATUSES.has(String(status || "").trim().toLowerCase());
 }
 
+async function findMostRecentLogByCallId(externalCallId?: string | null) {
+  if (!externalCallId) return null;
+
+  const logs = await db.select().from(voiceCallLogs).where(eq(voiceCallLogs.externalCallId, externalCallId)).all();
+  if (!logs.length) return null;
+
+  return logs.sort((a, b) => b.id - a.id)[0] || null;
+}
+
 function voicePostCallParamValue(token: string, lead: NormalizedEdesyPayload) {
   const normalized = token.trim().toLowerCase();
   if (!normalized) return "";
@@ -212,22 +221,111 @@ export async function POST(req: NextRequest) {
     }
 
     eventKey = lead.eventKey;
-    if (!isTerminalEdesyStatus(lead.callStatus)) {
-      return NextResponse.json({
-        success: true,
-        skipped: true,
-        eventKey,
-        reason: "non_terminal_status",
-        callStatus: lead.callStatus,
-      });
-    }
-
     const duplicate = await db.select().from(voiceCallLogs).where(eq(voiceCallLogs.eventKey, eventKey)).get();
     if (duplicate) {
       return NextResponse.json({
         success: true,
         duplicate: true,
         eventKey,
+      });
+    }
+
+    if (lead.shouldEnrichExistingLog) {
+      const existingLog = await findMostRecentLogByCallId(lead.externalCallId);
+
+      if (existingLog) {
+        const mergedSummary = lead.summary || existingLog.summary || null;
+        const mergedTranscriptUrl = lead.transcriptUrl || existingLog.transcriptUrl || null;
+        const mergedRawPayload = [existingLog.rawPayload, rawBody || JSON.stringify(parsedBody || {})].filter(Boolean).join("\n\n");
+
+        await db
+          .update(voiceCallLogs)
+          .set({
+            callStatus: lead.callStatus || existingLog.callStatus,
+            startedAt: lead.startedAt || existingLog.startedAt,
+            endedAt: lead.endedAt || existingLog.endedAt,
+            durationSec: lead.durationSec || existingLog.durationSec,
+            language: lead.language || existingLog.language,
+            callerName: lead.callerName || existingLog.callerName,
+            callerType: lead.callerType || existingLog.callerType,
+            city: lead.city || existingLog.city,
+            preferredCentre: lead.preferredCentre || existingLog.preferredCentre,
+            tryingDuration: lead.tryingDuration || existingLog.tryingDuration,
+            knownCondition: lead.knownCondition || existingLog.knownCondition,
+            priorTreatment: lead.priorTreatment || existingLog.priorTreatment,
+            callbackWindow: lead.callbackWindow || existingLog.callbackWindow,
+            whatsappNumber: lead.whatsappNumber || existingLog.whatsappNumber,
+            transcriptUrl: mergedTranscriptUrl,
+            summary: mergedSummary,
+            transferRequested: lead.transferRequested || existingLog.transferRequested,
+            transferCompleted: lead.transferCompleted || existingLog.transferCompleted,
+            intentScore: Math.max(lead.intentScore || 0, existingLog.intentScore || 0),
+            intentBucket: lead.intentBucket || existingLog.intentBucket,
+            rawPayload: mergedRawPayload,
+            processStatus: "processed",
+            processedAt: new Date().toISOString(),
+          })
+          .where(eq(voiceCallLogs.id, existingLog.id));
+      }
+
+      const enrichmentRows = await db
+        .insert(voiceCallLogs)
+        .values({
+          eventKey,
+          externalCallId: lead.externalCallId,
+          contactId: existingLog?.contactId || null,
+          provider: lead.provider,
+          agentName: lead.agentName,
+          fromNumber: lead.fromNumber,
+          toNumber: lead.toNumber,
+          entryPoint: lead.entryPoint,
+          sourceCampaign: lead.sourceCampaign,
+          callStatus: lead.callStatus,
+          startedAt: lead.startedAt,
+          endedAt: lead.endedAt,
+          durationSec: lead.durationSec,
+          language: lead.language,
+          callerName: lead.callerName,
+          callerType: lead.callerType,
+          city: lead.city,
+          preferredCentre: lead.preferredCentre,
+          tryingDuration: lead.tryingDuration,
+          knownCondition: lead.knownCondition,
+          priorTreatment: lead.priorTreatment,
+          callbackWindow: lead.callbackWindow,
+          whatsappNumber: lead.whatsappNumber,
+          transcriptUrl: lead.transcriptUrl,
+          summary: lead.summary,
+          transferRequested: lead.transferRequested,
+          transferCompleted: lead.transferCompleted,
+          intentScore: lead.intentScore,
+          intentBucket: lead.intentBucket,
+          neodovePushStatus: "skipped",
+          whatsappPushStatus: "skipped",
+          rawPayload: rawBody || JSON.stringify(parsedBody || {}),
+          processStatus: "processed",
+          processedAt: new Date().toISOString(),
+        })
+        .returning({ id: voiceCallLogs.id });
+
+      logId = enrichmentRows[0]?.id || null;
+
+      return NextResponse.json({
+        success: true,
+        enriched: Boolean(existingLog),
+        eventKey,
+        eventType: lead.eventType,
+      });
+    }
+
+    if (!lead.shouldProcessDownstream && !isTerminalEdesyStatus(lead.callStatus)) {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        eventKey,
+        reason: "non_terminal_status",
+        callStatus: lead.callStatus,
+        eventType: lead.eventType,
       });
     }
 

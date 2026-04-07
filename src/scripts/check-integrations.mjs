@@ -99,6 +99,25 @@ const GROUPS = [
     note: "Agent IDs and API key are optional for config health, but required for API-based mapping and verification.",
   },
   {
+    name: "Edesy Voice",
+    keys: [
+      "EDESY_MAIN_NUMBER",
+      "EDESY_TV_NUMBER",
+      "EDESY_MAIN_AGENT_NAME",
+      "EDESY_TV_AGENT_NAME",
+      "EDESY_EXECUTION_WEBHOOK_URL",
+    ],
+    optional: [
+      "EDESY_MAIN_AGENT_ID",
+      "EDESY_TV_AGENT_ID",
+      "EDESY_WEBHOOK_SECRET",
+      "EDESY_API_KEY",
+      "EDESY_AGENT_ID",
+      "EDESY_AGENT_NAME",
+    ],
+    note: "Webhook URL is required for managed execution routing. Agent IDs, API key, and webhook secret are optional for config health but required for API verification and signed webhook validation.",
+  },
+  {
     name: "Zoho Cliq",
     keys: ["ZOHO_CLIQ_CLIENT_ID", "ZOHO_CLIQ_CLIENT_SECRET", "ZOHO_CLIQ_REFRESH_TOKEN", "ZOHO_CLIQ_CHANNEL_UNIQUE_NAME", "ZOHO_CLIQ_COMPANY_ID", "ZOHO_CLIQ_CRON_SECRET"],
   },

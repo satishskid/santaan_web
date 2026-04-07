@@ -46,7 +46,11 @@ export type NormalizedVoicePayload = {
 };
 
 export type NormalizedBolnaPayload = NormalizedVoicePayload;
-export type NormalizedEdesyPayload = NormalizedVoicePayload;
+export type NormalizedEdesyPayload = NormalizedVoicePayload & {
+  eventType: string;
+  shouldProcessDownstream: boolean;
+  shouldEnrichExistingLog: boolean;
+};
 
 function isRecord(value: unknown): value is VoicePayloadNode {
   return typeof value === "object" && value !== null;
@@ -560,6 +564,7 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
   if (!isRecord(body)) return null;
 
   const event = readString(body, ["event"]) || "";
+  const eventLower = event.trim().toLowerCase();
   const timestamp = readString(body, ["timestamp"]) || new Date().toISOString();
   const data = isRecord(body.data) ? body.data : null;
   if (!data) return null;
@@ -587,11 +592,10 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
   });
   const sourceCampaign = voiceCampaignForEntryPoint(entryPoint);
   const durationSec = readNumberFromNodes(nodes, ["duration_seconds", "duration_sec", "duration"]) || 0;
-  const endedAt = event === "call.started" ? null : timestamp;
+  const endedAt = eventLower === "call.started" ? null : timestamp;
   const startedAt =
     readFromNodes(nodes, ["started_at", "start_time", "created_at"]) ||
     (endedAt ? deriveStartedAtFromDuration(endedAt, durationSec) : timestamp);
-  const eventLower = event.trim().toLowerCase();
   const failureReason = readFromNodes(nodes, ["failure_reason", "failureReason"]) || "";
   const endReason = readFromNodes(nodes, ["end_reason", "endReason"]) || "";
   const disposition = readFromNodes(nodes, ["disposition", "status"]) || "";
@@ -601,8 +605,12 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
     callStatus = normalizeStatus(failureReason || "failed");
   } else if (eventLower === "call.transferred") {
     callStatus = "transfer";
+  } else if (eventLower === "call.voicemail_detected") {
+    callStatus = "voicemail";
   } else if (eventLower === "call.ended") {
     callStatus = normalizeStatus(disposition === "success" ? "completed" : endReason || disposition || "completed");
+  } else if (eventLower === "call.analyzed" || eventLower === "call.recording_ready") {
+    callStatus = "completed";
   } else {
     callStatus = normalizeStatus(eventLower.replace(/^call\./, "") || "completed");
   }
@@ -634,12 +642,17 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
     normalizeIndianMobile(
       readFromNodes(nodes, ["whatsapp_number", "alternate_whatsapp_number", "confirmed_whatsapp_number"]) || null
     ) || null;
-  const transcript = turnsToTranscript(transcriptNode?.turns) || readFromNodes(nodes, ["transcript"]) || null;
+  const transcript =
+    turnsToTranscript(transcriptNode?.turns) ||
+    readFromNodes(nodes, ["transcript", "full_transcript", "transcript_text"]) ||
+    null;
   const summary =
-    readFromNodes(nodes, ["summary", "call_summary", "conversation_summary"]) ||
+    readFromNodes(nodes, ["summary", "call_summary", "conversation_summary", "analysis_summary"]) ||
     (transcript ? transcript.slice(0, 1200) : null);
-  const transcriptUrl = readFromNodes(nodes, ["transcript_url", "transcriptUrl"]) || null;
-  const recordingUrl = readFromNodes(nodes, ["recording_url", "recordingUrl"]) || null;
+  const transcriptUrl =
+    readFromNodes(nodes, ["transcript_url", "transcriptUrl", "transcript_download_url"]) || null;
+  const recordingUrl =
+    readFromNodes(nodes, ["recording_url", "recordingUrl", "recording_download_url", "audio_url"]) || null;
   const transferFlag =
     readBooleanFromNodes(nodes, ["transfer_occurred", "transfer_completed", "transfer_success"]) || false;
   const transferRequested =
@@ -648,17 +661,24 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
     Boolean(readFromNodes(nodes, ["transfer_to", "transfer_target"]));
   const transferCompleted = eventLower === "call.transferred" || transferFlag;
   const language = readFromNodes(nodes, ["language", "lang"]) || "Odia";
+  const answeredByVoiceMail =
+    eventLower === "call.voicemail_detected" ||
+    readBooleanFromNodes(nodes, ["voicemail", "voice_mail", "answered_by_voicemail", "voicemail_detected"]) ||
+    false;
   const intentScore = calculateVoiceIntentScore({
     tryingDuration,
     knownCondition,
     priorTreatment,
   });
-
-  const eventKey =
-    externalCallId ? `edesy:${externalCallId}` : `edesy:${fromNumber || "unknown"}:${toNumber || "unknown"}:${timestamp}`;
+  const eventSuffix = eventLower || "event";
+  const baseKey = externalCallId
+    ? `edesy:${externalCallId}`
+    : `edesy:${fromNumber || "unknown"}:${toNumber || "unknown"}:${timestamp}`;
+  const shouldEnrichExistingLog = eventLower === "call.analyzed" || eventLower === "call.recording_ready";
+  const shouldProcessDownstream = eventLower === "call.ended" || eventLower === "call.transferred" || eventLower === "call.failed" || eventLower === "call.voicemail_detected";
 
   return {
-    eventKey,
+    eventKey: `${baseKey}:${eventSuffix}`,
     externalCallId,
     provider: "edesy",
     agentName,
@@ -669,7 +689,7 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
     entryPoint,
     sourceCampaign,
     callStatus,
-    answeredByVoiceMail: false,
+    answeredByVoiceMail,
     startedAt,
     endedAt,
     durationSec,
@@ -692,5 +712,8 @@ export function normalizeEdesyPayload(body: unknown): NormalizedEdesyPayload | n
     transferCompleted,
     intentScore,
     intentBucket: scoreToIntentBucket(intentScore),
+    eventType: eventLower,
+    shouldProcessDownstream,
+    shouldEnrichExistingLog,
   };
 }
