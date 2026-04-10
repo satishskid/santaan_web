@@ -1,4 +1,4 @@
-# Azure Speech Fallback Spike
+# Azure Speech Research Spike
 
 Date: April 5, 2026 (IST)
 Owner: Santaan voice ops / engineering
@@ -6,13 +6,15 @@ Status: Spike ready to execute
 
 ## Purpose
 
-This spike evaluates Azure Speech as the fallback Odia speech layer for Santaan while Edesy clarifies:
+This spike evaluates Azure Speech as a research track for Odia speech quality while Edesy clarifies:
 
 - dedicated inbound number allocation
 - turns and transcript visibility
 - direct inbound routing behavior
 
 This is a speech-layer spike first, not a full telephony migration.
+
+This is not the current operational fallback. If live voice QA fails today, the fallback should remain a normal call path that still registers the caller in Santaan CRM.
 
 ## Why Azure
 

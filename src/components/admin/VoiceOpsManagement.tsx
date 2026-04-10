@@ -117,8 +117,8 @@ const FIELD_SECTIONS: VoiceFieldSection[] = [
       },
       {
         key: "VOICE_AGENT_BACKUP_NUMBER",
-        label: "Backup / test number",
-        description: "Keep one spare DID for sandbox tests, failover, or future channel expansion.",
+        label: "Fallback capture number",
+        description: "Use this when live voice QA fails. It should remain a normal call path that still registers the caller in CRM.",
         placeholder: "+91XXXXXXXXXX",
       },
       {
@@ -576,7 +576,7 @@ export default function VoiceOpsManagement() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
-                    <span>Backup / test line</span>
+                    <span>Fallback capture line</span>
                     <span className="font-medium text-gray-900">{payload?.qa.currentRouting.backupNumber || "Not set"}</span>
                   </div>
                 </div>
@@ -604,6 +604,15 @@ export default function VoiceOpsManagement() {
                     <div>
                       <p className="font-medium text-gray-900">Escalate when</p>
                       <p className="text-xs text-gray-600">wrong persona, no answer, transcript missing repeatedly, or any CRM push shows error.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-lg bg-amber-50 px-3 py-3">
+                    <PhoneCall className="mt-0.5 h-4 w-4 text-santaan-amber" />
+                    <div>
+                      <p className="font-medium text-gray-900">Operational fallback</p>
+                      <p className="text-xs text-gray-600">
+                        If Swara voice QA is failing, route the caller to the fallback capture line so the call still completes as a normal inquiry and the caller is registered in CRM.
+                      </p>
                     </div>
                   </div>
                 </div>

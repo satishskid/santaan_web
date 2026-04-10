@@ -22,9 +22,9 @@ const VOICE_OPS_BASELINE = {
   VOICE_AGENT_MAIN_PROMPT_VERSION: "main-v1",
   VOICE_AGENT_TV_PROMPT_VERSION: "tv-v1",
   VOICE_AGENT_OPEN_RISKS:
-    "Turns / transcript reliability still needs live validation. Pause handling still needs close QA review on direct inbound calls. Azure Speech fallback spike remains open as a backup path.",
+    "Turns / transcript reliability still needs live validation. Pause handling still needs close QA review on direct inbound calls. Azure Speech remains research-only and is not an operational fallback yet.",
   VOICE_AGENT_CHANGE_NOTES:
-    "Live Bolna API verification on 2026-04-03 confirmed main=+918065481598 -> Santaan Main Inbound and tv=+918065481542 -> Santaan TV Inbound. Edesy inbound routing was later updated so +918065481541 now routes to Swara - Santaan Odia (5614). Shared trial number +91 22 7126 4263 remains backup/testing only.",
+    "Live Bolna API verification on 2026-04-03 confirmed main=+918065481598 -> Santaan Main Inbound and tv=+918065481542 -> Santaan TV Inbound. Edesy inbound routing was later updated so +918065481541 now routes to Swara - Santaan Odia (5614). Shared trial number +91 22 7126 4263 remains the fallback capture path for normal call handling and caller registration if voice QA is failing. Azure Speech is still only a research spike.",
   VOICE_AGENT_LAST_UPDATED_BY: "seed_voice_ops_settings_script",
   VOICE_AGENT_LAST_UPDATED_AT: now,
 };

@@ -14,7 +14,7 @@ const VOICE_OPS_DOC_SPECS = [
   { prefix: "VOICE_AGENT_PRODUCT_PHILOSOPHY_", title: "Product Philosophy", category: "Governance" },
   { prefix: "VOICE_AGENT_GOVERNANCE_", title: "Governance Policy", category: "Governance" },
   { prefix: "VOICE_AGENT_SYSTEM_README_", title: "System README", category: "Governance" },
-  { prefix: "AZURE_SPEECH_FALLBACK_SPIKE_", title: "Azure Speech Fallback Spike", category: "Operations" },
+  { prefix: "AZURE_SPEECH_FALLBACK_SPIKE_", title: "Azure Speech Research Spike", category: "Operations" },
   { prefix: "VOICE_AGENT_CHANGE_LOG_TEMPLATE_", title: "Change Log Template", category: "Governance" },
   { prefix: "VOICE_AGENT_PERSONA_PROTOCOL_", title: "Persona Protocol", category: "Strategy" },
   { prefix: "BOLNA_VOICE_AGENT_PRODUCTION_PROMPT_", title: "Production Prompt", category: "Prompts" },
