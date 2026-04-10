@@ -15,6 +15,8 @@ const VOICE_OPS_DOC_SPECS = [
   { prefix: "VOICE_AGENT_GOVERNANCE_", title: "Governance Policy", category: "Governance" },
   { prefix: "VOICE_AGENT_SYSTEM_README_", title: "System README", category: "Governance" },
   { prefix: "AZURE_SPEECH_FALLBACK_SPIKE_", title: "Azure Speech Research Spike", category: "Operations" },
+  { prefix: "SWARA_BUSINESS_UPDATE_", title: "Swara Business Update", category: "Operations" },
+  { prefix: "SWARA_OPERATOR_MANUAL_", title: "Swara Operator Manual", category: "Operations" },
   { prefix: "VOICE_AGENT_CHANGE_LOG_TEMPLATE_", title: "Change Log Template", category: "Governance" },
   { prefix: "VOICE_AGENT_PERSONA_PROTOCOL_", title: "Persona Protocol", category: "Strategy" },
   { prefix: "BOLNA_VOICE_AGENT_PRODUCTION_PROMPT_", title: "Production Prompt", category: "Prompts" },

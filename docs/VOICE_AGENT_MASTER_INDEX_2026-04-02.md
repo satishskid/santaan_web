@@ -11,11 +11,17 @@ Purpose: Single entry point for all Santaan voice-agent operating documents
 - [VOICE_AGENT_SYSTEM_README_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/VOICE_AGENT_SYSTEM_README_2026-04-02.md)
 - [AZURE_SPEECH_FALLBACK_SPIKE_2026-04-05.md](/Users/spr/santaan%20hope/santaan-web/docs/AZURE_SPEECH_FALLBACK_SPIKE_2026-04-05.md)
 
+## Business And Operations
+
+- [SWARA_BUSINESS_UPDATE_2026-04-10.md](/Users/spr/santaan%20hope/santaan-web/docs/SWARA_BUSINESS_UPDATE_2026-04-10.md)
+- [SWARA_OPERATOR_MANUAL_2026-04-10.md](/Users/spr/santaan%20hope/santaan-web/docs/SWARA_OPERATOR_MANUAL_2026-04-10.md)
+
 ## Prompt Layer
 
 - [BOLNA_VOICE_AGENT_PRODUCTION_PROMPT_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_VOICE_AGENT_PRODUCTION_PROMPT_2026-04-02.md)
 - [BOLNA_MAIN_AGENT_FINAL_PROMPT_BLOCK_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_MAIN_AGENT_FINAL_PROMPT_BLOCK_2026-04-02.md)
 - [BOLNA_TV_AGENT_FINAL_PROMPT_BLOCK_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/BOLNA_TV_AGENT_FINAL_PROMPT_BLOCK_2026-04-02.md)
+- [EDESY_ODIA_AGENT_PROMPT_BLOCK_2026-04-10.md](/Users/spr/santaan%20hope/santaan-web/docs/EDESY_ODIA_AGENT_PROMPT_BLOCK_2026-04-10.md)
 
 ## Operating Scripts
 
