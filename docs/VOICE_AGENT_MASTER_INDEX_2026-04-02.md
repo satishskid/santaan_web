@@ -9,6 +9,7 @@ Purpose: Single entry point for all Santaan voice-agent operating documents
 - [VOICE_AGENT_PERSONA_PROTOCOL_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/VOICE_AGENT_PERSONA_PROTOCOL_2026-04-02.md)
 - [VOICE_AGENT_GOVERNANCE_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/VOICE_AGENT_GOVERNANCE_2026-04-02.md)
 - [VOICE_AGENT_SYSTEM_README_2026-04-02.md](/Users/spr/santaan%20hope/santaan-web/docs/VOICE_AGENT_SYSTEM_README_2026-04-02.md)
+- [AZURE_SPEECH_FALLBACK_SPIKE_2026-04-05.md](/Users/spr/santaan%20hope/santaan-web/docs/AZURE_SPEECH_FALLBACK_SPIKE_2026-04-05.md)
 
 ## Prompt Layer
 

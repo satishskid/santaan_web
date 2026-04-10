@@ -46,7 +46,9 @@ export function PractoBookingSection() {
     if (!host) return;
 
     if (hasRenderedPractoWidget(host)) {
-      setWidgetStatus("ready");
+      timeoutRef.current = window.setTimeout(() => {
+        setWidgetStatus("ready");
+      }, 0);
       return;
     }
 

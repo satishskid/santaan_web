@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ClipboardCheck, Copy, FileText, PhoneCall, Save, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardCheck,
+  Copy,
+  ExternalLink,
+  FileText,
+  Link2,
+  PhoneCall,
+  Save,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +30,49 @@ interface VoiceOpsPayload {
   ok: boolean;
   canManage: boolean;
   docs: VoiceOpsDoc[];
+  qa: {
+    latestCallAt: string;
+    currentRouting: {
+      mainBolnaNumber: string;
+      tvBolnaNumber: string;
+      backupNumber: string;
+      mainEdesyNumber: string;
+      tvEdesyNumber: string;
+      mainEdesyAgentName: string;
+      mainEdesyAgentId: string;
+      rolloutStatus: string;
+    };
+    stats: {
+      total: number;
+      completed: number;
+      transcriptReady: number;
+      summaryReady: number;
+      crmLinked: number;
+      neodovePushed: number;
+      whatsappSent: number;
+      failedOps: number;
+    };
+    recentCalls: Array<{
+      id: number;
+      eventKey: string;
+      provider: string;
+      callStatus: string;
+      entryPoint: string;
+      callerName: string;
+      contactName: string;
+      fromNumber: string;
+      toNumber: string;
+      durationSec: number;
+      receivedAt: string;
+      processStatus: string;
+      neodovePushStatus: string;
+      whatsappPushStatus: string;
+      hasTranscriptArtifact: boolean;
+      hasSummary: boolean;
+      transcriptUrl: string;
+      summary: string;
+    }>;
+  };
   settings: Record<string, string>;
   updatedAt: string;
 }
@@ -221,6 +275,42 @@ function isMultilineField(field: VoiceField) {
   return Boolean(field.multiline);
 }
 
+function prettyDate(value?: string | null) {
+  const raw = String(value || "").trim();
+  if (!raw) return "Not yet";
+  const millis = Date.parse(raw);
+  if (!Number.isFinite(millis)) return raw;
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(millis));
+}
+
+function titleizeToken(value?: string | null) {
+  const token = String(value || "").trim();
+  if (!token) return "Unknown";
+  return token
+    .replace(/[_-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function badgeTone(value?: string | null) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["completed", "processed", "pushed", "sent", "live", "pilot", "linked_pending_live_calls"].includes(normalized)) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  }
+  if (["pending", "received", "processing", "qa", "draft", "limited live", "limited-live"].includes(normalized)) {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+  if (["failed", "error", "skipped", "ignored"].includes(normalized)) {
+    return "border-red-200 bg-red-50 text-red-800";
+  }
+  return "border-gray-200 bg-gray-50 text-gray-700";
+}
+
 export default function VoiceOpsManagement() {
   const [payload, setPayload] = useState<VoiceOpsPayload | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -349,6 +439,29 @@ export default function VoiceOpsManagement() {
     },
   ];
 
+  const qaCards = [
+    {
+      label: "Recent Calls",
+      value: String(payload?.qa.stats.total ?? 0),
+      hint: `${payload?.qa.stats.completed ?? 0} completed`,
+    },
+    {
+      label: "Transcript Artifacts",
+      value: String(payload?.qa.stats.transcriptReady ?? 0),
+      hint: `${payload?.qa.stats.summaryReady ?? 0} summaries`,
+    },
+    {
+      label: "CRM Linked",
+      value: String(payload?.qa.stats.crmLinked ?? 0),
+      hint: `${payload?.qa.stats.neodovePushed ?? 0} NeoDove pushed`,
+    },
+    {
+      label: "WhatsApp Sent",
+      value: String(payload?.qa.stats.whatsappSent ?? 0),
+      hint: `${payload?.qa.stats.failedOps ?? 0} ops errors`,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -408,6 +521,201 @@ export default function VoiceOpsManagement() {
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.95fr]">
         <div className="space-y-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <h4 className="text-base font-semibold text-gray-900">Voice QA cockpit</h4>
+                <p className="mt-1 text-sm text-gray-600">
+                  A non-technical operating view for live voice routing, the latest calls, and whether the CRM pipeline is healthy.
+                </p>
+              </div>
+              <div className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                Last call: {prettyDate(payload?.qa.latestCallAt)}
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {qaCards.map((card) => (
+                <div key={card.label} className="rounded-xl border border-gray-200 bg-gray-50/40 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{card.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-gray-900">{card.value}</p>
+                  <p className="mt-1 text-xs text-gray-500">{card.hint}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-white p-4">
+                <p className="text-sm font-semibold text-gray-900">Live routing</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-700">
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>Rollout</span>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(payload?.qa.currentRouting.rolloutStatus)}`}>
+                      {titleizeToken(payload?.qa.currentRouting.rolloutStatus)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>Edesy main line</span>
+                    <span className="font-medium text-gray-900">{payload?.qa.currentRouting.mainEdesyNumber || "Not set"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>Edesy agent</span>
+                    <span className="font-medium text-gray-900">
+                      {payload?.qa.currentRouting.mainEdesyAgentName || "Not set"}
+                      {payload?.qa.currentRouting.mainEdesyAgentId ? ` (${payload?.qa.currentRouting.mainEdesyAgentId})` : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>Bolna main line</span>
+                    <span className="font-medium text-gray-900">{payload?.qa.currentRouting.mainBolnaNumber || "Not set"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>TV line</span>
+                    <span className="font-medium text-gray-900">
+                      {payload?.qa.currentRouting.tvEdesyNumber || payload?.qa.currentRouting.tvBolnaNumber || "Not set"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
+                    <span>Backup / test line</span>
+                    <span className="font-medium text-gray-900">{payload?.qa.currentRouting.backupNumber || "Not set"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-4">
+                <p className="text-sm font-semibold text-gray-900">How to review a live test</p>
+                <div className="mt-3 space-y-3 text-sm text-gray-700">
+                  <div className="flex items-start gap-3 rounded-lg bg-gray-50 px-3 py-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-santaan-teal" />
+                    <div>
+                      <p className="font-medium text-gray-900">Caller-side</p>
+                      <p className="text-xs text-gray-600">Check greeting, warmth, pause handling, interruption handling, and whether Swara gives a clear next step.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-lg bg-gray-50 px-3 py-3">
+                    <Link2 className="mt-0.5 h-4 w-4 text-santaan-teal" />
+                    <div>
+                      <p className="font-medium text-gray-900">CRM-side</p>
+                      <p className="text-xs text-gray-600">Check whether the call row appears below, whether a transcript artifact exists, and whether CRM / NeoDove / WhatsApp statuses are healthy.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-lg bg-gray-50 px-3 py-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 text-santaan-amber" />
+                    <div>
+                      <p className="font-medium text-gray-900">Escalate when</p>
+                      <p className="text-xs text-gray-600">wrong persona, no answer, transcript missing repeatedly, or any CRM push shows error.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-gray-200 bg-white">
+              <div className="border-b border-gray-200 px-4 py-3">
+                <p className="text-sm font-semibold text-gray-900">Latest voice calls</p>
+                <p className="mt-1 text-xs text-gray-500">This table is designed for non-tech QA first and technical drill-down second.</p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Call</th>
+                      <th className="px-4 py-3 font-medium">Routing</th>
+                      <th className="px-4 py-3 font-medium">Transcript</th>
+                      <th className="px-4 py-3 font-medium">CRM</th>
+                      <th className="px-4 py-3 font-medium">Ops</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {(payload?.qa.recentCalls || []).length ? (
+                      payload?.qa.recentCalls.map((call) => (
+                        <tr key={call.id}>
+                          <td className="px-4 py-3 align-top">
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-900">
+                                {call.contactName || call.callerName || call.fromNumber || "Unknown caller"}
+                              </p>
+                              <p className="text-xs text-gray-500">{prettyDate(call.receivedAt)}</p>
+                              <p className="text-xs text-gray-600">
+                                {call.fromNumber || "Unknown"} {call.toNumber ? `→ ${call.toNumber}` : ""}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {call.durationSec ? `${call.durationSec}s` : "Duration unavailable"}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="space-y-2">
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(call.callStatus)}`}>
+                                {titleizeToken(call.callStatus)}
+                              </span>
+                              <p className="text-xs text-gray-600">
+                                {titleizeToken(call.provider)} · {titleizeToken(call.entryPoint)}
+                              </p>
+                              <p className="text-[11px] text-gray-500 break-all">{call.eventKey}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="space-y-2">
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(call.hasTranscriptArtifact ? "processed" : "pending")}`}>
+                                {call.hasTranscriptArtifact ? "Artifact ready" : "Missing"}
+                              </span>
+                              <p className="text-xs text-gray-600">
+                                Summary: {call.hasSummary ? "Available" : "Missing"}
+                              </p>
+                              {call.transcriptUrl ? (
+                                <a
+                                  href={call.transcriptUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-santaan-teal hover:underline"
+                                >
+                                  Open artifact <ExternalLink className="h-3 w-3" />
+                                </a>
+                              ) : null}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="space-y-2">
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(call.processStatus)}`}>
+                                {titleizeToken(call.processStatus)}
+                              </span>
+                              <p className="text-xs text-gray-600">
+                                Contact: {call.contactName ? "Linked" : "Unlinked"}
+                              </p>
+                              {call.summary ? (
+                                <p className="line-clamp-3 text-xs leading-5 text-gray-500">{call.summary}</p>
+                              ) : (
+                                <p className="text-xs text-gray-400">No summary captured yet.</p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="space-y-2">
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(call.neodovePushStatus)}`}>
+                                NeoDove: {titleizeToken(call.neodovePushStatus)}
+                              </span>
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${badgeTone(call.whatsappPushStatus)}`}>
+                                WhatsApp: {titleizeToken(call.whatsappPushStatus)}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-10 text-center text-sm text-gray-500">
+                          No voice-call logs have landed yet. Once a live test call completes, the Voice QA cockpit will start filling in automatically.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           {FIELD_SECTIONS.map((section) => (
             <div key={section.title} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-4">

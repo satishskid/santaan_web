@@ -3,8 +3,9 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { settings } from "@/db/schema";
+import { contacts, settings, voiceCallLogs } from "@/db/schema";
 import { isAuthorizedOpsUser, isAuthorizedVoiceOpsEditor } from "@/lib/auth-helper";
+import { desc, inArray } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,103 @@ const VOICE_OPS_MUTABLE_KEYS: ReadonlySet<string> = new Set(
 
 type VoiceOpsSettingKey = (typeof VOICE_OPS_SETTING_KEYS)[number];
 
+type VoiceOpsRecentCall = {
+  id: number;
+  eventKey: string;
+  provider: string;
+  callStatus: string;
+  entryPoint: string;
+  callerName: string;
+  contactName: string;
+  fromNumber: string;
+  toNumber: string;
+  durationSec: number;
+  receivedAt: string;
+  processStatus: string;
+  neodovePushStatus: string;
+  whatsappPushStatus: string;
+  hasTranscriptArtifact: boolean;
+  hasSummary: boolean;
+  transcriptUrl: string;
+  summary: string;
+};
+
+async function loadVoiceOpsQa(settingsMap: Record<string, string>) {
+  const rows = await db
+    .select()
+    .from(voiceCallLogs)
+    .orderBy(desc(voiceCallLogs.receivedAt), desc(voiceCallLogs.id))
+    .limit(12);
+
+  const contactIds = Array.from(
+    new Set(rows.map((row) => row.contactId).filter((value): value is number => typeof value === "number"))
+  );
+
+  const relatedContacts = contactIds.length
+    ? await db.select().from(contacts).where(inArray(contacts.id, contactIds))
+    : [];
+
+  const contactMap = new Map(relatedContacts.map((contact) => [contact.id, contact]));
+
+  const recentCalls: VoiceOpsRecentCall[] = rows.map((row) => {
+    const relatedContact = row.contactId ? contactMap.get(row.contactId) : null;
+    return {
+      id: row.id,
+      eventKey: row.eventKey,
+      provider: row.provider || "unknown",
+      callStatus: row.callStatus || "unknown",
+      entryPoint: row.entryPoint || "unknown",
+      callerName: row.callerName || "",
+      contactName: relatedContact?.name || "",
+      fromNumber: row.fromNumber || "",
+      toNumber: row.toNumber || "",
+      durationSec: row.durationSec || 0,
+      receivedAt: row.receivedAt || row.processedAt || "",
+      processStatus: row.processStatus || "received",
+      neodovePushStatus: row.neodovePushStatus || "pending",
+      whatsappPushStatus: row.whatsappPushStatus || "pending",
+      hasTranscriptArtifact: Boolean(row.transcriptUrl),
+      hasSummary: Boolean(row.summary),
+      transcriptUrl: row.transcriptUrl || "",
+      summary: row.summary || "",
+    };
+  });
+
+  const total = recentCalls.length;
+  const completed = recentCalls.filter((call) => call.callStatus.toLowerCase() === "completed").length;
+  const transcriptReady = recentCalls.filter((call) => call.hasTranscriptArtifact).length;
+  const summaryReady = recentCalls.filter((call) => call.hasSummary).length;
+  const crmLinked = recentCalls.filter((call) => Boolean(call.contactName)).length;
+  const neodovePushed = recentCalls.filter((call) => call.neodovePushStatus === "pushed").length;
+  const whatsappSent = recentCalls.filter((call) => call.whatsappPushStatus === "sent").length;
+  const failedOps = recentCalls.filter((call) => call.processStatus === "error").length;
+
+  return {
+    latestCallAt: recentCalls[0]?.receivedAt || "",
+    currentRouting: {
+      mainBolnaNumber: settingsMap.VOICE_AGENT_MAIN_NUMBER || "",
+      tvBolnaNumber: settingsMap.VOICE_AGENT_TV_NUMBER || "",
+      backupNumber: settingsMap.VOICE_AGENT_BACKUP_NUMBER || "",
+      mainEdesyNumber: settingsMap.VOICE_AGENT_MAIN_EDESY_NUMBER || "",
+      tvEdesyNumber: settingsMap.VOICE_AGENT_TV_EDESY_NUMBER || "",
+      mainEdesyAgentName: settingsMap.VOICE_AGENT_MAIN_EDESY_AGENT_NAME || "",
+      mainEdesyAgentId: settingsMap.VOICE_AGENT_MAIN_EDESY_AGENT_ID || "",
+      rolloutStatus: settingsMap.VOICE_AGENT_ROLLOUT_STATUS || "",
+    },
+    stats: {
+      total,
+      completed,
+      transcriptReady,
+      summaryReady,
+      crmLinked,
+      neodovePushed,
+      whatsappSent,
+      failedOps,
+    },
+    recentCalls,
+  };
+}
+
 async function loadVoiceOpsDocs() {
   const docsDir = path.join(process.cwd(), "docs");
   const fileNames = await readdir(docsDir);
@@ -134,10 +232,13 @@ export async function GET() {
       isAuthorizedVoiceOpsEditor(email, sessionRole),
     ]);
 
+    const qa = await loadVoiceOpsQa(voiceSettings);
+
     return NextResponse.json({
       ok: true,
       canManage,
       docs,
+      qa,
       settings: voiceSettings,
       updatedAt: new Date().toISOString(),
     });

@@ -29,6 +29,7 @@
     "seed:voice-ops": "node src/scripts/seed-voice-ops-settings.mjs",
     "voice:bolna:verify": "node src/scripts/setup-bolna-inbound.mjs",
     "voice:bolna:setup": "node src/scripts/setup-bolna-inbound.mjs --apply",
+    "voice:azure:speech": "node src/scripts/azure-speech-spike.mjs",
     "voice:edesy:call": "node src/scripts/trigger-edesy-outbound.mjs",
     "migrate:meta-launch": "node src/scripts/migrate-meta-launch-drafts.mjs",
     "migrate:meta-conversions": "node src/scripts/migrate-meta-conversion-events.mjs",
