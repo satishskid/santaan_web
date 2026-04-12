@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from 'react';
-import { Play } from 'lucide-react';
-import Image from 'next/image';
+import { useMemo, useState } from "react";
+import { Play } from "lucide-react";
+import Image from "next/image";
 
 export interface VideoTestimonialItem {
   name: string;
@@ -15,11 +15,11 @@ export interface VideoTestimonialItem {
 function extractYouTubeId(url: string) {
   try {
     const parsed = new URL(url);
-    if (parsed.hostname.includes('youtu.be')) {
-      return parsed.pathname.replace('/', '') || null;
+    if (parsed.hostname.includes("youtu.be")) {
+      return parsed.pathname.replace("/", "") || null;
     }
-    if (parsed.hostname.includes('youtube.com')) {
-      return parsed.searchParams.get('v') || null;
+    if (parsed.hostname.includes("youtube.com")) {
+      return parsed.searchParams.get("v") || null;
     }
     return null;
   } catch {
@@ -30,8 +30,8 @@ function extractYouTubeId(url: string) {
 function extractVimeoId(url: string) {
   try {
     const parsed = new URL(url);
-    if (!parsed.hostname.includes('vimeo.com')) return null;
-    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (!parsed.hostname.includes("vimeo.com")) return null;
+    const parts = parsed.pathname.split("/").filter(Boolean);
     const last = parts[parts.length - 1];
     return last && /^\d+$/.test(last) ? last : null;
   } catch {
@@ -60,33 +60,33 @@ function defaultThumbnail(videoUrl: string) {
 }
 
 export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(items.length > 0 ? 0 : null);
 
-  const resolvedActiveIndex = items.length === 0 ? null : (activeIndex ?? 0);
-  const active = resolvedActiveIndex === null ? null : items[resolvedActiveIndex];
+  const active = activeIndex === null ? null : items[activeIndex];
   const embedUrl = useMemo(() => (active ? buildEmbedUrl(active.videoUrl) : null), [active]);
 
   return (
     <section id="video-testimonials" className="py-24 bg-white">
       <div className="container px-4 md:px-6 mx-auto">
         <div className="text-center mb-14">
-          <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Video Testimonials</span>
+          <span className="text-santaan-teal font-medium tracking-wide uppercase text-sm">Videos</span>
           <h2 className="text-3xl md:text-4xl font-playfair font-bold text-gray-900 mt-2">
-            Real voices. Real journeys.
+            Expert explainers from Santaan
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto mt-4">
-            Watch Santaan stories, doctor explainers, and milestone moments from our journey.
+          <p className="text-gray-600 max-w-3xl mx-auto mt-4">
+            Evidence-driven IVF and fertility care with clear, practical guidance from our specialists in
+            Bhubaneswar, Berhampur and Bangalore.
           </p>
         </div>
 
-        <div className="space-y-8">
-          <div className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
             {active && embedUrl ? (
               <div className="relative w-full aspect-video bg-black">
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={embedUrl}
-                  title={`Video testimonial from ${active.name}`}
+                  title={`${active.name} · ${active.label}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -95,12 +95,12 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
               <div className="w-full aspect-video flex items-center justify-center text-center p-10">
                 <div>
                   <p className="text-lg font-semibold text-gray-900">
-                    {items.length === 0 ? "Video testimonials coming soon" : "Select a story to play"}
+                    {items.length === 0 ? "Videos coming soon" : "Select a video to play"}
                   </p>
                   <p className="text-gray-600 mt-2">
                     {items.length === 0
                       ? "Add YouTube/Vimeo links and thumbnails to activate this section."
-                      : "Choose a Santaan video below to switch the featured story."}
+                      : "The video loads only when the user clicks, keeping the homepage light."}
                   </p>
                 </div>
               </div>
@@ -116,46 +116,39 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             )}
           </div>
 
-          <div>
-            {items.length > 0 && (
-              <div className="mb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-santaan-teal">
-                  More from Santaan
-                </p>
-              </div>
-            )}
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="space-y-4">
             {items.map((item, index) => {
               const thumb = item.thumbnail || defaultThumbnail(item.videoUrl);
-              const selected = index === resolvedActiveIndex;
+              const selected = index === activeIndex;
               return (
                 <button
                   key={`${item.name}-${index}`}
                   onClick={() => setActiveIndex(index)}
-                  aria-label={`Play video testimonial: ${item.name}`}
-                  className={`w-full text-left rounded-2xl border transition-all overflow-hidden bg-white ${
-                    selected ? 'border-santaan-teal shadow-md' : 'border-gray-100 hover:border-santaan-teal/40'
+                  aria-label={`Play video: ${item.name}`}
+                  className={`w-full text-left rounded-2xl border transition-colors overflow-hidden bg-white ${
+                    selected ? "border-santaan-teal shadow-md" : "border-gray-100 hover:border-santaan-teal/40"
                   }`}
                 >
-                  <div className="relative aspect-video bg-gray-100">
-                    {thumb ? (
-                      <Image src={thumb} alt="" fill className="object-cover" sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 100vw" />
-                    ) : (
-                      <div className="w-full h-full bg-linear-to-r from-santaan-sage/30 to-santaan-teal/20" />
-                    )}
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <span className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center">
-                        <Play className="w-5 h-5 text-santaan-teal" />
-                      </span>
+                  <div className="flex gap-4 p-4 items-center">
+                    <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                      {thumb ? (
+                        <Image src={thumb} alt="" fill className="object-cover" sizes="96px" />
+                      ) : (
+                        <div className="w-full h-full bg-linear-to-r from-santaan-sage/30 to-santaan-teal/20" />
+                      )}
+                      <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
+                        <span className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
+                          <Play className="w-4 h-4 text-santaan-teal" />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="font-semibold text-gray-900">{item.name}</p>
-                    <p className="text-xs text-gray-600 mt-1">{item.label}</p>
-                    <p className="text-sm text-gray-500 mt-3 [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden">
-                      {item.quote}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-600 mt-1 truncate">{item.label}</p>
+                      <p className="text-xs text-gray-500 mt-2 [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
+                        {item.quote}
+                      </p>
+                    </div>
                   </div>
                 </button>
               );
@@ -168,7 +161,6 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
                 </p>
               </div>
             )}
-            </div>
           </div>
         </div>
       </div>
