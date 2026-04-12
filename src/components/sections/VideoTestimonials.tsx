@@ -59,14 +59,11 @@ function defaultThumbnail(videoUrl: string) {
   return null;
 }
 
-function isRemote(src: string) {
-  return src.startsWith('http://') || src.startsWith('https://');
-}
-
 export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const active = activeIndex === null ? null : items[activeIndex];
+  const resolvedActiveIndex = items.length === 0 ? null : (activeIndex ?? 0);
+  const active = resolvedActiveIndex === null ? null : items[resolvedActiveIndex];
   const embedUrl = useMemo(() => (active ? buildEmbedUrl(active.videoUrl) : null), [active]);
 
   return (
@@ -78,12 +75,12 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             Real voices. Real journeys.
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-4">
-            This section is ready for your content team to plug in final videos and captions.
+            Watch Santaan stories, doctor explainers, and milestone moments from our journey.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="space-y-8">
+          <div className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
             {active && embedUrl ? (
               <div className="relative w-full aspect-video bg-black">
                 <iframe
@@ -97,9 +94,13 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             ) : (
               <div className="w-full aspect-video flex items-center justify-center text-center p-10">
                 <div>
-                  <p className="text-lg font-semibold text-gray-900">{items.length === 0 ? 'Video testimonials coming soon' : 'Select a story to play'}</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {items.length === 0 ? "Video testimonials coming soon" : "Select a story to play"}
+                  </p>
                   <p className="text-gray-600 mt-2">
-                    {items.length === 0 ? 'Add YouTube/Vimeo links and thumbnails to activate this section.' : 'The video loads only when the user clicks, keeping the homepage light.'}
+                    {items.length === 0
+                      ? "Add YouTube/Vimeo links and thumbnails to activate this section."
+                      : "Choose a Santaan video below to switch the featured story."}
                   </p>
                 </div>
               </div>
@@ -115,43 +116,46 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             )}
           </div>
 
-          <div className="space-y-4">
+          <div>
+            {items.length > 0 && (
+              <div className="mb-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-santaan-teal">
+                  More from Santaan
+                </p>
+              </div>
+            )}
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {items.map((item, index) => {
               const thumb = item.thumbnail || defaultThumbnail(item.videoUrl);
-              const selected = index === activeIndex;
+              const selected = index === resolvedActiveIndex;
               return (
                 <button
                   key={`${item.name}-${index}`}
                   onClick={() => setActiveIndex(index)}
                   aria-label={`Play video testimonial: ${item.name}`}
-                  className={`w-full text-left rounded-2xl border transition-colors overflow-hidden bg-white ${
+                  className={`w-full text-left rounded-2xl border transition-all overflow-hidden bg-white ${
                     selected ? 'border-santaan-teal shadow-md' : 'border-gray-100 hover:border-santaan-teal/40'
                   }`}
                 >
-                  <div className="flex gap-4 p-4 items-center">
-                    <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                      {thumb ? (
-                        isRemote(thumb) ? (
-                          <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                        ) : (
-                          <Image src={thumb} alt="" fill className="object-cover" sizes="96px" />
-                        )
-                      ) : (
-                        <div className="w-full h-full bg-linear-to-r from-santaan-sage/30 to-santaan-teal/20" />
-                      )}
-                      <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
-                        <span className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
-                          <Play className="w-4 h-4 text-santaan-teal" />
-                        </span>
-                      </div>
+                  <div className="relative aspect-video bg-gray-100">
+                    {thumb ? (
+                      <Image src={thumb} alt="" fill className="object-cover" sizes="(min-width: 1280px) 280px, (min-width: 768px) 45vw, 100vw" />
+                    ) : (
+                      <div className="w-full h-full bg-linear-to-r from-santaan-sage/30 to-santaan-teal/20" />
+                    )}
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <span className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center">
+                        <Play className="w-5 h-5 text-santaan-teal" />
+                      </span>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{item.name}</p>
-                      <p className="text-xs text-gray-600 mt-1 truncate">{item.label}</p>
-                      <p className="text-xs text-gray-500 mt-2 [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
-                        {item.quote}
-                      </p>
-                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="font-semibold text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-600 mt-1">{item.label}</p>
+                    <p className="text-sm text-gray-500 mt-3 [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden">
+                      {item.quote}
+                    </p>
                   </div>
                 </button>
               );
@@ -159,9 +163,12 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             {items.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <p className="font-semibold text-gray-900">Add videos later</p>
-                <p className="text-sm text-gray-600 mt-2">This is a developer-ready placeholder. A writer can supply links and captions without code changes.</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  This is a developer-ready placeholder. A writer can supply links and captions without code changes.
+                </p>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
