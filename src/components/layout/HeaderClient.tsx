@@ -6,9 +6,7 @@ import { Menu, X, Phone, Calendar, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Session } from 'next-auth';
 import Image from 'next/image';
-import { useJourney } from '@/context/JourneyContext';
 import { CENTER_CONTACTS, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
@@ -25,10 +23,6 @@ const navigation = [
     { name: 'Clinical Insights', href: '/clinical-insights' },
 ];
 
-interface HeaderClientProps {
-    session: Session | null;
-}
-
 function trackHeaderEvent(label: string) {
     if (typeof window === 'undefined') return;
     const analyticsWindow = window as GtagWindow;
@@ -40,10 +34,9 @@ function trackHeaderEvent(label: string) {
     });
 }
 
-export function HeaderClient({ session }: HeaderClientProps) {
+export function HeaderClient() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { signal } = useJourney();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -137,72 +130,25 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             WhatsApp
                         </a>
 
-                        {session?.user ? (
-                            <Link href="/profile">
-                                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                                    <div className="relative w-9 h-9">
-                                        {session.user.image ? (
-                                            <Image
-                                                src={session.user.image}
-                                                alt={session.user.name || "User"}
-                                                fill
-                                                className="rounded-full object-cover border-2 border-white ring-1 ring-gray-200"
-                                            />
-                                        ) : (
-                                            <div className="w-9 h-9 rounded-full bg-santaan-sage/20 flex items-center justify-center text-sm font-bold text-santaan-teal">
-                                                {session.user.name?.[0] || "U"}
-                                            </div>
-                                        )}
-                                        {/* Status Dot based on Signal */}
-                                        <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${signal === 'green' ? 'bg-emerald-500' :
-                                            signal === 'yellow' ? 'bg-amber-500' :
-                                                signal === 'red' ? 'bg-rose-500' :
-                                                    'bg-gray-300'
-                                            }`}></div>
-                                    </div>
-                                    <div className="text-xs text-left">
-                                        <div className="font-bold text-gray-700">Namaste</div>
-                                        <div className="text-santaan-teal font-medium">{session.user.name?.split(' ')[0]}</div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ) : (
-                            <Button
-                                size="sm"
-                                className="bg-santaan-amber hover:bg-[#E08E45] text-white"
-                                data-cta-kind="book"
-                                data-center="Network"
-                                data-cta-target="/at-home-fertility-testing"
-                                onClick={() => {
-                                    trackHeaderEvent('header_cta_book_assessment');
-                                    window.location.href = '/at-home-fertility-testing';
-                                }}
-                            >
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Book Assessment
-                            </Button>
-                        )}
+                        <Button
+                            size="sm"
+                            className="bg-santaan-amber hover:bg-[#E08E45] text-white"
+                            data-cta-kind="book"
+                            data-center="Network"
+                            data-cta-target="/at-home-fertility-testing"
+                            onClick={() => {
+                                trackHeaderEvent('header_cta_book_assessment');
+                                window.location.href = '/at-home-fertility-testing';
+                            }}
+                        >
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Book Assessment
+                        </Button>
 
                     </div>
 
                     {/* Mobile Menu Button */}
                     <div className="flex lg:hidden gap-4 items-center">
-                        {session?.user && (
-                            <Link href="/profile" className="relative w-8 h-8">
-                                {session.user.image ? (
-                                    <Image
-                                        src={session.user.image}
-                                        alt={session.user.name || "User"}
-                                        fill
-                                        className="rounded-full object-cover border border-gray-200"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 rounded-full bg-santaan-sage/20 flex items-center justify-center text-xs font-bold text-santaan-teal">
-                                        {session.user.name?.[0] || "U"}
-                                    </div>
-                                )}
-                            </Link>
-                        )}
                         <button
                             type="button"
                             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 hover:bg-gray-100"
@@ -240,60 +186,54 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                 </Link>
                             ))}
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                                {!session?.user ? (
-                                    <div className="space-y-4">
-                                        <a
-                                            href={`tel:${PRIMARY_CALL_NUMBER}`}
-                                            className="block"
-                                            data-cta-kind="call"
-                                            data-center="Bhubaneswar"
-                                            data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
-                                        >
-                                            <Button variant="outline" className="w-full justify-center">
-                                                Call {PRIMARY_CALL_NUMBER}
-                                            </Button>
-                                        </a>
-                                        <a
-                                            href={PRIMARY_WHATSAPP_URL}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block"
-                                            data-cta-kind="whatsapp"
-                                            data-center="Bhubaneswar"
-                                            data-cta-target={PRIMARY_WHATSAPP_URL}
-                                        >
-                                            <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
-                                                WhatsApp a Fertility Advisor
-                                            </Button>
-                                        </a>
-                                        {CENTER_CONTACTS.map((center) => (
-                                            <div key={center.name} className="space-y-2">
-                                                <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider">
-                                                    {center.name}
-                                                </div>
-                                                {center.phones.map((phone) => (
-                                                    <Link
-                                                        key={phone}
-                                                        href={`tel:${phone}`}
-                                                        className="block"
-                                                        data-cta-kind="call"
-                                                        data-center={center.city}
-                                                        data-cta-target={`tel:${phone}`}
-                                                    >
-                                                        <Button variant="outline" className="w-full justify-center">
-                                                            Call {phone}
-                                                        </Button>
-                                                    </Link>
-                                                ))}
+                                <div className="space-y-4">
+                                    <a
+                                        href={`tel:${PRIMARY_CALL_NUMBER}`}
+                                        className="block"
+                                        data-cta-kind="call"
+                                        data-center="Bhubaneswar"
+                                        data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                                    >
+                                        <Button variant="outline" className="w-full justify-center">
+                                            Call {PRIMARY_CALL_NUMBER}
+                                        </Button>
+                                    </a>
+                                    <a
+                                        href={PRIMARY_WHATSAPP_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block"
+                                        data-cta-kind="whatsapp"
+                                        data-center="Bhubaneswar"
+                                        data-cta-target={PRIMARY_WHATSAPP_URL}
+                                    >
+                                        <Button className="w-full justify-center bg-emerald-600 hover:bg-emerald-700">
+                                            WhatsApp a Fertility Advisor
+                                        </Button>
+                                    </a>
+                                    {CENTER_CONTACTS.map((center) => (
+                                        <div key={center.name} className="space-y-2">
+                                            <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider">
+                                                {center.name}
                                             </div>
-                                        ))}
-                                        <div className="text-xs text-gray-500">Choose your nearest center to book.</div>
-                                    </div>
-                                ) : (
-                                    <Link href="/profile" className="block">
-                                        <Button className="w-full justify-center">View Profile</Button>
-                                    </Link>
-                                )}
+                                            {center.phones.map((phone) => (
+                                                <Link
+                                                    key={phone}
+                                                    href={`tel:${phone}`}
+                                                    className="block"
+                                                    data-cta-kind="call"
+                                                    data-center={center.city}
+                                                    data-cta-target={`tel:${phone}`}
+                                                >
+                                                    <Button variant="outline" className="w-full justify-center">
+                                                        Call {phone}
+                                                    </Button>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ))}
+                                    <div className="text-xs text-gray-500">Choose your nearest center to book.</div>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

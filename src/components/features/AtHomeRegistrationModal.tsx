@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader2, CheckCircle2 } from "lucide-react";
-import { ensureMandatoryUtm, readUtmParams } from "@/lib/utm";
 
 interface AtHomeRegistrationModalProps {
     isOpen: boolean;
@@ -14,6 +13,7 @@ interface AtHomeRegistrationModalProps {
 }
 
 export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationModalProps) {
+    const VOICE_CALLBACK_URL = "https://voice.santaan.in/new-lead";
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState("");
@@ -32,18 +32,18 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
         setError("");
 
         try {
-            // Get UTM params
-            const utm = ensureMandatoryUtm(readUtmParams());
-
-            const res = await fetch("/api/at-home/register", {
+            const res = await fetch(VOICE_CALLBACK_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, utm }),
+                body: JSON.stringify({
+                    phone: formData.phone.trim(),
+                    utm_campaign: "Organic_Website",
+                }),
             });
 
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.error || "Something went wrong");
+            if (!res.ok) {
+                throw new Error("Could not request your callback right now.");
+            }
 
             setIsSuccess(true);
             setTimeout(() => {
@@ -65,12 +65,12 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
             <DialogContent className="sm:max-w-md bg-white text-gray-900 border-none shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-playfair text-santaan-teal text-center">
-                        {isSuccess ? "Request Received!" : "Book At-Home Testing"}
+                        {isSuccess ? "Request Received!" : "Request a Call"}
                     </DialogTitle>
                     <DialogDescription className="text-center text-gray-600">
                         {isSuccess 
-                            ? "Our executive will call you shortly to schedule your appointment."
-                            : "Fill in your details for a private and convenient fertility assessment."}
+                            ? "Sneha will call you shortly to guide your next step."
+                            : "Share your number and our team will call you back right away."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -143,10 +143,10 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Submitting...
+                                    Requesting callback...
                                 </>
                             ) : (
-                                "Request Call Back"
+                                "Request a Call"
                             )}
                         </Button>
                         

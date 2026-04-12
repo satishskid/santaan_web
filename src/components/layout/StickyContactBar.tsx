@@ -1,19 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Phone, MessageCircle, CalendarCheck } from 'lucide-react';
 import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
-const hiddenPrefixes = ['/admin', '/login', '/profile'];
-
 export default function StickyContactBar() {
-  const pathname = usePathname();
-
-  if (hiddenPrefixes.some((prefix) => pathname.startsWith(prefix))) {
-    return null;
-  }
-
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-1.5rem)] max-w-md md:max-w-xl">
       <div className="bg-white/95 backdrop-blur-md shadow-xl border border-santaan-sage/30 rounded-2xl p-2 flex items-center justify-between gap-2">

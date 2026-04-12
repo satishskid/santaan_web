@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, Sprout, Activity, Lock, Calendar } from 'lucide-react';
+import { AlertCircle, CheckCircle, HelpCircle, RefreshCcw, Sprout, Activity, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useJourney } from '@/context/JourneyContext';
-import { useSession, signIn } from 'next-auth/react';
 import { SeminarRegistration } from '@/components/features/SeminarRegistration';
 
 // --- Types ---
@@ -34,7 +33,6 @@ export function SantaanSignal() {
     const [isSeminarOpen, setIsSeminarOpen] = useState(false);
 
     const { setSignal } = useJourney();
-    const { data: session } = useSession();
 
     // --- Helpers ---
     const calculateBMI = () => {
@@ -347,46 +345,7 @@ export function SantaanSignal() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="h-full flex flex-col items-center text-center relative"
                                     >
-                                        {!session ? (
-                                            // Gated View
-                                            <div className="w-full h-full flex flex-col items-center justify-center pt-8">
-                                                <div className="filter blur-md opacity-50 select-none pointer-events-none w-full flex flex-col items-center">
-                                                    <div className={`w-28 h-28 rounded-full ${resultDisplay.bg} flex items-center justify-center mb-6 ring-4 ring-white shadow-lg`}>
-                                                        {resultDisplay.icon}
-                                                    </div>
-                                                    <h3 className="text-3xl font-playfair font-bold text-gray-900 mb-4">
-                                                        {resultDisplay.title}
-                                                    </h3>
-                                                    <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-                                                        {resultDisplay.message}
-                                                    </p>
-                                                </div>
-
-                                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-3xl">
-                                                    <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full mx-4 border border-gray-100 text-center">
-                                                        <div className="w-16 h-16 bg-santaan-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                            <Lock className="w-8 h-8 text-santaan-teal" />
-                                                        </div>
-                                                        <h3 className="text-xl font-bold text-gray-800 mb-2">Unlock Your Report</h3>
-                                                        <p className="text-gray-500 mb-6 text-sm">
-                                                            Sign in to view your detailed fertility signal, personalized insights, and gardener&apos;s advice.
-                                                        </p>
-                                                        <Button
-                                                            onClick={() => signIn('google')}
-                                                            className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2 mb-3"
-                                                        >
-                                                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-                                                            Sign in with Google
-                                                        </Button>
-                                                        <p className="text-[10px] text-gray-400">
-                                                            We ensure your data privacy.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            // Authenticated View (Existing Result UI)
-                                            <>
+                                        <>
                                                 <div className={`w-28 h-28 rounded-full ${resultDisplay.bg} flex items-center justify-center mb-6 ring-4 ring-white shadow-lg`}>
                                                     {resultDisplay.icon}
                                                 </div>
@@ -458,8 +417,7 @@ export function SantaanSignal() {
                                                         Start Over
                                                     </button>
                                                 </div>
-                                            </>
-                                        )}
+                                        </>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -473,10 +431,6 @@ export function SantaanSignal() {
                 onClose={() => setIsSeminarOpen(false)}
                 score={resultData.score}
                 signal={resultData.signal.charAt(0).toUpperCase() + resultData.signal.slice(1) as 'Green' | 'Yellow' | 'Red'}
-                initialData={{
-                    name: session?.user?.name || '',
-                    email: session?.user?.email || ''
-                }}
             />
         </section>
     );

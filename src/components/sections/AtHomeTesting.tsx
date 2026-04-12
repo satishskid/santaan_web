@@ -271,11 +271,11 @@ export default function AtHomeTesting({ headingAs = 'h2' }: AtHomeTestingProps) 
                         className="group bg-linear-to-r from-santaan-amber to-santaan-amber/90 hover:from-santaan-amber/90 hover:to-santaan-amber text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-3"
                     >
                         <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                        Register Your Interest
+                        Request a Call
                     </Button>
                     
                     <p className="text-sm text-gray-500 mt-4">
-                        Our executive will call you back for personalized assistance
+                        Our team will call you back for personalized assistance
                     </p>
                 </div>
             </div>

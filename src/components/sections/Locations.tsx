@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { MapPin, Mail, Phone, Loader2, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MapPin, Mail, Phone, ExternalLink } from 'lucide-react';
 import type { ElementType } from 'react';
+import { CENTER_CONTACTS } from '@/data/centers';
 
 interface Center {
-    id: number;
+    id: string;
     city: string;
     title: string;
     address: string;
@@ -24,9 +24,20 @@ interface LocationsProps {
     headingAs?: Extract<ElementType, 'h1' | 'h2'>;
 }
 
+const PUBLIC_CENTERS: Center[] = CENTER_CONTACTS.map((center, index) => ({
+    id: `center-${index + 1}`,
+    city: center.city,
+    title: center.name,
+    address: center.city === 'Bangalore' ? 'Brookefield, Bengaluru, Karnataka' : `${center.city}, Odisha`,
+    description: 'Contact our team for exact landmark details and appointment coordination.',
+    email: 'info@santaan.in',
+    phones: center.phones,
+    mapUrl: null,
+    isActive: true,
+    sortOrder: index + 1,
+}));
+
 export function Locations({ headingAs = 'h2' }: LocationsProps) {
-    const [centers, setCenters] = useState<Center[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const HeadingTag = headingAs;
 
     const trackLocationEvent = (eventLabel: string) => {
@@ -44,35 +55,6 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
         if (city.toLowerCase() === 'bengaluru' || city.toLowerCase() === 'bangalore') return 'Bangalore (R&D)';
         return city;
     };
-
-    useEffect(() => {
-        const fetchCenters = async () => {
-            try {
-                const res = await fetch('/api/admin/centers');
-                if (res.ok) {
-                    const data = await res.json();
-                    const desiredOrder = ['Berhampur', 'Bhubaneswar', 'Cuttack', 'Bengaluru', 'Bangalore'];
-                    const orderIndex = (city: string) => {
-                        const idx = desiredOrder.findIndex((x) => x.toLowerCase() === city.toLowerCase());
-                        return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
-                    };
-                    const nextCenters = (data.centers || []) as Center[];
-                    nextCenters.sort((a, b) => {
-                        const ao = orderIndex(a.city);
-                        const bo = orderIndex(b.city);
-                        if (ao !== bo) return ao - bo;
-                        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-                    });
-                    setCenters(nextCenters);
-                }
-            } catch (error) {
-                console.error('Failed to fetch centers:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchCenters();
-    }, []);
 
     return (
         <section className="py-24 bg-santaan-teal text-white relative overflow-hidden">
@@ -92,13 +74,8 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                     </div>
                 </div>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-16">
-                        <Loader2 className="w-8 h-8 animate-spin text-santaan-amber" />
-                    </div>
-                ) : (
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {centers.map((loc, i) => {
+                <div className="grid md:grid-cols-3 gap-8">
+                    {PUBLIC_CENTERS.map((loc, i) => {
                             const mapHref = loc.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${loc.title} ${loc.city} ${loc.address}`)}`;
 
                             return (
@@ -170,9 +147,8 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                                 </div>
                             </motion.div>
                         );
-                        })}
-                    </div>
-                )}
+                    })}
+                </div>
             </div>
         </section>
     );

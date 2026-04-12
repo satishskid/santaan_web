@@ -3,9 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/layout/SmoothScrollProvider";
 import { JourneyProvider } from "@/context/JourneyContext";
-import AuthProvider from "@/components/providers/AuthProvider";
 import UtmTracker from "@/components/analytics/UtmTracker";
-import CtaContactTracker from "@/components/analytics/CtaContactTracker";
 import { defaultSeoMetadata } from "@/lib/seo";
 import ClientWidgets from "@/components/layout/ClientWidgets";
 
@@ -35,16 +33,12 @@ export default function RootLayout({
       >
         <AnalyticsScripts />
         <UtmTracker />
-        <CtaContactTracker />
-
-        <AuthProvider>
-          <SmoothScrollProvider>
-            <JourneyProvider>
-              {children}
-              <ClientWidgets />
-            </JourneyProvider>
-          </SmoothScrollProvider>
-        </AuthProvider>
+        <SmoothScrollProvider>
+          <JourneyProvider>
+            {children}
+            <ClientWidgets />
+          </JourneyProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );

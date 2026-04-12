@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { contacts } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { sendWhatsAppMessage } from "@/services/whatsapp";
 import { ensureMandatoryUtm } from "@/lib/utm";
-import { pushLeadToNeoDove } from "@/lib/neodove";
-import { resolveCenter } from "@/lib/lead-attribution";
 
 export async function POST(request: Request) {
     try {
@@ -68,58 +65,6 @@ export async function POST(request: Request) {
                 utmMedium: utm.utm_medium || 'website',
                 utmCampaign: utm.utm_campaign || 'at_home_test',
             });
-        }
-
-        const center = resolveCenter({
-            center: location || utm.center,
-            landingPath: utm.landing_path || "/at-home-fertility-testing",
-            target: phone,
-        });
-        const neoDoveEmail = email || `no-email-${cleanPhone}@santaan.in`;
-        const neoDoveTags = ["website", "at_home_test", "hot_lead", `center_${center.toLowerCase()}`];
-        const neoDoveNote = concerns
-            ? `At-home registration request | center=${center} | concern=${concerns}`
-            : `At-home registration request | center=${center}`;
-
-        const neoDoveResult = await pushLeadToNeoDove({
-            name,
-            mobile: cleanPhone,
-            email: neoDoveEmail,
-            source: "at_home_registration",
-            campaign: "CHATBOTS",
-            center,
-            status: "OPEN",
-            pipeline: "Reminder",
-            landingPath: utm.landing_path || "/at-home-fertility-testing",
-            notes: neoDoveNote,
-            tags: neoDoveTags,
-            utm: {
-                utm_source: utm.utm_source,
-                utm_medium: utm.utm_medium,
-                utm_campaign: utm.utm_campaign,
-                utm_term: utm.utm_term,
-                utm_content: utm.utm_content,
-            },
-        });
-        if (!neoDoveResult.ok) {
-            console.error("[NeoDove] At-home lead push failed:", neoDoveResult);
-        }
-
-        // Send WhatsApp Notification to Admin
-        // We assume a template 'SANTAAN_LEAD_ALERT' exists with 3 params: Name, Service, Phone
-        // If not, this might fail or send just the template name.
-        // User needs to provide the actual Admin Template Name.
-        const adminPhone = process.env.next_public_admin_wa_phone || '9742100448';
-        
-        try {
-            await sendWhatsAppMessage({ 
-                phone: adminPhone, 
-                template: 'SANTAAN_LEAD_ALERT', 
-                params: [name, 'At-Home-Test', phone] 
-            });
-            console.log(`[WhatsApp] Admin alert sent to ${adminPhone}`);
-        } catch (waError) {
-            console.error('[WhatsApp] Failed to send admin alert:', waError);
         }
 
         return NextResponse.json({ success: true, message: "Request registered successfully" });
