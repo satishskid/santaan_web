@@ -18,6 +18,7 @@ import { FAQ } from "@/components/sections/FAQ";
 import { NewsAnnouncements } from "@/components/sections/NewsAnnouncements";
 import Script from "next/script";
 import { faqs } from "@/data/faqs";
+import { SANTAAN_YOUTUBE_VIDEOS } from "@/data/youtubeVideos";
 import { buildMetadata } from "@/lib/seo";
 import { buildFaqSchema, buildLocalClinicSchemas, buildOrganizationSchema } from "@/lib/schema";
 
@@ -71,34 +72,34 @@ export default function Home() {
 
       <Header />
       <Hero />
-      
+
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
-      <VideoTestimonials items={[]} />
+      <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} />
       <Awards />
       <NewsAnnouncements />
-      
+
       {/* 2. Address Confusion - Problem Awareness */}
       <MythBusting />
-      
+
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <FertilityReadinessAssessment />
       <FertilityJourneyMap />
-      
+
       {/* 4. Educate - Knowledge Building */}
       <Insights />
       <WonderOfLife />
-      
+
       {/* 5. Establish Credibility - Expertise & Infrastructure */}
       <CareGap />
       <AtHomeTesting />
       <SantaanLab />
       <Doctors />
       <Locations />
-      
+
       {/* 6. Answer Concerns - Final Objection Handling */}
       <FAQ />
-      
+
       <Footer />
     </main>
   );
