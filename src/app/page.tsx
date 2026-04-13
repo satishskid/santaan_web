@@ -6,6 +6,7 @@ import { WonderOfLife } from "@/components/sections/WonderOfLife";
 import { Insights } from "@/components/sections/Insights";
 import { FertilityReadinessAssessment } from "@/components/sections/FertilityReadinessAssessment";
 import { FertilityJourneyMap } from "@/components/sections/FertilityJourneyMap";
+import { PractoBookingSection } from "@/components/sections/PractoBookingSection";
 import { Awards } from "@/components/sections/Awards";
 import { SantaanLab } from "@/components/sections/SantaanLab";
 import { CareGap } from "@/components/sections/CareGap";
@@ -88,6 +89,7 @@ export default function Home() {
       {/* 3. Engage & Assess - Interactive Call-to-Action */}
       <FertilityReadinessAssessment />
       <FertilityJourneyMap />
+      <PractoBookingSection />
 
       {/* 4. Educate - Knowledge Building */}
       <Insights />

@@ -135,10 +135,10 @@ export function HeaderClient() {
                             className="bg-santaan-amber hover:bg-[#E08E45] text-white"
                             data-cta-kind="book"
                             data-center="Network"
-                            data-cta-target="/at-home-fertility-testing"
+                            data-cta-target="/#book-consultation"
                             onClick={() => {
                                 trackHeaderEvent('header_cta_book_assessment');
-                                window.location.href = '/at-home-fertility-testing';
+                                window.location.href = '/#book-consultation';
                             }}
                         >
                             <Calendar className="w-4 h-4 mr-2" />

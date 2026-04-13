@@ -74,7 +74,7 @@ export default async function ServicePage({ params }: { params: Params }) {
               WhatsApp Us
             </a>
             <Link
-              href="/at-home-fertility-testing"
+              href="/#book-consultation"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
             >
               <CalendarCheck className="w-4 h-4" />

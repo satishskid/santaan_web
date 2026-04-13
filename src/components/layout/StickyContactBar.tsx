@@ -33,10 +33,10 @@ export default function StickyContactBar() {
         </a>
 
         <Link
-          href="/at-home-fertility-testing"
+          href="/#book-consultation"
           data-cta-kind="book"
           data-center="Network"
-          data-cta-target="/at-home-fertility-testing"
+          data-cta-target="/#book-consultation"
           className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs md:text-sm font-semibold bg-santaan-amber text-white hover:bg-[#E08E45] transition-colors"
         >
           <CalendarCheck className="w-4 h-4" />

@@ -134,7 +134,7 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
             <h2 className="text-2xl font-playfair font-bold">Ready for a personalized fertility plan?</h2>
             <p className="mt-2 text-white/85">Book a consultation or start with at-home fertility testing for quicker, evidence-driven next steps.</p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/at-home-fertility-testing" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
+              <Link href="/#book-consultation" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
                 Book Assessment
               </Link>
               <Link href="/contact-centres" className="px-5 py-2.5 border border-white/40 rounded-full font-semibold hover:bg-white/10 transition-colors">
