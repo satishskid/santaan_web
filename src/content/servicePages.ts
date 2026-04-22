@@ -129,6 +129,57 @@ export const servicePageData: Record<string, ServicePageData> = {
       },
     ],
   },
+  'ivf-clinic-angul': {
+    slug: 'ivf-clinic-angul',
+    title: 'IVF Centre in Angul',
+    description:
+      'Santaan IVF Angul supports couples with fertility evaluation, IVF and IUI planning, male infertility workup, and step-wise specialist guidance closer to home.',
+    h1: 'IVF Centre in Angul',
+    kicker: 'Angul Fertility Care',
+    intro:
+      'Santaan Angul helps families begin fertility evaluation earlier, understand the right next step faster, and move into specialist-led treatment planning without unnecessary confusion or travel burden.',
+    primaryKeyword: 'IVF centre in Angul',
+    city: 'Angul',
+    sections: [
+      {
+        heading: 'Start fertility workup without delaying the decision',
+        body:
+          'Many couples spend months repeating fragmented tests before they get a clear plan. The Angul pathway is designed to shorten that delay with structured evaluation for both partners and focused next-step guidance.',
+      },
+      {
+        heading: 'Services and guidance available through this center',
+        body:
+          'We help patients move from baseline fertility testing and report review into IUI, IVF, ICSI, male-factor evaluation, and condition-specific treatment planning depending on diagnosis, age, and timeline.',
+      },
+      {
+        heading: 'Built for practical, real-world fertility planning',
+        body:
+          'Treatment decisions are based on ovarian reserve, semen quality, endocrine markers, menstrual history, and prior attempts. This reduces guesswork and helps couples understand what is worth trying next.',
+      },
+      {
+        heading: 'Support for Angul and nearby districts',
+        body:
+          'The center is designed for families who want accessible first-step fertility guidance in Angul, with continuity into broader Santaan specialist support when advanced treatment coordination is needed.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Can I start fertility evaluation in Angul before deciding on IVF?',
+        answer:
+          'Yes. A structured fertility evaluation is often the best first step because it helps clarify whether timed treatment, IUI, IVF, or further testing is the right path.',
+      },
+      {
+        question: 'Do you evaluate both partners together?',
+        answer:
+          'Yes. Santaan’s fertility pathway is built around a couple-first assessment model so male and female factors are reviewed together from the beginning.',
+      },
+      {
+        question: 'Who should consider booking at the Angul center?',
+        answer:
+          'Couples who have been trying for a while, have irregular cycles, low AMH, semen-factor concerns, or want a specialist-led second opinion can start with the Angul center.',
+      },
+    ],
+  },
   'ivf-clinic-bangalore-aecs-layout': {
     slug: 'ivf-clinic-bangalore-aecs-layout',
     title: 'IVF Centre in AECS Layout, Bangalore',

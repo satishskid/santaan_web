@@ -1,6 +1,7 @@
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, CalendarDays, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/Button';
+import { PRACTO_BOOKING_URL, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 import { cn } from '@/lib/utils';
 
 export function Hero() {
@@ -22,34 +23,18 @@ export function Hero() {
             </div>
 
             <div className="container relative z-10 px-4 md:px-6 text-center max-w-4xl mx-auto">
-                <div className="mb-8 md:mb-10 mt-10 md:mt-12">
-                    <div className="bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 md:px-8 md:py-6 shadow-xl max-w-3xl mx-auto">
-                        <p className="font-playfair text-white text-lg md:text-xl mb-2 italic tracking-wide">
-                            संतानः वंशस्य सातत्यम्, जीवनस्य समृद्धिः, प्रीतेः स्वरूपम्।
-                        </p>
-                        <p className="text-white/70 text-xs md:text-sm mb-1 font-light tracking-wider">
-                            Santānaḥ vaṃśasya sātatyam, jīvanasya samṛddhiḥ, prīteḥ svarūpam.
-                        </p>
-                        <p className="text-white/90 text-sm md:text-base font-medium">
-                            &quot;Santaan is the continuity of lineage, the prosperity of life, and the embodiment of love.&quot;
-                        </p>
-                    </div>
-                </div>
-
                 <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium tracking-wide border border-white/20 shadow-sm">
-                    Evidence-backed, research-led care
+                    Private, evidence-backed fertility care
                 </span>
 
-                <h1 className="text-3xl md:text-5xl font-playfair font-bold text-white mb-3 leading-tight drop-shadow-md">
-                    Evidence-Driven IVF & Fertility Care in Bhubaneswar, Berhampur and Bangalore
+                <h1 className="text-3xl md:text-5xl font-playfair font-bold text-white mb-5 leading-tight drop-shadow-md">
+                    Trying for pregnancy longer than expected?
+                    <span className="block text-santaan-amber">Let&apos;s talk about the next step clearly.</span>
                 </h1>
 
-                <p className="text-2xl md:text-4xl font-playfair font-bold text-white mb-6 leading-tight drop-shadow-md">
-                    Where Science Meets <span className="text-santaan-amber">Hope</span>
-                </p>
-
-                <p className="text-lg md:text-xl text-white/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium">
-                    Advanced diagnostics, compassionate specialists, and personalized treatment pathways for your fertility journey.
+                <p className="text-lg md:text-xl text-white/90 mb-4 max-w-3xl mx-auto leading-relaxed drop-shadow-sm font-medium">
+                    Santaan offers IVF, IUI, ICSI, fertility diagnostics, and male-factor care in Bhubaneswar, Berhampur,
+                    and Bangalore, with specialist guidance that feels private, practical, and never pushy.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 mb-8 md:mb-10">
@@ -57,32 +42,44 @@ export function Hero() {
                         Odisha&apos;s only IVF chain*
                     </span>
                     <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
-                        IVF for Bharat
+                        15K+ families supported*
                     </span>
                     <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
-                        Active R&amp;D + innovation focus
+                        15+ national awards
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs md:text-sm font-medium tracking-wide border border-white/20">
+                        4.8 / 5 rating from 479 Berhampur reviews*
                     </span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-16">
                     <a
-                        href="#santaan-signal"
-                        aria-label="Begin your journey: take the Santaan Signal assessment"
+                        href={PRIMARY_WHATSAPP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-cta-kind="whatsapp"
+                        data-center="Network"
+                        data-cta-target={PRIMARY_WHATSAPP_URL}
+                        aria-label="Start a private conversation with Santaan on WhatsApp"
                         className={cn(
                             buttonVariants({
                                 size: 'lg',
                                 className:
-                                    'group w-full sm:w-auto bg-santaan-amber hover:bg-[#E08E45] border-none shadow-lg hover:shadow-xl transition-all',
+                                    'group w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 border-none shadow-lg hover:shadow-xl transition-all',
                             })
                         )}
                     >
-                        Begin Your Journey
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Chat on WhatsApp
                         <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </a>
 
                     <a
-                        href="#insights"
-                        aria-label="Read today's fertility insight"
+                        href="#book-consultation"
+                        data-cta-kind="book"
+                        data-center="Network"
+                        data-cta-target={PRACTO_BOOKING_URL}
+                        aria-label="Book consultation with Santaan"
                         className={cn(
                             buttonVariants({
                                 variant: 'outline',
@@ -91,10 +88,18 @@ export function Hero() {
                             })
                         )}
                     >
-                        <BookOpen className="w-5 h-5 mr-2" />
-                        Read Today&apos;s Insight
+                        <CalendarDays className="w-5 h-5 mr-2" />
+                        Book consultation
                     </a>
                 </div>
+
+                <p className="mb-8 text-sm md:text-base text-white/80 max-w-2xl mx-auto">
+                    Prefer to explore first?{' '}
+                    <a href="#santaan-signal" className="font-semibold text-white underline underline-offset-4 hover:text-santaan-amber transition-colors">
+                        Know your fertility score
+                    </a>
+                    .
+                </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
                     <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
@@ -106,8 +111,8 @@ export function Hero() {
                         <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">National awards</p>
                     </div>
                     <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
-                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">0% EMI*</p>
-                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">On select plans</p>
+                        <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">4.8 / 5</p>
+                        <p className="mt-2 text-xs md:text-sm text-white/85 font-medium">479 Berhampur reviews*</p>
                     </div>
                     <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-4 md:px-5 md:py-5 text-left">
                         <p className="text-2xl md:text-3xl font-playfair font-bold text-white leading-none">Odisha</p>
@@ -115,7 +120,9 @@ export function Hero() {
                     </div>
                 </div>
                 <p className="mt-4 text-[11px] md:text-xs text-white/70 max-w-4xl mx-auto">
-                    *Figures are indicative and based on internal records. Family count is 15K+ and counting. “Only IVF chain” claim is based on publicly available information as of Mar 2026. EMI offered by partner financial institutions, subject to eligibility and terms. Medical outcomes vary by age, diagnosis and clinical factors.
+                    *Figures are based on internal records and public review snapshots available with the Santaan team as of Apr 2026.
+                    Family count is 15K+ and counting. “Only IVF chain” claim is based on publicly available information for Odisha.
+                    Medical outcomes vary by age, diagnosis, and clinical factors.
                 </p>
             </div>
         </section>

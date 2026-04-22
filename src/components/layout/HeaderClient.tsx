@@ -10,20 +10,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Session } from 'next-auth';
 import Image from 'next/image';
 import { useJourney } from '@/context/JourneyContext';
-import { CENTER_CONTACTS, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+import { PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
 const navigation = [
-    { name: 'IVF Centres', href: '/contact-centres' },
-    { name: 'Female Fertility', href: '/female-fertility' },
-    { name: 'Male Fertility', href: '/male-infertility-clinic' },
+    { name: 'IVF centres', href: '/contact-centres' },
+    { name: 'Female fertility', href: '/female-fertility' },
+    { name: 'Male fertility', href: '/male-infertility-clinic' },
     { name: 'Treatments', href: '/treatments' },
     { name: 'Pricing', href: '/pricing' },
-    { name: 'Success Rates', href: '/success-rates' },
-    { name: 'Fertility Doctors', href: '/our-doctors' },
-    { name: 'Fertility Insights', href: '/fertility-insights' },
-    { name: 'Clinical Insights', href: '/clinical-insights' },
+    { name: 'Success rates', href: '/success-rates' },
+    { name: 'Fertility doctors', href: '/our-doctors' },
+    { name: 'Fertility insights', href: '/fertility-insights' },
+    { name: 'Clinical insights', href: '/clinical-insights' },
 ];
 
 interface HeaderClientProps {
@@ -115,10 +115,10 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             Search
                         </button>
                         <a
-                            href={`tel:${PRIMARY_CALL_NUMBER}`}
+                            href={PRIMARY_CALL_HREF}
                             data-cta-kind="call"
-                            data-center="Bhubaneswar"
-                            data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                            data-center="Network"
+                            data-cta-target={PRIMARY_CALL_HREF}
                             className={actionLinkClass}
                             onClick={() => trackHeaderEvent('header_call_primary')}
                         >
@@ -131,13 +131,13 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             target="_blank"
                             rel="noopener noreferrer"
                             data-cta-kind="whatsapp"
-                            data-center="Bhubaneswar"
+                            data-center="Network"
                             data-cta-target={PRIMARY_WHATSAPP_URL}
                             className={cn(actionLinkClass, isScrolled ? 'text-emerald-700 hover:text-emerald-800' : 'text-emerald-300 hover:text-emerald-200')}
                             onClick={() => trackHeaderEvent('header_whatsapp_primary')}
                         >
                             <MessageCircle className="w-4 h-4" />
-                            WhatsApp
+                            Chat on WhatsApp
                         </a>
 
                         {session?.user ? (
@@ -175,14 +175,14 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                 className="bg-santaan-amber hover:bg-[#E08E45] text-white"
                                 data-cta-kind="book"
                                 data-center="Network"
-                                data-cta-target="/at-home-fertility-testing"
+                                data-cta-target="/#book-consultation"
                                 onClick={() => {
-                                    trackHeaderEvent('header_cta_book_assessment');
-                                    window.location.href = '/at-home-fertility-testing';
+                                    trackHeaderEvent('header_cta_book_consultation');
+                                    window.location.href = '/#book-consultation';
                                 }}
                             >
                                 <Calendar className="w-4 h-4 mr-2" />
-                                Book Assessment
+                                Book consultation
                             </Button>
                         )}
 
@@ -286,10 +286,10 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                 {!session?.user ? (
                                     <div className="space-y-4">
                                         <a
-                                            href={`tel:${PRIMARY_CALL_NUMBER}`}
+                                            href={PRIMARY_CALL_HREF}
                                             data-cta-kind="call"
-                                            data-center="Bhubaneswar"
-                                            data-cta-target={`tel:${PRIMARY_CALL_NUMBER}`}
+                                            data-center="Network"
+                                            data-cta-target={PRIMARY_CALL_HREF}
                                             aria-label={`Call ${PRIMARY_CALL_NUMBER}`}
                                             className={cn(
                                                 buttonVariants({ variant: 'outline', fullWidth: true, className: 'w-full justify-center' })
@@ -302,9 +302,9 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             data-cta-kind="whatsapp"
-                                            data-center="Bhubaneswar"
+                                            data-center="Network"
                                             data-cta-target={PRIMARY_WHATSAPP_URL}
-                                            aria-label="WhatsApp a fertility advisor"
+                                            aria-label="Chat with Santaan on WhatsApp"
                                             className={cn(
                                                 buttonVariants({
                                                     fullWidth: true,
@@ -312,42 +312,18 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                                 })
                                             )}
                                         >
-                                            WhatsApp a Fertility Advisor
+                                            Chat on WhatsApp
                                         </a>
-                                        {CENTER_CONTACTS.map((center) => (
-                                            <div key={center.name} className="space-y-2">
-                                                <div className="text-xs font-semibold text-santaan-teal uppercase tracking-wider">
-                                                    {center.name}
-                                                </div>
-                                                {center.phones.map((phone) => (
-                                                    <Link
-                                                        key={phone}
-                                                        href={`tel:${phone}`}
-                                                        data-cta-kind="call"
-                                                        data-center={center.city}
-                                                        data-cta-target={`tel:${phone}`}
-                                                        aria-label={`Call ${phone}`}
-                                                        className={cn(
-                                                            buttonVariants({
-                                                                variant: 'outline',
-                                                                fullWidth: true,
-                                                                className: 'w-full justify-center',
-                                                            })
-                                                        )}
-                                                    >
-                                                        Call {phone}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        ))}
-                                        <div className="text-xs text-gray-500">Choose your nearest center to book.</div>
+                                        <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+                                            Local clinic phone numbers are listed on each centre page with the address, timings, and directions.
+                                        </div>
                                     </div>
                                 ) : (
                                     <Link
                                         href="/profile"
                                         className={cn(buttonVariants({ fullWidth: true, className: 'w-full justify-center' }))}
                                     >
-                                        View Profile
+                                        View profile
                                     </Link>
                                 )}
                             </div>

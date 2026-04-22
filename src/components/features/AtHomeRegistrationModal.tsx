@@ -65,7 +65,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
             <DialogContent className="sm:max-w-md bg-white text-gray-900 border-none shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-playfair text-santaan-teal text-center">
-                        {isSuccess ? "Request Received!" : "Book At-Home Testing"}
+                        {isSuccess ? "Request received!" : "Book at-home testing"}
                     </DialogTitle>
                     <DialogDescription className="text-center text-gray-600">
                         {isSuccess 
@@ -146,7 +146,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                                     Submitting...
                                 </>
                             ) : (
-                                "Request Call Back"
+                                "Request a callback"
                             )}
                         </Button>
                         

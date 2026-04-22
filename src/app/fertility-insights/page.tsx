@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Input } from '@/components/ui/input';
 import { getSantaanBlogPosts } from '@/lib/medium';
+import { isPatientReadyPost } from '@/lib/patient-content';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
 
@@ -24,14 +25,15 @@ export const metadata = buildMetadata({
 export default async function FertilityInsightsPage({ searchParams }: { searchParams?: { q?: string } }) {
   const query = typeof searchParams?.q === 'string' ? searchParams.q.trim() : '';
 
-  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []);
+  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 90 }).catch(() => []);
+  const readyPosts = posts.filter(isPatientReadyPost);
   const visiblePosts = query
-    ? posts.filter((post) => {
+    ? readyPosts.filter((post) => {
         const haystack = `${post.title} ${post.excerpt}`.toLowerCase();
         return haystack.includes(query.toLowerCase());
       })
-    : posts;
-  const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
+    : readyPosts;
+  const tagCounts = readyPosts.reduce<Record<string, number>>((acc, post) => {
     post.tags.forEach((tag) => {
       const slug = tagToSlug(tag);
       if (!slug) return;

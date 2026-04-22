@@ -179,10 +179,10 @@ export function SantaanSignal() {
                             <span className="text-xs font-bold uppercase tracking-widest text-santaan-teal">Fertility Assessment</span>
                         </div>
                         <h2 className="text-3xl md:text-4xl font-playfair font-bold text-santaan-teal mb-3">
-                            Check Your Santaan Signal
+                            Check Your Fertility Readiness Score
                         </h2>
                         <p className="text-gray-500 max-w-lg mx-auto">
-                            A medically-grounded assessment to understand your fertility potential and get personalized guidance.
+                            A medically grounded readiness check to understand where you stand and what next step may make sense.
                         </p>
                     </div>
 

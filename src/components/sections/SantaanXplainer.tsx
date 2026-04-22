@@ -52,7 +52,7 @@ export function SantaanXplainer() {
               href="#santaan-signal"
               className="px-4 py-2 rounded-full bg-white border border-gray-100 text-santaan-teal font-semibold text-sm hover:bg-santaan-cream/40 transition-colors"
             >
-              Take Santaan Signal
+              Know your score
             </a>
             <a
               href="#wonder-of-life"
@@ -110,14 +110,14 @@ export function SantaanXplainer() {
             <div>
               <p className="text-lg font-semibold text-gray-900">Want a personalized plan instead of generic promises?</p>
               <p className="mt-1 text-sm text-gray-600">
-                Take the Santaan Signal assessment and get a structured next-step map for your situation.
+                Check your fertility readiness score and get a structured next-step map for your situation.
               </p>
             </div>
             <a
               href="#santaan-signal"
               className="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-santaan-amber text-white font-semibold hover:bg-[#E08E45] transition-colors"
             >
-              Take Santaan Signal
+              Know your score
             </a>
           </div>
           <p className="mt-4 text-xs text-gray-500">

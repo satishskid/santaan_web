@@ -241,7 +241,7 @@ export function WonderOfLife() {
                         <p className="text-xl mb-8 opacity-90">Every journey is unique. Let us guide yours.</p>
                         <a
                             href="#santaan-signal"
-                            aria-label="Start assessment: Santaan Signal"
+                            aria-label="Check your fertility readiness score"
                             className={cn(
                                 buttonVariants({
                                     size: 'lg',
@@ -249,7 +249,7 @@ export function WonderOfLife() {
                                 })
                             )}
                         >
-                            Start Assessment
+                            Know your score
                         </a>
                     </div>
 

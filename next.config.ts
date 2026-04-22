@@ -25,6 +25,30 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["better-sqlite3"],
+  async redirects() {
+    return [
+      {
+        source: "/contact",
+        destination: "/contact-centres",
+        permanent: true,
+      },
+      {
+        source: "/doctors",
+        destination: "/our-doctors",
+        permanent: true,
+      },
+      {
+        source: "/at-home-testing",
+        destination: "/at-home-fertility-testing",
+        permanent: true,
+      },
+      {
+        source: "/bengaluru-aecs-layout",
+        destination: "/ivf-clinic-bangalore-aecs-layout",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

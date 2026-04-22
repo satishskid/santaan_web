@@ -53,3 +53,4 @@ santaan.db
 tmp/
 output/
 .env*.local
+.abacusai/

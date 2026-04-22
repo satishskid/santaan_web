@@ -533,7 +533,7 @@ export function FertilityReadinessAssessment() {
                                         <p className="text-sm text-gray-600">
                                             Ready to take the next step? Speak with our fertility specialists.
                                         </p>
-                                        <a href="tel:+917008990586">
+                                        <a href="tel:+918065481541">
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
@@ -547,7 +547,7 @@ export function FertilityReadinessAssessment() {
                                                     }
                                                 }}
                                             >
-                                                Book Consultation
+                                                Call Santaan
                                             </motion.button>
                                         </a>
                                     </div>

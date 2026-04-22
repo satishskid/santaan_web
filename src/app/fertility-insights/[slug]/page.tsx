@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, Clock, ExternalLink } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPostBySlug, getSantaanBlogPosts } from '@/lib/medium';
+import { isPatientReadyPost } from '@/lib/patient-content';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
@@ -26,8 +27,8 @@ function getRelatedLinks(tags: string[]) {
 }
 
 export async function generateStaticParams() {
-  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 30 }).catch(() => []);
-  return posts.map((post) => ({ slug: post.slug }));
+  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 90 }).catch(() => []);
+  return posts.filter(isPatientReadyPost).slice(0, 30).map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Params }) {
@@ -48,6 +49,7 @@ export async function generateMetadata({ params }: { params: Params }) {
     path: `/fertility-insights/${post.slug}`,
     type: 'article',
     keywords: post.tags,
+    noIndex: !isPatientReadyPost(post),
   });
 }
 
@@ -81,9 +83,10 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
   ]);
 
   const relatedLinks = getRelatedLinks(post.tags);
-  const latestPosts = await getSantaanBlogPosts({ type: 'blog', limit: 30 }).catch(() => []);
+  const latestPosts = await getSantaanBlogPosts({ type: 'blog', limit: 90 }).catch(() => []);
   const postTagSlugs = new Set(post.tags.map(tagToSlug).filter(Boolean));
   const relatedPosts = latestPosts
+    .filter(isPatientReadyPost)
     .filter((p) => p.slug !== post.slug)
     .map((p) => {
       const score = p.tags.reduce((acc, t) => (postTagSlugs.has(tagToSlug(t)) ? acc + 1 : acc), 0);
@@ -137,10 +140,10 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
             <p className="mt-2 text-white/85">Book a consultation or start with at-home fertility testing for quicker, evidence-driven next steps.</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/at-home-fertility-testing" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
-                Book Assessment
+                Explore at-home testing
               </Link>
               <Link href="/contact-centres" className="px-5 py-2.5 border border-white/40 rounded-full font-semibold hover:bg-white/10 transition-colors">
-                Call a Centre
+                Explore centres
               </Link>
             </div>
           </div>

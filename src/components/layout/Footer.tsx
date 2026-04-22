@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Facebook, Instagram, Linkedin, Twitter, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { readUtmParams } from "@/lib/utm";
-import { CENTER_CONTACTS } from "@/data/centers";
+import { CENTER_PROFILES } from "@/data/centers";
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
@@ -104,18 +104,28 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
+                                <Link href="/ivf-clinic-berhampur" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    IVF Berhampur
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/ivf-clinic-angul" className="text-gray-300 hover:text-santaan-amber transition-colors">
+                                    IVF Angul
+                                </Link>
+                            </li>
+                            <li>
                                 <Link href="/our-doctors" className="text-gray-300 hover:text-santaan-amber transition-colors">
                                     Doctors
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/contact-centres" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    Contact Centres
+                                    Contact centres
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/at-home-fertility-testing" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    At-Home Testing
+                                    At-home testing
                                 </Link>
                             </li>
                             <li>
@@ -130,10 +140,17 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-lg mb-6 text-santaan-sage">Our Centers</h4>
                         <ul className="space-y-4">
-                            {CENTER_CONTACTS.map((center) => (
+                            {CENTER_PROFILES.map((center) => (
                                 <li key={center.name} className="flex gap-3 text-gray-300">
                                     <MapPin className="w-5 h-5 text-santaan-amber shrink-0" />
-                                    <span>{center.name}</span>
+                                    <div className="space-y-1">
+                                        <Link href={center.href} className="block hover:text-santaan-amber transition-colors">
+                                            {center.name}
+                                        </Link>
+                                        <p className="text-xs text-gray-400 leading-relaxed">
+                                            {center.landmark ? `${center.landmark} · ` : ''}{center.addressLine}
+                                        </p>
+                                    </div>
                                 </li>
                             ))}
                         </ul>

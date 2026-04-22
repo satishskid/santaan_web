@@ -247,6 +247,7 @@ export default function CentersManagement() {
             <TableRow>
               <TableHead>City</TableHead>
               <TableHead>Title</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Phones</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Order</TableHead>
@@ -256,13 +257,13 @@ export default function CentersManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                   Loading centers...
                 </TableCell>
               </TableRow>
             ) : centers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                   No centers configured.
                 </TableCell>
               </TableRow>
@@ -273,6 +274,19 @@ export default function CentersManagement() {
                   <TableCell className="text-gray-700">
                     <div className="font-medium">{center.title}</div>
                     <div className="text-xs text-gray-500 mt-1">{center.email}</div>
+                  </TableCell>
+                  <TableCell className="text-gray-700 max-w-[280px]">
+                    <div className="text-sm leading-relaxed">{center.address || "-"}</div>
+                    {center.mapUrl ? (
+                      <a
+                        href={center.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-santaan-teal hover:underline mt-1 inline-block"
+                      >
+                        Open map
+                      </a>
+                    ) : null}
                   </TableCell>
                   <TableCell className="text-gray-700">{(center.phones || []).join(", ") || "-"}</TableCell>
                   <TableCell>

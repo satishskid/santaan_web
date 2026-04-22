@@ -281,17 +281,17 @@ export function FertilityJourneyMap() {
                                                 Ready to start your personalized journey?
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                                Get your Santaan Signal assessment or speak with our fertility specialists
+                                                Know your fertility score or speak with our fertility specialists
                                             </p>
                                         </div>
                                         <div className="flex gap-3">
-                                            <a href="#santaan-signal" aria-label="Take the Santaan Signal assessment">
+                                            <a href="#santaan-signal" aria-label="Check your fertility readiness score">
                                                 <motion.button 
                                                     whileHover={{ scale: 1.05 }}
                                                     whileTap={{ scale: 0.95 }}
                                                     className="px-6 py-3 bg-santaan-amber hover:bg-santaan-amber/90 text-white font-semibold rounded-full shadow-lg flex items-center gap-2 transition-colors"
                                                 >
-                                                    Take Assessment
+                                                    Know your score
                                                     <ArrowRight className="w-4 h-4" />
                                                 </motion.button>
                                             </a>

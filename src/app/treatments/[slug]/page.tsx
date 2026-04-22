@@ -66,13 +66,13 @@ export default async function TreatmentPage({ params }: { params: Params }) {
           <p className="mt-6 max-w-3xl text-white/85 text-lg">{page.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact-centres" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
-              Talk to a Centre
+              Explore centres
             </Link>
             <Link href="/pricing" className="px-5 py-2.5 border border-white/35 rounded-full font-semibold hover:bg-white/10 transition-colors">
               Pricing & EMI
             </Link>
             <Link href="/success-rates" className="px-5 py-2.5 border border-white/35 rounded-full font-semibold hover:bg-white/10 transition-colors">
-              Success Rates
+              Success rates
             </Link>
           </div>
         </div>
@@ -147,10 +147,10 @@ export default async function TreatmentPage({ params }: { params: Params }) {
                 </p>
                 <div className="mt-5 grid gap-3">
                   <Link href="/contact-centres" className="w-full text-center px-5 py-3 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
-                    Call a Centre
+                    Explore centres
                   </Link>
                   <Link href="/at-home-fertility-testing" className="w-full text-center px-5 py-3 border border-gray-200 rounded-full font-semibold text-santaan-teal hover:bg-gray-50 transition-colors">
-                    Start with Testing
+                    Explore at-home testing
                   </Link>
                 </div>
               </div>

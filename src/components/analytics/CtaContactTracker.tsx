@@ -10,6 +10,11 @@ const VISITOR_STORAGE_KEY = "santaan_visitor_id";
 const PHONE_REGEX = /^tel:/i;
 const WHATSAPP_REGEX = /(wa\.me|whatsapp\.com|api\.whatsapp\.com)/i;
 
+type AnalyticsWindow = Window & {
+    gtag?: (command: string, eventName: string, params?: Record<string, unknown>) => void;
+    dataLayer?: Array<Record<string, unknown>>;
+};
+
 const buildVisitorId = () => {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
         return crypto.randomUUID();
@@ -89,6 +94,50 @@ const sendCtaIntent = (payload: Record<string, unknown>) => {
     });
 };
 
+const getGoogleEventName = (action: CtaAction) => {
+    if (action === "whatsapp") return "whatsapp_click";
+    if (action === "book") return "book_consultation_click";
+    return "phone_call_click";
+};
+
+const emitGoogleLeadSignals = (input: {
+    action: CtaAction;
+    center: string;
+    target: string;
+    landingPath: string;
+    utm: Record<string, unknown>;
+}) => {
+    if (typeof window === "undefined") return;
+
+    const analyticsWindow = window as AnalyticsWindow;
+    const eventName = getGoogleEventName(input.action);
+    const params = {
+        event_category: "lead_intent",
+        event_label: `${input.action}_${input.center.toLowerCase()}`,
+        lead_channel: input.action,
+        center: input.center,
+        cta_target: input.target,
+        landing_path: input.landingPath,
+        utm_source: input.utm.utm_source,
+        utm_medium: input.utm.utm_medium,
+        utm_campaign: input.utm.utm_campaign,
+        utm_content: input.utm.utm_content,
+        value: input.action === "book" ? 3 : input.action === "whatsapp" ? 2 : 1,
+    };
+
+    if (analyticsWindow.gtag) {
+        analyticsWindow.gtag("event", eventName, params);
+        analyticsWindow.gtag("event", "generate_lead", params);
+        analyticsWindow.gtag("event", "ads_conversion_other", params);
+        return;
+    }
+
+    analyticsWindow.dataLayer = analyticsWindow.dataLayer || [];
+    analyticsWindow.dataLayer.push({ event: eventName, ...params });
+    analyticsWindow.dataLayer.push({ event: "generate_lead", ...params });
+    analyticsWindow.dataLayer.push({ event: "ads_conversion_other", ...params });
+};
+
 export default function CtaContactTracker() {
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -112,6 +161,14 @@ export default function CtaContactTracker() {
                 target: cta.target,
             });
 
+            emitGoogleLeadSignals({
+                action: cta.action,
+                center,
+                target: cta.target,
+                landingPath,
+                utm,
+            });
+
             sendCtaIntent({
                 action: cta.action,
                 target: cta.target,
@@ -128,4 +185,3 @@ export default function CtaContactTracker() {
 
     return null;
 }
-

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { servicePageSlugs } from '@/content/servicePages';
+import { isClinicalReadyPost } from '@/lib/clinical';
 import { getSantaanBlogPosts } from '@/lib/medium';
+import { isPatientReadyPost } from '@/lib/patient-content';
 import { getSiteUrl } from '@/lib/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -9,18 +11,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes = [
     '/',
+    '/know-your-score',
+    '/fertility-conditions',
+    '/fertility-guides',
+    '/fertility-tips',
     '/fertility-insights',
     '/clinical-insights',
     '/contact-centres',
     '/our-doctors',
     '/at-home-fertility-testing',
+    '/pricing',
+    '/success-rates',
+    '/treatments',
     '/privacy',
     '/terms',
   ];
 
   const serviceRoutes = servicePageSlugs.map((slug) => `/${slug}`);
 
-  const blogPosts = await getSantaanBlogPosts({ limit: 100 }).catch(() => []);
+  const blogPosts = await getSantaanBlogPosts({ limit: 160 }).catch(() => []);
+  const readyPosts = blogPosts.filter((post) => (post.type === 'doctor' ? isClinicalReadyPost(post) : isPatientReadyPost(post)));
 
   const staticEntries = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
@@ -36,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.startsWith('/ivf-clinic-') ? 0.9 : 0.7,
   }));
 
-  const blogEntries = blogPosts.map((post) => {
+  const blogEntries = readyPosts.map((post) => {
     const route = post.type === 'doctor' ? `/clinical-insights/${post.slug}` : `/fertility-insights/${post.slug}`;
     const lastModified = Number.isNaN(new Date(post.publishedAt).getTime()) ? now : new Date(post.publishedAt);
 

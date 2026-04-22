@@ -10,6 +10,7 @@ export interface PageSeoInput {
   path: string;
   keywords?: string[];
   type?: 'website' | 'article';
+  noIndex?: boolean;
 }
 
 function canonicalUrl(path: string): string {
@@ -17,7 +18,7 @@ function canonicalUrl(path: string): string {
   return `${getSiteUrl()}${normalizedPath}`;
 }
 
-export function buildMetadata({ title, description, path, keywords = [], type = 'website' }: PageSeoInput): Metadata {
+export function buildMetadata({ title, description, path, keywords = [], type = 'website', noIndex = false }: PageSeoInput): Metadata {
   const canonical = canonicalUrl(path);
 
   return {
@@ -48,6 +49,16 @@ export function buildMetadata({ title, description, path, keywords = [], type = 
       description,
       images: [DEFAULT_OG_IMAGE],
     },
+    robots: noIndex
+      ? {
+          index: false,
+          follow: true,
+          googleBot: {
+            index: false,
+            follow: true,
+          },
+        }
+      : undefined,
   };
 }
 

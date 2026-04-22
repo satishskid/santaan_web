@@ -1,4 +1,4 @@
-import { CENTER_CONTACTS, PRIMARY_CALL_NUMBER } from '@/data/centers';
+import { CENTER_PROFILES, PRIMARY_CALL_NUMBER, getCenterMapsUrl, type CenterProfile } from '@/data/centers';
 import { getSiteUrl } from '@/lib/site';
 
 interface FaqItem {
@@ -50,38 +50,79 @@ export function buildOrganizationSchema() {
       'https://www.linkedin.com/school/santaan-fertility-center-and-research-institute/',
       'https://medium.com/@santaanIVF',
     ],
-    areaServed: CENTER_CONTACTS.map((center) => ({
+    areaServed: CENTER_PROFILES.map((center) => ({
       '@type': 'City',
       name: center.city,
     })),
   };
 }
 
-export function buildLocalClinicSchemas() {
+export function buildMedicalClinicSchema(center: CenterProfile) {
   const baseUrl = getSiteUrl();
-  return CENTER_CONTACTS.map((center) => ({
-    // Use service-page canonicals for cities with dedicated pages.
-    // Fallback to contact centres page for other active locations.
+  const openingHoursSpecification = center.hours
+    .map((entry) => {
+      const [day, time] = entry.split(': ');
+      const dayMap: Record<string, string> = {
+        Monday: 'https://schema.org/Monday',
+        Tuesday: 'https://schema.org/Tuesday',
+        Wednesday: 'https://schema.org/Wednesday',
+        Thursday: 'https://schema.org/Thursday',
+        Friday: 'https://schema.org/Friday',
+        Saturday: 'https://schema.org/Saturday',
+        Sunday: 'https://schema.org/Sunday',
+      };
+
+      if (!day || !time || time.toLowerCase() === 'closed' || !dayMap[day]) {
+        return null;
+      }
+
+      return {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: dayMap[day],
+        opens: '09:30',
+        closes: '18:30',
+      };
+    })
+    .filter(Boolean);
+
+  return {
     '@context': 'https://schema.org',
     '@type': 'MedicalClinic',
-    name: `Santaan IVF - ${center.name}`,
-    url:
-      center.city === 'Bhubaneswar'
-        ? `${baseUrl}/ivf-clinic-bhubaneswar`
-        : center.city === 'Berhampur'
-          ? `${baseUrl}/ivf-clinic-berhampur`
-          : center.city === 'Bangalore'
-            ? `${baseUrl}/ivf-clinic-bangalore-aecs-layout`
-            : `${baseUrl}/contact-centres`,
+    name: center.centerName,
+    description: center.summary,
+    url: `${baseUrl}${center.href}`,
     telephone: center.phones[0],
-    areaServed: center.city,
+    email: center.email,
+    hasMap: getCenterMapsUrl(center),
+    areaServed: center.areaServed.map((area) => ({
+      '@type': 'AdministrativeArea',
+      name: area,
+    })),
     address: {
       '@type': 'PostalAddress',
+      streetAddress: center.fullAddress,
       addressLocality: center.city,
+      addressRegion: center.region,
       addressCountry: 'IN',
     },
     medicalSpecialty: 'ReproductiveHealth',
-  }));
+    openingHoursSpecification: openingHoursSpecification.length > 0 ? openingHoursSpecification : undefined,
+    review:
+      center.reviews && center.reviews.length > 0
+        ? center.reviews.slice(0, 2).map((review) => ({
+            '@type': 'Review',
+            author: {
+              '@type': 'Person',
+              name: review.author,
+            },
+            reviewBody: review.quote,
+          }))
+        : undefined,
+  };
+}
+
+export function buildLocalClinicSchemas() {
+  return CENTER_PROFILES.map((center) => buildMedicalClinicSchema(center));
 }
 
 export function buildBlogPostingSchema(input: {

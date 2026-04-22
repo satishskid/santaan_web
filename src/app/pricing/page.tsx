@@ -62,10 +62,10 @@ export default function PricingPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact-centres" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
-              Talk to a Centre
+              Explore centres
             </Link>
             <Link href="/at-home-fertility-testing" className="px-5 py-2.5 border border-white/35 rounded-full font-semibold hover:bg-white/10 transition-colors">
-              Start with Testing
+              Explore at-home testing
             </Link>
           </div>
         </div>

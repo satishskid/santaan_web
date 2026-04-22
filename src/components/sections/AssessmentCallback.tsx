@@ -32,7 +32,7 @@ export function AssessmentCallback() {
 
                             <ul className="space-y-4 mb-8">
                                 {[
-                                    { text: "Receive your personalized Santaan Signal score", color: "santaan-sage" },
+                                    { text: "Receive your personalized fertility readiness score", color: "santaan-sage" },
                                     { text: "Understand factors affecting your fertility", color: "santaan-teal" },
                                     { text: "Get tailored recommendations for your timeline", color: "santaan-amber" }
                                 ].map((item, i) => (
@@ -59,7 +59,7 @@ export function AssessmentCallback() {
 
                             <a
                                 href="#santaan-signal"
-                                aria-label="Start your Santaan Signal assessment"
+                                aria-label="Check your fertility readiness score"
                                 className={cn(
                                     buttonVariants({
                                         size: 'lg',
@@ -68,7 +68,7 @@ export function AssessmentCallback() {
                                     })
                                 )}
                             >
-                                Start Your Assessment
+                                Check your score
                             </a>
                         </motion.div>
                     </div>

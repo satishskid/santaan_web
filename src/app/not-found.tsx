@@ -15,13 +15,13 @@ export default function NotFoundPage() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/" className="px-5 py-2.5 rounded-full bg-santaan-teal text-white font-semibold hover:bg-santaan-dark-teal transition-colors">
-              Go to Homepage
+              Go to homepage
             </Link>
             <Link href="/fertility-insights" className="px-5 py-2.5 rounded-full border border-santaan-teal/30 text-santaan-teal font-semibold hover:bg-santaan-teal/5 transition-colors">
-              Read Fertility Insights
+              Read fertility insights
             </Link>
             <Link href="/contact-centres" className="px-5 py-2.5 rounded-full border border-santaan-teal/30 text-santaan-teal font-semibold hover:bg-santaan-teal/5 transition-colors">
-              Call a Centre
+              Explore centres
             </Link>
           </div>
         </div>

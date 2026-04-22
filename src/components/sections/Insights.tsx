@@ -74,18 +74,18 @@ export function Insights() {
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <a
-                            href="#newsletter"
-                            aria-label="Get daily updates: jump to newsletter signup"
+                        <Link
+                            href="/fertility-tips"
+                            aria-label="Get fertility tips and updates"
                             className="text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
                         >
-                            Get daily updates
-                        </a>
+                            Get fertility tips
+                        </Link>
                         <Link
-                            href="/fertility-insights"
+                            href="/fertility-guides"
                             className="group flex items-center gap-2 text-santaan-teal font-medium hover:text-santaan-amber transition-colors"
                         >
-                            View all articles
+                            View fertility guides
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         </Link>
                     </div>

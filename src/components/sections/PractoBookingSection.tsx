@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
-import { AlertCircle, CalendarDays, CheckCircle2, ExternalLink, MessageCircle, PhoneCall, ShieldCheck } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, ExternalLink, LoaderCircle, MessageCircle, PhoneCall, ShieldCheck } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
-import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from "@/data/centers";
+import { buildPrimaryWhatsappUrl, PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER } from "@/data/centers";
 import { cn } from "@/lib/utils";
 
 const practoWidgetId = process.env.NEXT_PUBLIC_PRACTO_WIDGET_ID?.trim() || "183548fb196d70a5";
@@ -28,13 +28,19 @@ function hasRenderedPractoWidget(host: HTMLElement | null) {
   if (!host) return false;
 
   const text = host.textContent?.trim() || "";
-  if (text.includes("Book Appointment")) return true;
+  if (/book|appointment|consult/i.test(text)) return true;
 
-  return Boolean(host.querySelector("a, button, iframe"));
+  if (host.querySelector("iframe")) return true;
+
+  return Array.from(host.querySelectorAll("a, button")).some((node) => {
+    const label = node.textContent?.trim() || "";
+    return label.length > 0;
+  });
 }
 
 export function PractoBookingSection() {
-  const callHref = `tel:${PRIMARY_CALL_NUMBER.replace(/[^0-9+]/g, "")}`;
+  const callHref = PRIMARY_CALL_HREF;
+  const whatsappBookingHref = buildPrimaryWhatsappUrl("Hi, I'd like to book a consultation");
   const hostRef = useRef<HTMLDivElement | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const [widgetStatus, setWidgetStatus] = useState<WidgetStatus>(practoWidgetId ? "loading" : "idle");
@@ -65,7 +71,7 @@ export function PractoBookingSection() {
       if (!hasRenderedPractoWidget(host)) {
         setWidgetStatus("fallback");
       }
-    }, 7000);
+    }, 4500);
 
     return () => {
       observer.disconnect();
@@ -134,7 +140,7 @@ export function PractoBookingSection() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
-                href={PRIMARY_WHATSAPP_URL}
+                href={whatsappBookingHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
@@ -177,7 +183,16 @@ export function PractoBookingSection() {
               </div>
 
               {practoWidgetId ? (
-                <div className="rounded-[20px] border border-santaan-teal/10 bg-white px-6 py-10 shadow-inner">
+                <div className="relative min-h-[320px] rounded-[20px] border border-santaan-teal/10 bg-white px-6 py-10 shadow-inner">
+                  <div
+                    ref={hostRef}
+                    className={cn(
+                      "practo-widget-host mx-auto flex max-w-3xl justify-center",
+                      widgetStatus === "ready" ? "opacity-100" : "pointer-events-none absolute inset-6 opacity-0"
+                    )}
+                    dangerouslySetInnerHTML={{ __html: practoWidgetMarkup }}
+                  />
+
                   {widgetStatus === "fallback" ? (
                     <div className="mx-auto max-w-md rounded-2xl border border-amber-200 bg-amber-50 px-5 py-6 text-center">
                       <AlertCircle className="mx-auto h-8 w-8 text-amber-600" />
@@ -199,7 +214,7 @@ export function PractoBookingSection() {
                           </a>
                         ) : null}
                         <a
-                          href={PRIMARY_WHATSAPP_URL}
+                          href={whatsappBookingHref}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={cn(buttonVariants({ variant: practoBookingUrl ? "outline" : "default", size: "lg" }), "w-full sm:w-auto")}
@@ -209,21 +224,36 @@ export function PractoBookingSection() {
                         </a>
                       </div>
                     </div>
-                  ) : (
-                    <div className="mx-auto flex min-h-28 max-w-md items-center justify-center rounded-2xl border border-santaan-teal/10 bg-[#f8faf8] px-4 py-6">
-                      <div
-                        ref={hostRef}
-                        className="practo-widget-host flex justify-center"
-                        dangerouslySetInnerHTML={{ __html: practoWidgetMarkup }}
-                      />
+                  ) : widgetStatus === "loading" ? (
+                    <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-santaan-teal/10 bg-[#f8faf8] px-5 py-8 text-center">
+                      <LoaderCircle className="h-8 w-8 animate-spin text-santaan-amber" />
+                      <p className="mt-4 font-semibold text-santaan-teal">Loading appointment booking...</p>
+                      <p className="mt-2 max-w-lg text-sm leading-6 text-santaan-teal/75">
+                        If the embedded booking takes too long on this device, patients can continue instantly on WhatsApp,
+                        by phone, or on the full Practo page.
+                      </p>
+                      <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+                        <a
+                          href={whatsappBookingHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
+                        >
+                          <MessageCircle className="mr-2 h-5 w-5" />
+                          Continue on WhatsApp
+                        </a>
+                        <a
+                          href={callHref}
+                          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
+                        >
+                          <PhoneCall className="mr-2 h-5 w-5" />
+                          Call {PRIMARY_CALL_NUMBER}
+                        </a>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="mx-auto min-h-[240px] max-w-3xl rounded-2xl border border-santaan-teal/10 bg-[#f8faf8] px-4 py-6" />
                   )}
-
-                  {widgetStatus === "loading" ? (
-                    <p className="mt-4 text-center text-sm text-santaan-teal/65">
-                      Loading Practo booking...
-                    </p>
-                  ) : null}
                 </div>
               ) : (
                 <div className="rounded-[20px] border border-dashed border-santaan-teal/20 bg-white px-6 py-10 text-center">
@@ -234,7 +264,7 @@ export function PractoBookingSection() {
                   </p>
                   <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                     <a
-                      href={PRIMARY_WHATSAPP_URL}
+                      href={whatsappBookingHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
@@ -247,7 +277,7 @@ export function PractoBookingSection() {
                       className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
                     >
                       <PhoneCall className="mr-2 h-5 w-5" />
-                      Request a callback
+                      Call Santaan
                     </a>
                   </div>
                 </div>

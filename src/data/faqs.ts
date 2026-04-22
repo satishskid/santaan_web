@@ -45,6 +45,6 @@ export const faqs = [
     },
     {
         question: "How do I get started with Santaan?",
-        answer: "Begin with the Santaan Signal assessment, ask the Companion for quick guidance, or book a consultation. We’ll help you choose the right next step.",
+        answer: "Begin with the fertility readiness check, ask the Companion for quick guidance, or book a consultation. We’ll help you choose the right next step.",
     },
 ];

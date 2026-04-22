@@ -72,9 +72,39 @@ function getQuickReply(text: string) {
 
   if (lower === "3" || lower.includes("ivf")) {
     return [
-      "Explore evidence-based IVF guidance here:",
-      "https://santaan.in/fertility-insights",
+      "Start with patient-friendly fertility guides here:",
+      "https://santaan.in/fertility-guides",
       "If you share your age and concern, I can guide next steps.",
+    ].join("\n");
+  }
+
+  if (lower.includes("score") || lower.includes("readiness") || lower.includes("assessment")) {
+    return [
+      "Check your fertility score here:",
+      "https://santaan.in/know-your-score",
+      "It is a simple first step before deciding what to do next.",
+    ].join("\n");
+  }
+
+  if (
+    lower.includes("pcos") ||
+    lower.includes("thyroid") ||
+    lower.includes("male") ||
+    lower.includes("sperm") ||
+    lower.includes("condition")
+  ) {
+    return [
+      "Explore the most common fertility conditions here:",
+      "https://santaan.in/fertility-conditions",
+      "Open the page that feels closest to your concern.",
+    ].join("\n");
+  }
+
+  if (lower.includes("tips") || lower.includes("newsletter") || lower.includes("updates")) {
+    return [
+      "Get fertility tips and gentle updates here:",
+      "https://santaan.in/fertility-tips",
+      "A good option if you want to learn first and decide later.",
     ].join("\n");
   }
 
@@ -378,4 +408,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
-

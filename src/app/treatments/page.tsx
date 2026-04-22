@@ -24,14 +24,14 @@ export default function TreatmentsIndexPage() {
           <p className="uppercase tracking-[0.2em] text-santaan-amber text-xs font-semibold mb-4">Care Pathways</p>
           <h1 className="text-4xl md:text-6xl font-playfair font-bold max-w-4xl leading-tight">Treatments</h1>
           <p className="mt-6 max-w-2xl text-white/85 text-lg">
-            Structured, evidence-driven treatment pages. Content placeholders are ready for the writer to finalize.
+            Explore structured treatment pathways for IVF, IUI, ICSI, egg freezing and embryo testing, with clear steps, decision points and next actions.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/pricing" className="px-5 py-2.5 bg-santaan-amber text-white rounded-full font-semibold hover:bg-[#E08E45] transition-colors">
               Pricing & EMI
             </Link>
             <Link href="/success-rates" className="px-5 py-2.5 border border-white/35 rounded-full font-semibold hover:bg-white/10 transition-colors">
-              Success Rates
+              Success rates
             </Link>
           </div>
         </div>
@@ -64,4 +64,3 @@ export default function TreatmentsIndexPage() {
     </main>
   );
 }
-

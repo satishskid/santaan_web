@@ -1,13 +1,19 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PhoneCall, MessageCircle, CalendarCheck } from 'lucide-react';
+import { MapPin, PhoneCall, MessageCircle, CalendarCheck } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getServicePageBySlug, servicePageSlugs } from '@/content/servicePages';
-import { buildBreadcrumbSchema, buildFaqSchema } from '@/lib/schema';
+import { buildBreadcrumbSchema, buildFaqSchema, buildMedicalClinicSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { getSiteUrl } from '@/lib/site';
-import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+import {
+  PRIMARY_CALL_NUMBER,
+  buildPrimaryWhatsappUrl,
+  getCenterMapsUrl,
+  getCenterProfileByCity,
+  getCenterProfileBySlug,
+} from '@/data/centers';
 
 type Params = Promise<{ slug: string }>;
 
@@ -45,10 +51,16 @@ export default async function ServicePage({ params }: { params: Params }) {
 
   const faqSchema = buildFaqSchema(page.faqs);
   const baseUrl = getSiteUrl();
+  const centerProfile = getCenterProfileBySlug(slug) ?? getCenterProfileByCity(page.city);
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: 'Home', url: `${baseUrl}/` },
     { name: page.title, url: `${baseUrl}/${slug}` },
   ]);
+  const clinicSchema = centerProfile ? buildMedicalClinicSchema(centerProfile) : null;
+  const callNumber = PRIMARY_CALL_NUMBER;
+  const callHref = `tel:${callNumber.replace(/[^0-9+]/g, '')}`;
+  const whatsappHref = buildPrimaryWhatsappUrl(`Hi, I'd like more info on ${page.h1}`);
+  const mapsHref = centerProfile ? getCenterMapsUrl(centerProfile) : null;
 
   return (
     <main className="min-h-screen bg-santaan-cream">
@@ -60,31 +72,144 @@ export default async function ServicePage({ params }: { params: Params }) {
           <p className="mt-6 max-w-3xl text-white/90 text-lg leading-relaxed">{page.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={`tel:${PRIMARY_CALL_NUMBER}`}
+              href={callHref}
+              data-cta-kind="call"
+              data-center="Network"
+              data-cta-target={callHref}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-santaan-amber text-white font-semibold hover:bg-[#E08E45] transition-colors"
             >
               <PhoneCall className="w-4 h-4" />
-              Call a Fertility Advisor
+              Call Santaan
             </a>
             <a
-              href={PRIMARY_WHATSAPP_URL}
+              href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
+              data-cta-kind="whatsapp"
+              data-center="Network"
+              data-cta-target={whatsappHref}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp Us
+              Chat on WhatsApp
             </a>
             <Link
               href="/at-home-fertility-testing"
+              data-cta-kind="book"
+              data-center={centerProfile?.city ?? 'Network'}
+              data-cta-target="/at-home-fertility-testing"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
             >
               <CalendarCheck className="w-4 h-4" />
-              Book Assessment
+              Explore at-home testing
             </Link>
           </div>
         </div>
       </section>
+
+      {centerProfile ? (
+        <section className="py-12">
+          <div className="container mx-auto px-4 md:px-6 max-w-5xl">
+            <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-6 rounded-2xl border border-gray-100 bg-white p-6 md:p-8 shadow-sm">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-santaan-amber font-semibold">Center Details</p>
+                <h2 className="mt-3 text-2xl md:text-3xl font-playfair font-bold text-santaan-teal">
+                  Visit {centerProfile.centerName}
+                </h2>
+                <p className="mt-3 text-gray-700 leading-relaxed">{centerProfile.summary}</p>
+                <div className="mt-5 grid gap-4 md:grid-cols-2 text-sm">
+                  <div className="rounded-xl bg-santaan-cream/60 border border-santaan-sage/20 p-4">
+                    <p className="font-semibold text-gray-900">Location</p>
+                    <p className="mt-2 text-gray-700">{centerProfile.fullAddress}</p>
+                  </div>
+                  <div className="rounded-xl bg-santaan-cream/60 border border-santaan-sage/20 p-4">
+                    <p className="font-semibold text-gray-900">Serves</p>
+                    <p className="mt-2 text-gray-700">{centerProfile.areaServed.join(', ')}</p>
+                  </div>
+                  {centerProfile.phones.length > 0 ? (
+                    <div className="rounded-xl bg-santaan-cream/60 border border-santaan-sage/20 p-4">
+                      <p className="font-semibold text-gray-900">Clinic phone</p>
+                      <div className="mt-2 space-y-1">
+                        {centerProfile.phones.map((phone) => (
+                          <p key={phone} className="text-gray-700">
+                            Ph: {phone}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {centerProfile.landmark ? (
+                    <div className="rounded-xl bg-santaan-cream/60 border border-santaan-sage/20 p-4">
+                      <p className="font-semibold text-gray-900">Landmark</p>
+                      <p className="mt-2 text-gray-700">{centerProfile.landmark}</p>
+                    </div>
+                  ) : null}
+                  {centerProfile.hours.length > 0 ? (
+                    <div className="rounded-xl bg-santaan-cream/60 border border-santaan-sage/20 p-4">
+                      <p className="font-semibold text-gray-900">Timings</p>
+                      <p className="mt-2 text-gray-700">{centerProfile.hours[0].replace('Monday: ', '')} Monday to Saturday</p>
+                      <p className="mt-1 text-gray-700">Sunday: Closed</p>
+                    </div>
+                  ) : null}
+                </div>
+                {centerProfile.reviews && centerProfile.reviews.length > 0 ? (
+                  <div className="mt-5 rounded-2xl border border-santaan-sage/20 bg-santaan-cream/60 p-4 md:p-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-santaan-amber font-semibold">Patient feedback</p>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      {centerProfile.reviews.slice(0, 2).map((review) => (
+                        <article key={`${review.author}-${review.meta}`} className="rounded-xl border border-santaan-sage/20 bg-white p-4">
+                          <p className="text-sm text-gray-700 leading-relaxed">“{review.quote}”</p>
+                          <p className="mt-3 text-xs font-semibold text-gray-900">{review.author}</p>
+                          <p className="text-[11px] text-gray-500">{review.meta}</p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="rounded-2xl bg-santaan-teal text-white p-6">
+                <p className="text-xs uppercase tracking-[0.2em] text-santaan-amber font-semibold">Quick Actions</p>
+                <div className="mt-5 space-y-3">
+                  <a
+                    href={callHref}
+                    data-cta-kind="call"
+                    data-center="Network"
+                    data-cta-target={callHref}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-white text-santaan-teal px-4 py-3 text-sm font-semibold hover:bg-santaan-cream transition-colors"
+                  >
+                    <PhoneCall className="w-4 h-4" />
+                    Call Santaan
+                  </a>
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-cta-kind="whatsapp"
+                    data-center="Network"
+                    data-cta-target={whatsappHref}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Chat on WhatsApp
+                  </a>
+                  {mapsHref ? (
+                    <a
+                      href={mapsHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      Open in Maps
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6 max-w-5xl">
@@ -139,6 +264,9 @@ export default async function ServicePage({ params }: { params: Params }) {
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      {clinicSchema ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(clinicSchema) }} />
+      ) : null}
       <Footer />
     </main>
   );

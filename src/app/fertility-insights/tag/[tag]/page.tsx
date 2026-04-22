@@ -3,6 +3,7 @@ import { Clock, ArrowRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPosts } from '@/lib/medium';
+import { isPatientReadyPost } from '@/lib/patient-content';
 import { buildMetadata } from '@/lib/seo';
 import { slugToLabel, tagToSlug } from '@/lib/tag-utils';
 
@@ -22,8 +23,9 @@ export async function generateMetadata({ params }: { params: Params }) {
 
 export default async function FertilityInsightsTagPage({ params }: { params: Params }) {
   const { tag } = await params;
-  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 60 }).catch(() => []);
-  const filtered = posts.filter((post) => post.tags.some((t) => tagToSlug(t) === tag));
+  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 120 }).catch(() => []);
+  const readyPosts = posts.filter(isPatientReadyPost);
+  const filtered = readyPosts.filter((post) => post.tags.some((t) => tagToSlug(t) === tag));
   const label = slugToLabel(tag);
 
   return (
@@ -103,4 +105,3 @@ export default async function FertilityInsightsTagPage({ params }: { params: Par
     </main>
   );
 }
-

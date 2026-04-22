@@ -13,6 +13,44 @@ This is the main web application for Santaan, built with Next.js, Drizzle ORM, a
 - **SEO**: Optimized metadata, schema, sitemap/robots, and service landing pages.
 - **Blog Engine**: Medium posts are synced into Turso and published on `santaan.in/fertility-insights/*`.
 
+## Website CTA and CRM Routing
+
+- **Primary call CTA**: `+91 80 6548 1541`
+- **Primary WhatsApp CTA**: `+91 96689 04011`
+- **Default WhatsApp prefill**: `Hi, I'd like more info on IVF`
+- **CTA source of truth**: [src/data/centers.ts](./src/data/centers.ts)
+
+### Warm-lead landing paths
+
+- `/fertility-guides`
+- `/fertility-conditions`
+- `/know-your-score`
+- `/fertility-tips`
+- `/newsletter` redirects to `/fertility-tips`
+
+These pages are meant for CRM, WhatsApp, SMS, and remarketing follow-up where the click goal is education first, then a soft conversion action.
+
+### CTA consistency rules
+
+- Primary website call/WhatsApp CTAs route through the shared network numbers above.
+- Local clinic phone numbers remain visible as office details on location/service pages and do not compete with the primary CTAs.
+- Public button labels use sentence case and are aligned to click intent:
+  - `Chat on WhatsApp`
+  - `Book consultation`
+  - `Know your score`
+  - `Explore centres`
+  - `Explore at-home testing`
+
+### Booking section behavior
+
+- The homepage Practo booking shell now includes:
+  - a loading state
+  - a WhatsApp fallback
+  - a direct call fallback
+  - a direct Practo fallback link when the embed does not render
+
+This prevents the booking area from appearing blank on slower devices or partial widget loads.
+
 ## Domains
 
 - Canonical site URL defaults to `https://santaan.in` via [site.ts](./src/lib/site.ts) and can be overridden with `NEXT_PUBLIC_SITE_URL` / `NEXTAUTH_URL`.
