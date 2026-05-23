@@ -69,8 +69,8 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                     </DialogTitle>
                     <DialogDescription className="text-center text-gray-600">
                         {isSuccess 
-                            ? "Our executive will call you shortly to schedule your appointment."
-                            : "Fill in your details for a private and convenient fertility assessment."}
+                            ? "Our team will message you on WhatsApp shortly to schedule the next step."
+                            : "Fill in your details for a private fertility assessment and WhatsApp follow-up."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -79,7 +79,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                             <CheckCircle2 className="w-8 h-8 text-green-600" />
                         </div>
-                        <p className="text-green-800 font-medium">We&apos;ll be in touch soon!</p>
+                        <p className="text-green-800 font-medium">We&apos;ll follow up on WhatsApp soon.</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4 mt-2">
@@ -146,7 +146,7 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
                                     Submitting...
                                 </>
                             ) : (
-                                "Request a callback"
+                                "Request WhatsApp follow-up"
                             )}
                         </Button>
                         

@@ -1,43 +1,51 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { contacts } from '@/db/schema';
+import { NextResponse } from "next/server";
+import { pushLeadToAiCrm } from "@/lib/aicrm";
+import { ensureMandatoryUtm } from "@/lib/utm";
 
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { name, email, phone, question, score, signal, utm } = body;
+  try {
+    const body = await request.json();
+    const name = String(body?.name || "").trim();
+    const phone = String(body?.phone || "").trim();
+    const email = body?.email ? String(body.email).trim() : "";
+    const question = body?.question ? String(body.question).trim() : "";
+    const score = body?.score;
+    const signal = body?.signal ? String(body.signal).trim() : "";
+    const utm = ensureMandatoryUtm(body?.utm || {});
 
-        // Simple validation
-        if (!name || !email) {
-            return NextResponse.json({ error: 'Name and Email are required' }, { status: 400 });
-        }
-
-        const newContact = await db.insert(contacts).values({
-            name,
-            email,
-            phone,
-            seminarRegistered: true,
-            seminarScore: score,
-            seminarSignal: signal,
-            seminarQuestion: question,
-            status: 'New',
-            role: 'Lead',
-            utmSource: utm?.utm_source,
-            utmMedium: utm?.utm_medium,
-            utmCampaign: utm?.utm_campaign,
-            utmTerm: utm?.utm_term,
-            utmContent: utm?.utm_content,
-            landingPath: utm?.landing_path,
-        }).returning();
-
-        return NextResponse.json({
-            success: true,
-            message: 'Registration successful',
-            contact: newContact[0]
-        });
-
-    } catch (error) {
-        console.error('Registration error:', error);
-        return NextResponse.json({ error: 'Failed to register' }, { status: 500 });
+    if (!name || !phone) {
+      return NextResponse.json({ error: "Name and WhatsApp number are required." }, { status: 400 });
     }
+
+    const result = await pushLeadToAiCrm({
+      name,
+      phone,
+      email,
+      topic: "seminar_registration",
+      source: "website_seminar",
+      campaign: "SEMINAR",
+      utm,
+      landingPath: utm.landing_path || "/know-your-score",
+      notes: question || "Seminar registration request",
+      extras: {
+        question: question || undefined,
+        score: typeof score === "number" ? score : undefined,
+        signal: signal || undefined,
+        form_kind: "seminar_registration",
+        ready_to_start: "exploring",
+      },
+    });
+
+    if (!result.ok) {
+      return NextResponse.json({ error: "Failed to reserve your spot." }, { status: 502 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Spot reserved. We will confirm the seminar details on WhatsApp.",
+    });
+  } catch (error) {
+    console.error("Seminar registration error:", error);
+    return NextResponse.json({ error: "Failed to register" }, { status: 500 });
+  }
 }

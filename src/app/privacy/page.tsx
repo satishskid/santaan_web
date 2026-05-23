@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <ul className="space-y-3 text-gray-700 list-disc pl-5">
                     <li>We never sell your data to third parties.</li>
-                    <li>Contact details are used for consultation, follow-ups, or newsletters you opt into.</li>
+                    <li>Contact details are used for consultation, follow-ups, or WhatsApp guidance you opt into.</li>
                     <li>You can request deletion of your data at any time.</li>
                 </ul>
                 <p className="text-gray-700 mt-6">

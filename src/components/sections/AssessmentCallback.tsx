@@ -54,7 +54,7 @@ export function AssessmentCallback() {
 
                             <p className="text-sm text-gray-600 mb-6">
                                 Prefer a quick answer? Tap <span className="font-semibold text-santaan-teal">Ask Santaan AI</span> at the bottom-right.
-                                For daily guidance, <a href="#newsletter" className="text-santaan-amber font-semibold hover:text-[#E08E45]">subscribe here</a>.
+                                For guided follow-up, <a href="#newsletter" className="text-santaan-amber font-semibold hover:text-[#E08E45]">get tips on WhatsApp here</a>.
                             </p>
 
                             <a

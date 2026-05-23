@@ -76,24 +76,6 @@ const resolveActionFromElement = (element: HTMLElement): { action: CtaAction; ta
     return null;
 };
 
-const sendCtaIntent = (payload: Record<string, unknown>) => {
-    const body = JSON.stringify(payload);
-
-    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-        const blob = new Blob([body], { type: "application/json" });
-        if (navigator.sendBeacon("/api/track-call", blob)) return;
-    }
-
-    fetch("/api/track-call", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body,
-        keepalive: true,
-    }).catch(() => {
-        // Ignore network failures so CTA flow is never blocked.
-    });
-};
-
 const getGoogleEventName = (action: CtaAction) => {
     if (action === "whatsapp") return "whatsapp_click";
     if (action === "book") return "book_consultation_click";
@@ -169,14 +151,7 @@ export default function CtaContactTracker() {
                 utm,
             });
 
-            sendCtaIntent({
-                action: cta.action,
-                target: cta.target,
-                center,
-                landingPath,
-                visitorId: getVisitorId(),
-                utm,
-            });
+            getVisitorId();
         };
 
         document.addEventListener("click", handleClick, { capture: true });

@@ -81,7 +81,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                             <DialogTitle>Register for Dr. Satish&apos;s Seminar</DialogTitle>
                             <DialogDescription>
                                 Join the upcoming session to discuss your score of {score}.
-                                Your privacy is our priority.
+                                We will confirm the details with you on WhatsApp.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -104,11 +104,10 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="your@email.com"
-                                    required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone (WhatsApp preferred)</Label>
+                                <Label htmlFor="phone">WhatsApp number</Label>
                                 <Input
                                     id="phone"
                                     type="tel"
@@ -132,7 +131,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
 
                             <DialogFooter className="mt-6">
                                 <Button type="submit" disabled={isSubmitting} className="w-full bg-orange-500 hover:bg-orange-600">
-                                    {isSubmitting ? 'Reserving...' : 'Reserve My Free Spot'}
+                                    {isSubmitting ? 'Reserving...' : 'Reserve my spot on WhatsApp'}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -144,7 +143,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Spot Reserved!</h3>
                         <p className="text-gray-500 mb-6">
-                            We have sent a confirmation to <b>{formData.email}</b> with the joining link.
+                            We will confirm the seminar details on <b>{formData.phone}</b> by WhatsApp.
                         </p>
                         <Button onClick={onClose} className="w-full">
                             Close

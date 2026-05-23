@@ -1,19 +1,19 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import NewsletterSubscribe from '@/components/sections/NewsletterSubscribe';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'Get Fertility Tips and Updates',
+  title: 'Get Fertility Tips on WhatsApp',
   description:
-    'Subscribe for short fertility tips, myth-busting education, and gentle next-step guidance designed for patients who are still exploring.',
+    'Get short fertility tips, myth-busting education, and gentle next-step guidance on WhatsApp for patients who are still exploring.',
   path: '/fertility-tips',
   keywords: [
-    'fertility newsletter',
+    'fertility tips whatsapp',
     'fertility tips',
-    'fertility updates',
+    'fertility whatsapp updates',
     'pcos fertility tips',
   ],
 });
@@ -21,7 +21,7 @@ export const metadata = buildMetadata({
 const benefits = [
   'Short, practical fertility tips that do not feel overwhelming.',
   'Educational follow-up for patients who are warm but not ready to book yet.',
-  'A softer nurture CTA for SMS, WhatsApp, and remarketing campaigns.',
+  'A softer WhatsApp nurture CTA for Meta, SMS, and remarketing campaigns.',
 ];
 
 export default function FertilityTipsPage() {
@@ -36,8 +36,8 @@ export default function FertilityTipsPage() {
             Get fertility tips that feel clear, calm, and useful.
           </h1>
           <p className="mt-6 max-w-3xl text-white/90 text-lg leading-relaxed">
-            This is the better newsletter entry point for warm leads. The promise is simple: one useful insight, one myth clarified,
-            and one gentle next step.
+            This is the better WhatsApp nurture entry point for warm leads. The promise is simple: one useful insight,
+            one myth clarified, and one gentle next step.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -45,7 +45,7 @@ export default function FertilityTipsPage() {
               href="#subscribe"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-santaan-amber text-white font-semibold hover:bg-[#E08E45] transition-colors"
             >
-              Subscribe now
+              Get tips on WhatsApp
               <ArrowRight className="w-4 h-4" />
             </a>
             <Link
@@ -74,15 +74,15 @@ export default function FertilityTipsPage() {
           <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-3xl border border-gray-100 bg-white p-6 md:p-8 shadow-sm">
               <div className="inline-flex items-center gap-2 rounded-full bg-santaan-cream px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-santaan-teal">
-                <Mail className="h-3.5 w-3.5 text-santaan-amber" />
-                Subscribe
+                <MessageCircle className="h-3.5 w-3.5 text-santaan-amber" />
+                WhatsApp nurture
               </div>
               <h2 className="mt-4 text-3xl font-playfair font-bold text-santaan-teal">
                 Stay connected without feeling pushed.
               </h2>
               <p className="mt-3 text-gray-700 leading-relaxed">
                 This page is designed for patients who need more confidence before they book. Capture intent now, then
-                keep building trust with useful education.
+                keep building trust with useful education on WhatsApp.
               </p>
               <div className="mt-6">
                 <NewsletterSubscribe />
@@ -95,7 +95,7 @@ export default function FertilityTipsPage() {
                 Pair tips with one high-intent path.
               </h2>
               <p className="mt-3 text-gray-700 leading-relaxed">
-                Newsletter-style education works best when the next click is still low pressure but clearly relevant.
+                WhatsApp education works best when the next click is still low pressure but clearly relevant.
               </p>
 
               <div className="mt-6 grid gap-4">

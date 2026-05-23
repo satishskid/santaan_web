@@ -7,9 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Session } from 'next-auth';
 import Image from 'next/image';
-import { useJourney } from '@/context/JourneyContext';
 import { PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
@@ -26,10 +24,6 @@ const navigation = [
     { name: 'Clinical insights', href: '/clinical-insights' },
 ];
 
-interface HeaderClientProps {
-    session: Session | null;
-}
-
 function trackHeaderEvent(label: string) {
     if (typeof window === 'undefined') return;
     const analyticsWindow = window as GtagWindow;
@@ -41,11 +35,10 @@ function trackHeaderEvent(label: string) {
     });
 }
 
-export function HeaderClient({ session }: HeaderClientProps) {
+export function HeaderClient() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
-    const { signal } = useJourney();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -140,51 +133,20 @@ export function HeaderClient({ session }: HeaderClientProps) {
                             Chat on WhatsApp
                         </a>
 
-                        {session?.user ? (
-                            <Link href="/profile">
-                                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                                    <div className="relative w-9 h-9">
-                                        {session.user.image ? (
-                                            <Image
-                                                src={session.user.image}
-                                                alt={session.user.name || "User"}
-                                                fill
-                                                className="rounded-full object-cover border-2 border-white ring-1 ring-gray-200"
-                                            />
-                                        ) : (
-                                            <div className="w-9 h-9 rounded-full bg-santaan-sage/20 flex items-center justify-center text-sm font-bold text-santaan-teal">
-                                                {session.user.name?.[0] || "U"}
-                                            </div>
-                                        )}
-                                        {/* Status Dot based on Signal */}
-                                        <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${signal === 'green' ? 'bg-emerald-500' :
-                                            signal === 'yellow' ? 'bg-amber-500' :
-                                                signal === 'red' ? 'bg-rose-500' :
-                                                    'bg-gray-300'
-                                            }`}></div>
-                                    </div>
-                                    <div className="text-xs text-left">
-                                        <div className="font-bold text-gray-700">Namaste</div>
-                                        <div className="text-santaan-teal font-medium">{session.user.name?.split(' ')[0]}</div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ) : (
-                            <Button
-                                size="sm"
-                                className="bg-santaan-amber hover:bg-[#E08E45] text-white"
-                                data-cta-kind="book"
-                                data-center="Network"
-                                data-cta-target="/#book-consultation"
-                                onClick={() => {
-                                    trackHeaderEvent('header_cta_book_consultation');
-                                    window.location.href = '/#book-consultation';
-                                }}
-                            >
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Book consultation
-                            </Button>
-                        )}
+                        <Button
+                            size="sm"
+                            className="bg-santaan-amber hover:bg-[#E08E45] text-white"
+                            data-cta-kind="book"
+                            data-center="Network"
+                            data-cta-target="/#book-consultation"
+                            onClick={() => {
+                                trackHeaderEvent('header_cta_book_consultation');
+                                window.location.href = '/#book-consultation';
+                            }}
+                        >
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Book consultation
+                        </Button>
 
                     </div>
 
@@ -193,22 +155,6 @@ export function HeaderClient({ session }: HeaderClientProps) {
                         <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
                             Search
                         </button>
-                        {session?.user && (
-                            <Link href="/profile" className="relative w-8 h-8">
-                                {session.user.image ? (
-                                    <Image
-                                        src={session.user.image}
-                                        alt={session.user.name || "User"}
-                                        fill
-                                        className="rounded-full object-cover border border-gray-200"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 rounded-full bg-santaan-sage/20 flex items-center justify-center text-xs font-bold text-santaan-teal">
-                                        {session.user.name?.[0] || "U"}
-                                    </div>
-                                )}
-                            </Link>
-                        )}
                         <button
                             type="button"
                             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 hover:bg-gray-100"
@@ -283,49 +229,40 @@ export function HeaderClient({ session }: HeaderClientProps) {
                                 </Link>
                             ))}
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                                {!session?.user ? (
-                                    <div className="space-y-4">
-                                        <a
-                                            href={PRIMARY_CALL_HREF}
-                                            data-cta-kind="call"
-                                            data-center="Network"
-                                            data-cta-target={PRIMARY_CALL_HREF}
-                                            aria-label={`Call ${PRIMARY_CALL_NUMBER}`}
-                                            className={cn(
-                                                buttonVariants({ variant: 'outline', fullWidth: true, className: 'w-full justify-center' })
-                                            )}
-                                        >
-                                            Call {PRIMARY_CALL_NUMBER}
-                                        </a>
-                                        <a
-                                            href={PRIMARY_WHATSAPP_URL}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            data-cta-kind="whatsapp"
-                                            data-center="Network"
-                                            data-cta-target={PRIMARY_WHATSAPP_URL}
-                                            aria-label="Chat with Santaan on WhatsApp"
-                                            className={cn(
-                                                buttonVariants({
-                                                    fullWidth: true,
-                                                    className: 'w-full justify-center bg-emerald-600 hover:bg-emerald-700',
-                                                })
-                                            )}
-                                        >
-                                            Chat on WhatsApp
-                                        </a>
-                                        <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-gray-600">
-                                            Local clinic phone numbers are listed on each centre page with the address, timings, and directions.
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <Link
-                                        href="/profile"
-                                        className={cn(buttonVariants({ fullWidth: true, className: 'w-full justify-center' }))}
+                                <div className="space-y-4">
+                                    <a
+                                        href={PRIMARY_CALL_HREF}
+                                        data-cta-kind="call"
+                                        data-center="Network"
+                                        data-cta-target={PRIMARY_CALL_HREF}
+                                        aria-label={`Call ${PRIMARY_CALL_NUMBER}`}
+                                        className={cn(
+                                            buttonVariants({ variant: 'outline', fullWidth: true, className: 'w-full justify-center' })
+                                        )}
                                     >
-                                        View profile
-                                    </Link>
-                                )}
+                                        Call {PRIMARY_CALL_NUMBER}
+                                    </a>
+                                    <a
+                                        href={PRIMARY_WHATSAPP_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        data-cta-kind="whatsapp"
+                                        data-center="Network"
+                                        data-cta-target={PRIMARY_WHATSAPP_URL}
+                                        aria-label="Chat with Santaan on WhatsApp"
+                                        className={cn(
+                                            buttonVariants({
+                                                fullWidth: true,
+                                                className: 'w-full justify-center bg-emerald-600 hover:bg-emerald-700',
+                                            })
+                                        )}
+                                    >
+                                        Chat on WhatsApp
+                                    </a>
+                                    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+                                        Local clinic phone numbers are listed on each centre page with the address, timings, and directions.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

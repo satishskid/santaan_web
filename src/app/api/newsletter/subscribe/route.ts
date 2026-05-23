@@ -1,61 +1,45 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { contacts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { pushLeadToAiCrm } from "@/lib/aicrm";
+import { ensureMandatoryUtm } from "@/lib/utm";
 
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const email = String(body?.email || "").trim().toLowerCase();
-        const name = body?.name;
-        const utm = body?.utm || {};
+  try {
+    const body = await request.json();
+    const name = String(body?.name || "").trim();
+    const phone = String(body?.phone || "").trim();
+    const utm = ensureMandatoryUtm(body?.utm || {});
 
-        if (!email) {
-            return NextResponse.json({ error: "Email is required" }, { status: 400 });
-        }
-
-        const existing = await db.select().from(contacts).where(eq(contacts.email, email)).get();
-        if (existing) {
-            // Update existing contact to newsletter subscriber
-            await db.update(contacts)
-                .set({
-                    newsletterSubscribed: true,
-                    tags: existing.tags 
-                        ? `${existing.tags},newsletter`.split(',').filter((t, i, a) => a.indexOf(t) === i).join(',')
-                        : 'newsletter',
-                    lastContact: new Date().toISOString(),
-                })
-                .where(eq(contacts.email, email));
-
-            return NextResponse.json({ 
-                success: true, 
-                message: "Successfully subscribed!",
-                alreadySubscribed: existing.newsletterSubscribed 
-            });
-        }
-
-        await db.insert(contacts).values({
-            name: name || "Newsletter Subscriber",
-            email,
-            role: "Newsletter",
-            status: "New",
-            seminarRegistered: false,
-            newsletterSubscribed: true,
-            tags: 'newsletter',
-            leadSource: 'website',
-            leadScore: 10,
-            preferredChannel: 'email',
-            utmSource: utm.utm_source || 'direct',
-            utmMedium: utm.utm_medium || 'website',
-            utmCampaign: utm.utm_campaign || 'newsletter',
-            utmTerm: utm.utm_term,
-            utmContent: utm.utm_content || 'footer_newsletter',
-            landingPath: utm.landing_path || '/newsletter',
-        });
-
-        return NextResponse.json({ success: true, message: "Subscribed successfully! Check your email." });
-    } catch (error) {
-        console.error("Newsletter subscribe error:", error);
-        return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
+    if (!name || !phone) {
+      return NextResponse.json({ error: "Name and WhatsApp number are required." }, { status: 400 });
     }
+
+    const result = await pushLeadToAiCrm({
+      name,
+      phone,
+      topic: "whatsapp_tips",
+      source: "website_whatsapp_tips",
+      campaign: "WHATSAPP_TIPS",
+      utm,
+      landingPath: utm.landing_path || "/fertility-tips",
+      notes: "Requested fertility tips on WhatsApp",
+      extras: {
+        form_kind: "whatsapp_tips",
+        nurture_stage: "warm",
+        content_preference: "fertility_tips",
+        ready_to_start: "exploring",
+      },
+    });
+
+    if (!result.ok) {
+      return NextResponse.json({ error: "Failed to save your WhatsApp request." }, { status: 502 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "You’re in. We will share fertility tips on WhatsApp.",
+    });
+  } catch (error) {
+    console.error("WhatsApp tips subscribe error:", error);
+    return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
+  }
 }
