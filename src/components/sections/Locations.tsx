@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, ExternalLink, Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowRight, ExternalLink, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import type { ElementType } from 'react';
-import { CENTER_PROFILES, getCenterMapsUrl } from '@/data/centers';
+import { CENTER_PROFILES, buildPrimaryWhatsappUrl, getCenterMapsUrl } from '@/data/centers';
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
@@ -169,16 +169,19 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                                         Explore {loc.city} page
                                         <ArrowRight className="w-4 h-4" />
                                     </Link>
-                                    <Link
-                                        href="/#book-consultation"
+                                    <a
+                                        href={buildPrimaryWhatsappUrl(`Hi, I'd like to book a consultation for ${loc.city}`)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         data-cta-kind="book"
                                         data-center={loc.city}
-                                        data-cta-target="/#book-consultation"
-                                        className="inline-flex items-center justify-center rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                                        data-cta-target="whatsapp_booking"
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
                                         onClick={() => trackLocationEvent(`location_book_${loc.city}`)}
                                     >
-                                        Book consultation
-                                    </Link>
+                                        <MessageCircle className="w-4 h-4" />
+                                        Book on WhatsApp
+                                    </a>
                                 </div>
                             </motion.article>
                         );

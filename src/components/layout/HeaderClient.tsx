@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+import { PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_BOOKING_URL } from '@/data/centers';
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
@@ -21,7 +21,7 @@ const navigation = [
     { name: 'Success rates', href: '/success-rates' },
     { name: 'Fertility doctors', href: '/our-doctors' },
     { name: 'Fertility insights', href: '/fertility-insights' },
-    { name: 'Clinical insights', href: '/clinical-insights' },
+    { name: 'Doctor insights', href: '/clinical-insights' },
 ];
 
 function trackHeaderEvent(label: string) {
@@ -120,34 +120,24 @@ export function HeaderClient() {
                             <span className="hidden xl:inline">{PRIMARY_CALL_NUMBER}</span>
                         </a>
                         <a
-                            href={PRIMARY_WHATSAPP_URL}
+                            href={PRIMARY_WHATSAPP_BOOKING_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                             data-cta-kind="whatsapp"
                             data-center="Network"
-                            data-cta-target={PRIMARY_WHATSAPP_URL}
-                            className={cn(actionLinkClass, isScrolled ? 'text-emerald-700 hover:text-emerald-800' : 'text-emerald-300 hover:text-emerald-200')}
+                            data-cta-target={PRIMARY_WHATSAPP_BOOKING_URL}
+                            className={cn(
+                                buttonVariants({
+                                    size: 'sm',
+                                    className:
+                                        'h-9 bg-emerald-600 px-4 text-white hover:bg-emerald-700 hover:text-white border-none shadow-sm',
+                                })
+                            )}
                             onClick={() => trackHeaderEvent('header_whatsapp_primary')}
                         >
                             <MessageCircle className="w-4 h-4" />
-                            Chat on WhatsApp
+                            Book on WhatsApp
                         </a>
-
-                        <Button
-                            size="sm"
-                            className="bg-santaan-amber hover:bg-[#E08E45] text-white"
-                            data-cta-kind="book"
-                            data-center="Network"
-                            data-cta-target="/#book-consultation"
-                            onClick={() => {
-                                trackHeaderEvent('header_cta_book_consultation');
-                                window.location.href = '/#book-consultation';
-                            }}
-                        >
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Book consultation
-                        </Button>
-
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -243,12 +233,12 @@ export function HeaderClient() {
                                         Call {PRIMARY_CALL_NUMBER}
                                     </a>
                                     <a
-                                        href={PRIMARY_WHATSAPP_URL}
+                                        href={PRIMARY_WHATSAPP_BOOKING_URL}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         data-cta-kind="whatsapp"
                                         data-center="Network"
-                                        data-cta-target={PRIMARY_WHATSAPP_URL}
+                                        data-cta-target={PRIMARY_WHATSAPP_BOOKING_URL}
                                         aria-label="Chat with Santaan on WhatsApp"
                                         className={cn(
                                             buttonVariants({
@@ -257,7 +247,24 @@ export function HeaderClient() {
                                             })
                                         )}
                                     >
-                                        Chat on WhatsApp
+                                        <MessageCircle className="w-4 h-4 mr-2" />
+                                        Book on WhatsApp
+                                    </a>
+                                    <a
+                                        href="/#book-consultation"
+                                        data-cta-kind="book"
+                                        data-center="Network"
+                                        data-cta-target="/#book-consultation"
+                                        className={cn(
+                                            buttonVariants({
+                                                variant: 'ghost',
+                                                fullWidth: true,
+                                                className: 'w-full justify-center',
+                                            })
+                                        )}
+                                    >
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Open booking options
                                     </a>
                                     <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-xs text-gray-600">
                                         Local clinic phone numbers are listed on each centre page with the address, timings, and directions.

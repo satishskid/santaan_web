@@ -1,7 +1,7 @@
-import { ArrowRight, CalendarDays, MessageCircle } from 'lucide-react';
+import { ArrowRight, MessageCircle, PhoneCall } from 'lucide-react';
 import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/Button';
-import { PRACTO_BOOKING_URL, PRIMARY_WHATSAPP_URL } from '@/data/centers';
+import { PRIMARY_CALL_HREF, PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_BOOKING_URL } from '@/data/centers';
 import { cn } from '@/lib/utils';
 
 export function Hero() {
@@ -54,12 +54,12 @@ export function Hero() {
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-16">
                     <a
-                        href={PRIMARY_WHATSAPP_URL}
+                        href={PRIMARY_WHATSAPP_BOOKING_URL}
                         target="_blank"
                         rel="noopener noreferrer"
                         data-cta-kind="whatsapp"
                         data-center="Network"
-                        data-cta-target={PRIMARY_WHATSAPP_URL}
+                        data-cta-target={PRIMARY_WHATSAPP_BOOKING_URL}
                         aria-label="Start a private conversation with Santaan on WhatsApp"
                         className={cn(
                             buttonVariants({
@@ -70,16 +70,16 @@ export function Hero() {
                         )}
                     >
                         <MessageCircle className="w-5 h-5 mr-2" />
-                        Chat on WhatsApp
+                        Book on WhatsApp
                         <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </a>
 
                     <a
-                        href="#book-consultation"
-                        data-cta-kind="book"
+                        href={PRIMARY_CALL_HREF}
+                        data-cta-kind="call"
                         data-center="Network"
-                        data-cta-target={PRACTO_BOOKING_URL}
-                        aria-label="Book consultation with Santaan"
+                        data-cta-target={PRIMARY_CALL_HREF}
+                        aria-label={`Call Santaan at ${PRIMARY_CALL_NUMBER}`}
                         className={cn(
                             buttonVariants({
                                 variant: 'outline',
@@ -88,10 +88,18 @@ export function Hero() {
                             })
                         )}
                     >
-                        <CalendarDays className="w-5 h-5 mr-2" />
-                        Book consultation
+                        <PhoneCall className="w-5 h-5 mr-2" />
+                        Call {PRIMARY_CALL_NUMBER}
                     </a>
                 </div>
+
+                <p className="mb-8 text-sm md:text-base text-white/80 max-w-2xl mx-auto">
+                    Prefer a calendar view?{' '}
+                    <a href="#book-consultation" className="font-semibold text-white underline underline-offset-4 hover:text-santaan-amber transition-colors">
+                        Open booking options
+                    </a>
+                    .
+                </p>
 
                 <p className="mb-8 text-sm md:text-base text-white/80 max-w-2xl mx-auto">
                     Prefer to explore first?{' '}

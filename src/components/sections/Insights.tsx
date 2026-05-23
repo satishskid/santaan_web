@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, BookOpen, Calendar } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Calendar, Stethoscope } from 'lucide-react';
 import Link from 'next/link';
 
 interface SantaanPost {
@@ -21,7 +21,7 @@ export function Insights() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await fetch('/api/blogs?type=blog&limit=6');
+                const response = await fetch('/api/blogs?type=blog&limit=3');
                 const data = await response.json();
 
                 if (response.ok && Array.isArray(data.posts)) {
@@ -64,28 +64,31 @@ export function Insights() {
                     <div>
                         <span className="text-santaan-amber font-medium uppercase tracking-wider text-sm mb-2 flex items-center gap-2">
                             <BookOpen className="w-4 h-4" />
-                            Knowledge Base
+                            Patient guides
                         </span>
                         <h2 className="text-3xl md:text-5xl font-playfair font-bold text-santaan-teal">
-                            Insights & Stories
+                            Start with three clear fertility guides
                         </h2>
                         <p className="text-gray-600 mt-3 max-w-xl text-sm md:text-base">
-                            A gentle narrative of fertility—myths clarified, science simplified, and small steps you can take today.
+                            Keep the homepage focused on patient education: practical explainers, common questions, and next-step clarity.
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link
-                            href="/fertility-tips"
-                            aria-label="Get fertility tips and updates"
+                            href="/clinical-insights"
+                            aria-label="Browse doctor insights"
                             className="text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
                         >
-                            Get fertility tips
+                            <span className="inline-flex items-center gap-2">
+                                <Stethoscope className="h-4 w-4" />
+                                Doctor insights
+                            </span>
                         </Link>
                         <Link
                             href="/fertility-guides"
                             className="group flex items-center gap-2 text-santaan-teal font-medium hover:text-santaan-amber transition-colors"
                         >
-                            View fertility guides
+                            See all guides
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         </Link>
                     </div>

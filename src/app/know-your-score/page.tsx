@@ -36,7 +36,7 @@ const nextSteps = [
     title: 'Prefer private guidance?',
     description: 'Chat with Santaan on WhatsApp and tell us what is worrying you most right now.',
     href: buildPrimaryWhatsappUrl("Hi, I've taken the readiness check and have questions"),
-    label: 'Chat on WhatsApp',
+    label: 'Ask on WhatsApp',
     external: true,
   },
 ];

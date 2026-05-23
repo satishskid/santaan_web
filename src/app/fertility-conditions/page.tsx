@@ -58,13 +58,13 @@ export default function FertilityConditionsPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href={buildPrimaryWhatsappUrl('Hi, I have questions about fertility conditions')}
+              href={buildPrimaryWhatsappUrl("Hi, I'd like to book a consultation and have questions about fertility conditions")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/35 font-semibold hover:bg-white/10 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              Chat on WhatsApp
+              Book on WhatsApp
             </a>
           </div>
         </div>

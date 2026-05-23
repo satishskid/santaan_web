@@ -59,7 +59,7 @@ export default async function ServicePage({ params }: { params: Params }) {
   const clinicSchema = centerProfile ? buildMedicalClinicSchema(centerProfile) : null;
   const callNumber = PRIMARY_CALL_NUMBER;
   const callHref = `tel:${callNumber.replace(/[^0-9+]/g, '')}`;
-  const whatsappHref = buildPrimaryWhatsappUrl(`Hi, I'd like more info on ${page.h1}`);
+  const whatsappHref = buildPrimaryWhatsappUrl(`Hi, I'd like to book a consultation about ${page.h1}`);
   const mapsHref = centerProfile ? getCenterMapsUrl(centerProfile) : null;
 
   return (
@@ -72,26 +72,26 @@ export default async function ServicePage({ params }: { params: Params }) {
           <p className="mt-6 max-w-3xl text-white/90 text-lg leading-relaxed">{page.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={callHref}
-              data-cta-kind="call"
-              data-center="Network"
-              data-cta-target={callHref}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-santaan-amber text-white font-semibold hover:bg-[#E08E45] transition-colors"
-            >
-              <PhoneCall className="w-4 h-4" />
-              Call Santaan
-            </a>
-            <a
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
               data-cta-kind="whatsapp"
               data-center="Network"
               data-cta-target={whatsappHref}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              Chat on WhatsApp
+              Book on WhatsApp
+            </a>
+            <a
+              href={callHref}
+              data-cta-kind="call"
+              data-center="Network"
+              data-cta-target={callHref}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
+            >
+              <PhoneCall className="w-4 h-4" />
+              Call Santaan
             </a>
             <Link
               href="/at-home-fertility-testing"
@@ -172,26 +172,26 @@ export default async function ServicePage({ params }: { params: Params }) {
                 <p className="text-xs uppercase tracking-[0.2em] text-santaan-amber font-semibold">Quick Actions</p>
                 <div className="mt-5 space-y-3">
                   <a
-                    href={callHref}
-                    data-cta-kind="call"
-                    data-center="Network"
-                    data-cta-target={callHref}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-white text-santaan-teal px-4 py-3 text-sm font-semibold hover:bg-santaan-cream transition-colors"
-                  >
-                    <PhoneCall className="w-4 h-4" />
-                    Call Santaan
-                  </a>
-                  <a
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     data-cta-kind="whatsapp"
                     data-center="Network"
                     data-cta-target={whatsappHref}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-400 transition-colors"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Chat on WhatsApp
+                    Book on WhatsApp
+                  </a>
+                  <a
+                    href={callHref}
+                    data-cta-kind="call"
+                    data-center="Network"
+                    data-cta-target={callHref}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    <PhoneCall className="w-4 h-4" />
+                    Call Santaan
                   </a>
                   {mapsHref ? (
                     <a

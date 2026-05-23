@@ -180,10 +180,12 @@ export const PRIMARY_CALL_NUMBER = '+91 80 6548 1541';
 export const PRIMARY_CALL_HREF = `tel:${PRIMARY_CALL_NUMBER.replace(/[^0-9+]/g, "")}`;
 export const PRIMARY_WHATSAPP_NUMBER = '919668904011';
 export const PRIMARY_WHATSAPP_MESSAGE = "Hi, I'd like more info on IVF";
+export const PRIMARY_WHATSAPP_BOOKING_MESSAGE = "Hi, I'd like to book a consultation";
 export function buildPrimaryWhatsappUrl(message: string = PRIMARY_WHATSAPP_MESSAGE) {
   return `https://wa.me/${PRIMARY_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 export const PRIMARY_WHATSAPP_URL = buildPrimaryWhatsappUrl();
+export const PRIMARY_WHATSAPP_BOOKING_URL = buildPrimaryWhatsappUrl(PRIMARY_WHATSAPP_BOOKING_MESSAGE);
 export const PRACTO_BOOKING_URL =
   'https://www.practo.com/ganjam/clinic/santaan-fertility-centre-and-research-institute-berhampur-city/infertility-specialist-ps-329';
 

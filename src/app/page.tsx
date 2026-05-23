@@ -87,7 +87,6 @@ export default function Home() {
         description="Fertility awareness, IVF guidance and Santaan milestones—built for clarity, not confusion."
       />
       <Awards />
-      <NewsAnnouncements />
       
       {/* 2. Address Confusion - Problem Awareness */}
       <MythBusting />
@@ -108,6 +107,7 @@ export default function Home() {
       <SantaanLab />
       <Doctors />
       <Locations />
+      <NewsAnnouncements />
       
       {/* 6. Answer Concerns - Final Objection Handling */}
       <FAQ />

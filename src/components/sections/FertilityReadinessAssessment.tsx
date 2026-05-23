@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Users, Heart, Weight, Cigarette, Brain, Moon, Activity, CheckCircle, Info, RefreshCcw, ArrowRight, Droplet, Zap, Shield, Pill, Stethoscope, Beaker } from 'lucide-react';
+import { User, Users, Heart, Weight, Cigarette, Brain, Moon, Activity, CheckCircle, Info, RefreshCcw, ArrowRight, Droplet, Zap, Shield, Pill, Stethoscope, Beaker, MessageCircle, PhoneCall } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { PRIMARY_CALL_HREF, buildPrimaryWhatsappUrl } from '@/data/centers';
 
 interface Factor {
     id: string;
@@ -533,23 +534,48 @@ export function FertilityReadinessAssessment() {
                                         <p className="text-sm text-gray-600">
                                             Ready to take the next step? Speak with our fertility specialists.
                                         </p>
-                                        <a href="tel:+918065481541">
-                                            <motion.button
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="px-6 py-2.5 bg-santaan-teal hover:bg-santaan-teal/90 text-white font-semibold rounded-full shadow-md transition-colors"
-                                                onClick={() => {
-                                                    if (typeof window !== 'undefined' && (window as any).gtag) {
-                                                        (window as any).gtag('event', 'click', {
-                                                            event_category: 'conversion',
-                                                            event_label: 'assessment_result_book_consultation'
-                                                        });
-                                                    }
-                                                }}
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <a
+                                                href={buildPrimaryWhatsappUrl("Hi, I'd like to book a consultation after checking my fertility score")}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                             >
-                                                Call Santaan
-                                            </motion.button>
-                                        </a>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-full shadow-md transition-colors"
+                                                    onClick={() => {
+                                                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                            (window as any).gtag('event', 'click', {
+                                                                event_category: 'conversion',
+                                                                event_label: 'assessment_result_whatsapp_booking'
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    Book on WhatsApp
+                                                </motion.button>
+                                            </a>
+                                            <a href={PRIMARY_CALL_HREF}>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-santaan-teal hover:bg-santaan-teal/90 text-white font-semibold rounded-full shadow-md transition-colors"
+                                                    onClick={() => {
+                                                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                                                            (window as any).gtag('event', 'click', {
+                                                                event_category: 'conversion',
+                                                                event_label: 'assessment_result_call'
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <PhoneCall className="w-4 h-4" />
+                                                    Call Santaan
+                                                </motion.button>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
