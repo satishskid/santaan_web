@@ -132,7 +132,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link href="/fertility-insights" className="text-gray-300 hover:text-santaan-amber transition-colors">
-                                    Blog
+                                    Fertility insights
                                 </Link>
                             </li>
                         </ul>

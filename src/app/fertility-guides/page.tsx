@@ -84,7 +84,7 @@ export default async function FertilityGuidesPage() {
               href="/fertility-insights"
               className="inline-flex items-center gap-2 text-sm font-semibold text-santaan-teal hover:text-santaan-amber transition-colors"
             >
-              Browse the full article library
+              Explore all patient guides
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -159,7 +159,7 @@ export default async function FertilityGuidesPage() {
               href="/know-your-score"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-santaan-teal px-5 py-3 text-sm font-semibold text-white hover:bg-santaan-dark-teal transition-colors"
             >
-              Go to know your score
+              Know your score
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

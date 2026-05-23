@@ -296,7 +296,7 @@ export function PractoBookingSection() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-semibold text-santaan-teal transition-colors hover:text-santaan-amber"
                   >
-                    Open full booking page
+                    Open Practo booking page
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>

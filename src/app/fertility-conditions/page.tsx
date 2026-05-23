@@ -100,7 +100,7 @@ export default function FertilityConditionsPage() {
                   {page.intro}
                 </p>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-santaan-teal">
-                  Explore this concern
+                  Open this guide
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -125,7 +125,7 @@ export default function FertilityConditionsPage() {
               href="/know-your-score"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-santaan-teal px-5 py-3 text-sm font-semibold text-white hover:bg-santaan-dark-teal transition-colors"
             >
-              Go to know your score
+              Know your score
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

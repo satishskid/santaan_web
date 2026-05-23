@@ -159,7 +159,7 @@ export default async function FertilityInsightsPage({ searchParams }: { searchPa
                       href={`/fertility-insights/${post.slug}`}
                       className="mt-auto inline-flex items-center gap-2 text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
                     >
-                      Read on Santaan
+                      Read this guide
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>

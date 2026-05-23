@@ -141,7 +141,7 @@ export function Insights() {
                                     </div>
 
                                     <Link href={`/fertility-insights/${post.slug}`} className="mt-auto flex items-center text-santaan-amber text-sm font-bold uppercase tracking-wide group-hover:gap-2 transition-all">
-                                        Read on Santaan
+                                        Read this guide
                                         <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Link>
                                 </div>

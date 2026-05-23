@@ -52,7 +52,7 @@ export default function FertilityTipsPage() {
               href="/fertility-guides"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/35 font-semibold hover:bg-white/10 transition-colors"
             >
-              Read fertility guides
+              Explore guides
             </Link>
           </div>
 
