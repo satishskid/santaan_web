@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { blogPosts } from '@/db/schema';
 import { LEGACY_BLOG_SEEDS } from '@/content/legacyBlogSeeds';
+import { getSantaanHubPostBySlug, getSantaanHubPosts } from '@/lib/skids-content-hub';
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@santaanIVF';
 // Add a random cache-busting parameter to bypass rss2json's heavy caching
@@ -44,6 +45,19 @@ interface Rss2JsonResponse {
 }
 
 type BlogRow = typeof blogPosts.$inferSelect;
+
+function hasLegacyMediumFallback(): boolean {
+  return process.env.SANTAAN_ENABLE_LEGACY_MEDIUM_FALLBACK === 'true';
+}
+
+function newestFirst(posts: SantaanBlogPost[]): SantaanBlogPost[] {
+  return [...posts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+}
+
+function applyPostLimit(posts: SantaanBlogPost[], limit?: number): SantaanBlogPost[] {
+  if (typeof limit !== 'number') return posts;
+  return posts.slice(0, Math.max(0, limit));
+}
 
 function mergeWithLegacySeeds(posts: SantaanBlogPost[], options?: { limit?: number; type?: BlogType }): SantaanBlogPost[] {
   const existingSlugs = new Set(posts.map((post) => post.slug));
@@ -478,6 +492,19 @@ export async function syncMediumPostsToStore(options?: { limit?: number }) {
 }
 
 export async function getSantaanBlogPosts(options?: { limit?: number; type?: BlogType }): Promise<SantaanBlogPost[]> {
+  const hubPosts = await getSantaanHubPosts(options).catch((error) => {
+    console.error('Santaan content hub fetch failed:', error);
+    return [];
+  });
+
+  if (hubPosts.length > 0) {
+    return applyPostLimit(newestFirst(hubPosts), options?.limit);
+  }
+
+  if (!hasLegacyMediumFallback()) {
+    return [];
+  }
+
   const storedPosts = await readStoredPosts(options);
   if (storedPosts.length > 0) {
     return storedPosts;
@@ -502,6 +529,19 @@ export async function getSantaanBlogPosts(options?: { limit?: number; type?: Blo
 }
 
 export async function getSantaanBlogPostBySlug(slug: string): Promise<SantaanBlogPost | null> {
+  const hubPost = await getSantaanHubPostBySlug(slug).catch((error) => {
+    console.error('Santaan content hub slug fetch failed:', error);
+    return null;
+  });
+
+  if (hubPost) {
+    return hubPost;
+  }
+
+  if (!hasLegacyMediumFallback()) {
+    return null;
+  }
+
   const legacySeed = LEGACY_BLOG_SEEDS.find((post) => post.slug === slug);
   if (legacySeed) {
     return legacySeed;
