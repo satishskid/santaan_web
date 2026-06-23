@@ -2,8 +2,8 @@
 import Script from "next/script";
 
 export default function AnalyticsScripts() {
-    const gaId = process.env.GOOGLE_ANALYTICS_ID;
-    const fbPixelId = process.env.FACEBOOK_PIXEL_ID;
+    const gaId = process.env.GOOGLE_ANALYTICS_ID || process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+    const fbPixelId = process.env.META_PIXEL_ID || process.env.FACEBOOK_PIXEL_ID;
 
     return (
         <>
