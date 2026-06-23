@@ -15,6 +15,17 @@ function insightCta(post: { type: string }) {
   return post.type === 'doctor' ? 'Read clinical brief' : 'Read on Santaan';
 }
 
+function uniqueInsightPosts<T extends { slug: string; title: string }>(posts: T[]) {
+  const seen = new Set<string>();
+  return posts.filter((post) => {
+    const titleKey = post.title.toLowerCase().replace(/\s+/g, ' ').trim();
+    const key = titleKey || post.slug;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export const metadata = buildMetadata({
   title: 'Fertility Insights and Stories',
   description:
@@ -32,8 +43,9 @@ export const metadata = buildMetadata({
 export default async function FertilityInsightsPage({ searchParams }: { searchParams?: { q?: string } }) {
   const query = typeof searchParams?.q === 'string' ? searchParams.q.trim() : '';
 
-  const posts = await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []);
-  const latestWriterPosts = posts.length > 0 || query ? [] : await getSantaanBlogPosts({ limit: 3 }).catch(() => []);
+  const posts = uniqueInsightPosts(await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []));
+  const latestWriterPosts =
+    posts.length > 0 || query ? [] : uniqueInsightPosts(await getSantaanBlogPosts({ limit: 12 }).catch(() => [])).slice(0, 3);
   const visiblePosts = query
     ? posts.filter((post) => {
         const haystack = `${post.title} ${post.excerpt}`.toLowerCase();
