@@ -7,6 +7,14 @@ import { getSantaanBlogPosts } from '@/lib/medium';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
 
+function insightHref(post: { type: string; slug: string }) {
+  return post.type === 'doctor' ? `/clinical-insights/${post.slug}` : `/fertility-insights/${post.slug}`;
+}
+
+function insightCta(post: { type: string }) {
+  return post.type === 'doctor' ? 'Read clinical brief' : 'Read on Santaan';
+}
+
 export const metadata = buildMetadata({
   title: 'Fertility Insights and Stories',
   description:
@@ -25,6 +33,7 @@ export default async function FertilityInsightsPage({ searchParams }: { searchPa
   const query = typeof searchParams?.q === 'string' ? searchParams.q.trim() : '';
 
   const posts = await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []);
+  const latestWriterPosts = posts.length > 0 || query ? [] : await getSantaanBlogPosts({ limit: 3 }).catch(() => []);
   const visiblePosts = query
     ? posts.filter((post) => {
         const haystack = `${post.title} ${post.excerpt}`.toLowerCase();
@@ -111,7 +120,7 @@ export default async function FertilityInsightsPage({ searchParams }: { searchPa
               </div>
             </div>
           )}
-          {visiblePosts.length === 0 ? (
+          {visiblePosts.length === 0 && latestWriterPosts.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
               <h2 className="text-2xl font-playfair font-bold text-santaan-teal">
                 {query ? 'No matching articles found' : 'Fresh articles are syncing'}
@@ -121,6 +130,55 @@ export default async function FertilityInsightsPage({ searchParams }: { searchPa
                   ? 'Try a different keyword (PCOS, IVF, AMH, male infertility) or clear the search.'
                   : 'Please check back in a few minutes for the latest insights from our editorial team.'}
               </p>
+            </div>
+          ) : visiblePosts.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
+              <p className="uppercase tracking-[0.2em] text-santaan-teal text-xs font-semibold mb-3">Latest from Santaan</p>
+              <h2 className="text-2xl md:text-3xl font-playfair font-bold text-gray-900">
+                Patient articles are being prepared. The latest Santaan publication is live.
+              </h2>
+              <p className="text-gray-600 mt-3 max-w-2xl">
+                New patient-facing fertility explainers will appear here as soon as the editorial team publishes them through Writer Hub.
+              </p>
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {latestWriterPosts.map((post) => (
+                  <article
+                    key={post.slug}
+                    className="bg-santaan-cream rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex flex-col h-full"
+                  >
+                    {post.thumbnail ? (
+                      <img src={post.thumbnail} alt={post.title} className="w-full h-52 object-cover" loading="lazy" decoding="async" />
+                    ) : (
+                      <div className="w-full h-52 bg-gradient-to-r from-santaan-sage/30 to-santaan-teal/20" />
+                    )}
+                    <div className="p-6 flex flex-col grow">
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
+                        <span>{new Date(post.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span className="text-gray-300">•</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {post.readMinutes} min read
+                        </span>
+                      </div>
+
+                      <h2 className="text-xl font-playfair font-bold text-gray-900 leading-tight mb-3 min-h-[3.4rem] [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden">
+                        {post.title}
+                      </h2>
+                      <p className="text-gray-600 text-sm leading-relaxed mb-5 min-h-[4.2rem] [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden">
+                        {post.excerpt}
+                      </p>
+
+                      <Link
+                        href={insightHref(post)}
+                        className="mt-auto inline-flex items-center gap-2 text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
+                      >
+                        {insightCta(post)}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -154,10 +212,10 @@ export default async function FertilityInsightsPage({ searchParams }: { searchPa
                     </p>
 
                     <Link
-                      href={`/fertility-insights/${post.slug}`}
+                      href={insightHref(post)}
                       className="mt-auto inline-flex items-center gap-2 text-santaan-teal font-semibold hover:text-santaan-amber transition-colors"
                     >
-                      Read on Santaan
+                      {insightCta(post)}
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
