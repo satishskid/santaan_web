@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Clock, ExternalLink } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPostBySlug, getSantaanBlogPosts } from '@/lib/medium';
@@ -175,13 +175,7 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
             </div>
           )}
 
-          <p className="text-xs text-gray-500 mt-8">
-            Originally authored by Santaan team and syndicated from Medium.{' '}
-            <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-1">
-              View source
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </p>
+          <p className="text-xs text-gray-500 mt-8">Published by the Santaan editorial team.</p>
         </div>
       </section>
 

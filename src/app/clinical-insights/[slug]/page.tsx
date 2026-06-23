@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Clock, ExternalLink, Stethoscope } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock, Stethoscope } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPostBySlug, getSantaanBlogPosts } from '@/lib/medium';
-import { getClinicalCoverImage, getClinicalQuality, isClinicalReadyPost } from '@/lib/clinical';
+import { getClinicalCoverImage, getClinicalQuality } from '@/lib/clinical';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from '@/lib/schema';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
@@ -46,10 +46,6 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
     redirect(`/fertility-insights/${slug}`);
   }
 
-  if (!isClinicalReadyPost(post)) {
-    redirect('/clinical-insights');
-  }
-
   const quality = getClinicalQuality(post);
   const baseUrl = getSiteUrl();
   const schema = buildBlogPostingSchema({
@@ -71,7 +67,6 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
   const latestPosts = await getSantaanBlogPosts({ type: 'doctor', limit: 80 }).catch(() => []);
   const postTagSlugs = new Set(post.tags.map(tagToSlug).filter(Boolean));
   const relatedPosts = latestPosts
-    .filter(isClinicalReadyPost)
     .filter((p) => p.slug !== post.slug)
     .map((p) => {
       const score = p.tags.reduce((acc, t) => (postTagSlugs.has(tagToSlug(t)) ? acc + 1 : acc), 0);
@@ -145,7 +140,7 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
           </div>
 
           <div className="mt-6 text-sm text-gray-600 bg-white rounded-2xl border border-gray-100 p-5">
-            Quality checks: {quality.wordCount} words, citation signals present, structured sections verified.
+            Editorial checks: {quality.wordCount} words, published through the Santaan writer database.
           </div>
 
           {relatedPosts.length > 0 && (
@@ -171,13 +166,7 @@ export default async function ClinicalInsightDetailPage({ params }: { params: Pa
             </div>
           )}
 
-          <p className="text-xs text-gray-500 mt-8">
-            Originally authored by Santaan team and syndicated from Medium.{' '}
-            <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline inline-flex items-center gap-1">
-              View source
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </p>
+          <p className="text-xs text-gray-500 mt-8">Published by the Santaan editorial team.</p>
         </div>
       </section>
 

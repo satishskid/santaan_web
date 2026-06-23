@@ -3,7 +3,7 @@ import { ArrowRight, Clock, Stethoscope } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { getSantaanBlogPosts } from '@/lib/medium';
-import { getClinicalCoverImage, isClinicalReadyPost } from '@/lib/clinical';
+import { getClinicalCoverImage } from '@/lib/clinical';
 import { buildMetadata } from '@/lib/seo';
 import { tagToSlug } from '@/lib/tag-utils';
 
@@ -23,7 +23,7 @@ export const metadata = buildMetadata({
 
 export default async function ClinicalInsightsPage() {
   const doctorPosts = await getSantaanBlogPosts({ type: 'doctor', limit: 60 }).catch(() => []);
-  const posts = doctorPosts.filter(isClinicalReadyPost).slice(0, 24);
+  const posts = doctorPosts.slice(0, 24);
   const tagCounts = posts.reduce<Record<string, number>>((acc, post) => {
     post.tags.forEach((tag) => {
       const slug = tagToSlug(tag);

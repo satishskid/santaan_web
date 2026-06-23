@@ -47,7 +47,7 @@ interface Rss2JsonResponse {
 type BlogRow = typeof blogPosts.$inferSelect;
 
 function hasLegacyMediumFallback(): boolean {
-  return process.env.SANTAAN_ENABLE_LEGACY_MEDIUM_FALLBACK === 'true';
+  return process.env.SANTAAN_ALLOW_LEGACY_MEDIUM_FALLBACK === 'true';
 }
 
 function newestFirst(posts: SantaanBlogPost[]): SantaanBlogPost[] {
