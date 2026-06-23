@@ -23,7 +23,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["better-sqlite3"],
   async headers() {
     return [
       {

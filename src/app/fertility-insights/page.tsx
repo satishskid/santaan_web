@@ -40,8 +40,11 @@ export const metadata = buildMetadata({
   ],
 });
 
-export default async function FertilityInsightsPage({ searchParams }: { searchParams?: { q?: string } }) {
-  const query = typeof searchParams?.q === 'string' ? searchParams.q.trim() : '';
+type FertilityInsightsSearchParams = Promise<{ q?: string } | undefined>;
+
+export default async function FertilityInsightsPage({ searchParams }: { searchParams?: FertilityInsightsSearchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const query = typeof resolvedSearchParams?.q === 'string' ? resolvedSearchParams.q.trim() : '';
 
   const posts = uniqueInsightPosts(await getSantaanBlogPosts({ type: 'blog', limit: 24 }).catch(() => []));
   const latestWriterPosts =

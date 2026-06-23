@@ -101,7 +101,7 @@ export const buildMandatoryTrackedUrl = ({ url, ...rest }: TrackedLinkInput): st
     const base =
         typeof window !== "undefined"
             ? window.location.origin
-            : (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || "https://santaan.in");
+            : (process.env.NEXT_PUBLIC_SITE_URL || "https://www.santaan.in");
     const parsed = new URL(url, base);
 
     parsed.searchParams.set("utm_source", normalized.utm_source || UTM_DEFAULTS.utm_source);

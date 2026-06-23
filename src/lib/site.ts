@@ -1,7 +1,7 @@
 const FALLBACK_SITE_URL = 'https://www.santaan.in';
 
 export const getSiteUrl = (): string => {
-  const candidate = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || FALLBACK_SITE_URL;
+  const candidate = process.env.NEXT_PUBLIC_SITE_URL || FALLBACK_SITE_URL;
   const normalized = candidate.replace(/\/$/, '');
 
   try {

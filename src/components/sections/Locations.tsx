@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { MapPin, Mail, Phone, Loader2, ExternalLink } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { MapPin, Mail, Phone, ExternalLink } from 'lucide-react';
 import type { ElementType } from 'react';
+import { CENTER_CONTACTS } from '@/data/centers';
 
 interface Center {
     id: number;
@@ -25,20 +25,19 @@ interface LocationsProps {
 }
 
 export function Locations({ headingAs = 'h2' }: LocationsProps) {
-    const [centers, setCenters] = useState<Center[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const HeadingTag = headingAs;
-    const centerOverrides = useMemo(
-        () =>
-            ({
-                bhubaneswar: {
-                    address: '3rd Floor, Utkal Pristine, N-5, Plot, IRC Village, Nayapalli, Bhubaneswar, Odisha 751012',
-                    phones: ['070089 90586'],
-                    hours: 'Open · Closes 6:30 pm',
-                },
-            }) as Record<string, { address: string; phones: string[]; hours?: string }>,
-        []
-    );
+    const centers: Center[] = CENTER_CONTACTS.map((center, index) => ({
+        id: index + 1,
+        city: center.city,
+        title: center.title || center.name,
+        address: center.address || `Santaan IVF Centre, ${center.city}`,
+        description: center.description || null,
+        email: center.email || 'care@santaan.in',
+        phones: center.phones,
+        mapUrl: center.mapUrl || null,
+        isActive: true,
+        sortOrder: center.sortOrder ?? index + 1,
+    }));
 
     const trackLocationEvent = (eventLabel: string) => {
         if (typeof window === 'undefined') return;
@@ -55,35 +54,6 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
         if (city.toLowerCase() === 'bengaluru' || city.toLowerCase() === 'bangalore') return 'Bangalore (R&D)';
         return city;
     };
-
-    useEffect(() => {
-        const fetchCenters = async () => {
-            try {
-                const res = await fetch('/api/admin/centers');
-                if (res.ok) {
-                    const data = await res.json();
-                    const desiredOrder = ['Berhampur', 'Bhubaneswar', 'Cuttack', 'Bengaluru', 'Bangalore'];
-                    const orderIndex = (city: string) => {
-                        const idx = desiredOrder.findIndex((x) => x.toLowerCase() === city.toLowerCase());
-                        return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
-                    };
-                    const nextCenters = (data.centers || []) as Center[];
-                    nextCenters.sort((a, b) => {
-                        const ao = orderIndex(a.city);
-                        const bo = orderIndex(b.city);
-                        if (ao !== bo) return ao - bo;
-                        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-                    });
-                    setCenters(nextCenters);
-                }
-            } catch (error) {
-                console.error('Failed to fetch centers:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchCenters();
-    }, []);
 
     return (
         <section className="py-24 bg-santaan-teal text-white relative overflow-hidden">
@@ -103,17 +73,10 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                     </div>
                 </div>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-16">
-                        <Loader2 className="w-8 h-8 animate-spin text-santaan-amber" />
-                    </div>
-                ) : (
-                    <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-3 gap-8">
                         {centers.map((loc, i) => {
-                            const override = centerOverrides[String(loc.city || '').trim().toLowerCase()];
-                            const effectiveAddress = override?.address ?? loc.address;
-                            const effectivePhones = override?.phones ?? loc.phones;
-                            const effectiveHours = override?.hours;
+                            const effectiveAddress = loc.address;
+                            const effectivePhones = loc.phones;
                             const mapHref =
                                 loc.mapUrl ||
                                 `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -136,18 +99,7 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                                     </div>
                                     <MapPin className="w-6 h-6 text-santaan-amber" />
                                 </div>
-                                {effectiveHours ? (
-                                    <div className="text-white/80 text-sm mb-4 leading-relaxed space-y-2">
-                                        <p>
-                                            <span className="font-semibold text-white/90">Address:</span> {effectiveAddress}
-                                        </p>
-                                        <p>
-                                            <span className="font-semibold text-white/90">Hours:</span> {effectiveHours}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <p className="text-white/80 text-sm mb-4 leading-relaxed">{effectiveAddress}</p>
-                                )}
+                                <p className="text-white/80 text-sm mb-4 leading-relaxed">{effectiveAddress}</p>
                                 {loc.description && (
                                     <p className="text-white/60 text-xs mb-6">
                                         {loc.description}
@@ -202,8 +154,7 @@ export function Locations({ headingAs = 'h2' }: LocationsProps) {
                             </motion.div>
                         );
                         })}
-                    </div>
-                )}
+                </div>
             </div>
         </section>
     );

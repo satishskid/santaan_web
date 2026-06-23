@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Phone, MessageCircle, CalendarCheck } from 'lucide-react';
 import { PRIMARY_CALL_NUMBER, PRIMARY_WHATSAPP_URL } from '@/data/centers';
 
-const hiddenPrefixes = ['/admin', '/login', '/profile'];
+const hiddenPrefixes = ['/dashboard'];
 
 export default function StickyContactBar() {
   const pathname = usePathname();

@@ -3,22 +3,18 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 
-const ChatWidget = dynamic(() => import("@/components/chat/ChatWidget"), { ssr: false });
 const StickyContactBar = dynamic(() => import("@/components/layout/StickyContactBar"), { ssr: false });
 
 export default function ClientWidgets() {
   const pathname = usePathname();
 
-  // Hide widgets on admin/CRM and login routes
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/dashboard") || pathname?.startsWith("/login")) {
+  if (pathname?.startsWith("/dashboard")) {
     return null;
   }
 
   return (
     <>
-      <ChatWidget />
       <StickyContactBar />
     </>
   );
 }
-
