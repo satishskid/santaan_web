@@ -19,6 +19,8 @@ function extractYouTubeId(url: string) {
       return parsed.pathname.replace('/', '') || null;
     }
     if (parsed.hostname.includes('youtube.com')) {
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'shorts' && parts[1]) return parts[1];
       return parsed.searchParams.get('v') || null;
     }
     return null;

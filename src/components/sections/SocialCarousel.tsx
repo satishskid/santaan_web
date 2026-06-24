@@ -15,7 +15,11 @@ function ytIdFromUrl(url: string) {
   try {
     const u = new URL(url);
     if (u.hostname.includes('youtu.be')) return u.pathname.replace('/', '');
-    if (u.hostname.includes('youtube.com')) return u.searchParams.get('v');
+    if (u.hostname.includes('youtube.com')) {
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'shorts' && parts[1]) return parts[1];
+      return u.searchParams.get('v');
+    }
     return null;
   } catch {
     return null;
