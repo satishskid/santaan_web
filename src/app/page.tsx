@@ -79,7 +79,7 @@ export default function Home() {
       
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
-      <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} feedEndpoint="/api/youtube/latest" />
+      <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} />
       <SocialCarousel
         items={SOCIAL_CAMPAIGNS}
         youtubeFeedEndpoint="/api/youtube/latest"
