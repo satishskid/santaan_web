@@ -25,7 +25,6 @@ import { SOCIAL_CAMPAIGNS } from "@/data/socialCampaigns";
 import { buildMetadata } from "@/lib/seo";
 import { buildFaqSchema, buildLocalClinicSchemas, buildOrganizationSchema } from "@/lib/schema";
 import { getSiteUrl } from "@/lib/site";
-import { getLatestSantaanYouTubeVideos, youtubeVideosToSocialItems } from "@/lib/youtube";
 
 export const metadata = buildMetadata({
   title: "Santaan IVF | IVF & Fertility Centres in Odisha & Bangalore",
@@ -41,18 +40,10 @@ export const metadata = buildMetadata({
   ],
 });
 
-export const revalidate = 21600;
-
-export default async function Home() {
+export default function Home() {
   const faqSchema = buildFaqSchema(faqs);
   const organizationSchema = buildOrganizationSchema();
   const localClinicSchemas = buildLocalClinicSchemas();
-  const latestYouTubeVideos = await getLatestSantaanYouTubeVideos(4);
-  const videoItems = latestYouTubeVideos.length > 0 ? latestYouTubeVideos : SANTAAN_YOUTUBE_VIDEOS;
-  const socialItems = [
-    ...youtubeVideosToSocialItems(videoItems),
-    ...SOCIAL_CAMPAIGNS.filter((item) => item.platform !== 'youtube'),
-  ];
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -88,9 +79,10 @@ export default async function Home() {
       
       {/* 1. Build Trust First - Social Proof */}
       <SuccessStories />
-      <VideoTestimonials items={videoItems} />
+      <VideoTestimonials items={SANTAAN_YOUTUBE_VIDEOS} feedEndpoint="/api/youtube/latest" />
       <SocialCarousel
-        items={socialItems}
+        items={SOCIAL_CAMPAIGNS}
+        youtubeFeedEndpoint="/api/youtube/latest"
         heading="Campaign highlights"
         description="Fertility awareness, IVF guidance and Santaan milestones—built for clarity, not confusion."
       />

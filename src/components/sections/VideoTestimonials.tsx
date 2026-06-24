@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { Play } from 'lucide-react';
 import Image from 'next/image';
 
@@ -65,10 +66,36 @@ function isRemote(src: string) {
   return src.startsWith('http://') || src.startsWith('https://');
 }
 
-export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) {
+export function VideoTestimonials({ items, feedEndpoint }: { items: VideoTestimonialItem[]; feedEndpoint?: string }) {
+  const [videoItems, setVideoItems] = useState(items);
   const [activeIndex, setActiveIndex] = useState<number | null>(items.length > 0 ? 0 : null);
 
-  const active = activeIndex === null ? null : items[activeIndex];
+  useEffect(() => {
+    if (!feedEndpoint) return;
+
+    let cancelled = false;
+    const endpoint = feedEndpoint;
+
+    async function loadLatestVideos() {
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data.videos) || data.videos.length === 0 || cancelled) return;
+        setVideoItems(data.videos);
+        setActiveIndex(0);
+      } catch (error) {
+        console.error('Santaan YouTube runtime feed failed:', error);
+      }
+    }
+
+    loadLatestVideos();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [feedEndpoint]);
+
+  const active = activeIndex === null ? null : videoItems[activeIndex];
   const embedUrl = useMemo(() => (active ? buildEmbedUrl(active.videoUrl) : null), [active]);
 
   return (
@@ -99,9 +126,9 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
             ) : (
               <div className="w-full aspect-video flex items-center justify-center text-center p-10">
                 <div>
-                  <p className="text-lg font-semibold text-gray-900">{items.length === 0 ? 'Videos coming soon' : 'Select a video to play'}</p>
+                  <p className="text-lg font-semibold text-gray-900">{videoItems.length === 0 ? 'Videos coming soon' : 'Select a video to play'}</p>
                   <p className="text-gray-600 mt-2">
-                    {items.length === 0 ? 'Add YouTube/Vimeo links and thumbnails to activate this section.' : 'The video loads only when the user clicks, keeping the homepage light.'}
+                    {videoItems.length === 0 ? 'Add YouTube/Vimeo links and thumbnails to activate this section.' : 'The video loads only when the user clicks, keeping the homepage light.'}
                   </p>
                 </div>
               </div>
@@ -118,7 +145,7 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
           </div>
 
           <div className="space-y-4">
-            {items.map((item, index) => {
+            {videoItems.map((item, index) => {
               const thumb = item.thumbnail || defaultThumbnail(item.videoUrl);
               const selected = index === activeIndex;
               return (
@@ -158,7 +185,7 @@ export function VideoTestimonials({ items }: { items: VideoTestimonialItem[] }) 
                 </button>
               );
             })}
-            {items.length === 0 && (
+            {videoItems.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <p className="font-semibold text-gray-900">Add videos later</p>
                 <p className="text-sm text-gray-600 mt-2">This is a developer-ready placeholder. A writer can supply links and captions without code changes.</p>

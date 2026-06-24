@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 type Platform = 'youtube' | 'instagram' | 'facebook';
 
@@ -37,15 +38,46 @@ function buildThumb(item: SocialItem) {
 
 export function SocialCarousel({
   items,
+  youtubeFeedEndpoint,
   heading = 'Campaign highlights',
   description = 'Short updates from Santaan IVF on awareness, outcomes, and evidence-led care.',
   sectionId = 'campaign-highlights',
 }: {
   items: SocialItem[];
+  youtubeFeedEndpoint?: string;
   heading?: string;
   description?: string;
   sectionId?: string;
 }) {
+  const [displayItems, setDisplayItems] = useState(items);
+
+  useEffect(() => {
+    if (!youtubeFeedEndpoint) return;
+
+    let cancelled = false;
+    const endpoint = youtubeFeedEndpoint;
+
+    async function loadLatestSocialItems() {
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data.socialItems) || data.socialItems.length === 0 || cancelled) return;
+        setDisplayItems([
+          ...data.socialItems,
+          ...items.filter((item) => item.platform !== 'youtube'),
+        ]);
+      } catch (error) {
+        console.error('Santaan social video feed failed:', error);
+      }
+    }
+
+    loadLatestSocialItems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items, youtubeFeedEndpoint]);
+
   return (
     <section id={sectionId} className="py-16 bg-white">
       <div className="container px-4 md:px-6 mx-auto">
@@ -55,7 +87,7 @@ export function SocialCarousel({
         </div>
         <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] no-scrollbar">
           <div className="grid grid-flow-col auto-cols-[75%] sm:auto-cols-[45%] md:auto-cols-[30%] gap-4 snap-x snap-mandatory">
-            {items.map((it, i) => {
+            {displayItems.map((it, i) => {
               const thumb = buildThumb(it);
               return (
                 <Link
