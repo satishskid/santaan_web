@@ -13,6 +13,16 @@ interface SantaanPost {
     excerpt: string;
 }
 
+function uniquePosts(posts: SantaanPost[]) {
+    const seen = new Set<string>();
+    return posts.filter((post) => {
+        const key = post.title.toLowerCase().replace(/\s+/g, ' ').trim() || post.slug;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
 export function Insights() {
     const [posts, setPosts] = useState<SantaanPost[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,7 +35,19 @@ export function Insights() {
                 const data = await response.json();
 
                 if (response.ok && Array.isArray(data.posts)) {
-                    setPosts(data.posts);
+                    if (data.posts.length > 0) {
+                        setPosts(uniquePosts(data.posts));
+                        return;
+                    }
+
+                    const fallbackResponse = await fetch('/api/blogs?limit=6');
+                    const fallbackData = await fallbackResponse.json();
+
+                    if (fallbackResponse.ok && Array.isArray(fallbackData.posts)) {
+                        setPosts(uniquePosts(fallbackData.posts));
+                    } else {
+                        setError(true);
+                    }
                 } else {
                     setError(true);
                 }

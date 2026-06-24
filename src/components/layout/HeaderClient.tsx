@@ -16,11 +16,11 @@ const navigation = [
     { name: 'IVF Centres', href: '/contact-centres' },
     { name: 'Female Fertility', href: '/female-fertility' },
     { name: 'Male Fertility', href: '/male-infertility-clinic' },
-    { name: 'Treatments', href: '/treatments' },
-    { name: 'Pricing', href: '/pricing' },
+    { name: 'IVF Treatments', href: '/treatments' },
+    { name: 'IVF Cost', href: '/pricing' },
     { name: 'Success Rates', href: '/success-rates' },
     { name: 'Fertility Doctors', href: '/our-doctors' },
-    { name: 'Fertility Insights', href: '/fertility-insights' },
+    { name: 'Fertility Blog', href: '/fertility-insights' },
     { name: 'Clinical Insights', href: '/clinical-insights' },
 ];
 
@@ -49,7 +49,7 @@ export function HeaderClient() {
     }, []);
 
     const navLinkClass = cn(
-        'text-xs lg:text-sm font-medium whitespace-nowrap transition-colors',
+        'text-[11px] xl:text-xs 2xl:text-sm font-medium whitespace-nowrap transition-colors',
         isScrolled ? 'text-gray-700 hover:text-santaan-teal' : 'text-white/90 hover:text-santaan-amber drop-shadow-sm'
     );
 
@@ -90,7 +90,7 @@ export function HeaderClient() {
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden xl:flex gap-4 2xl:gap-6 items-center">
+                    <div className="hidden lg:flex flex-1 min-w-0 justify-center gap-2 xl:gap-3 2xl:gap-5 items-center px-4">
                         {navigation.map((item) => (
                             <Link
                                 key={item.name}
@@ -103,7 +103,7 @@ export function HeaderClient() {
                     </div>
 
                     {/* Actions */}
-                    <div className="hidden xl:flex items-center gap-2 2xl:gap-3">
+                    <div className="hidden 2xl:flex items-center gap-2 2xl:gap-3">
                         <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
                             Search
                         </button>
@@ -151,7 +151,7 @@ export function HeaderClient() {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex xl:hidden gap-4 items-center">
+                    <div className="flex 2xl:hidden gap-4 items-center">
                         <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
                             Search
                         </button>
