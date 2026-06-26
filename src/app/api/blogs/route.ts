@@ -3,6 +3,13 @@ import { getSantaanBlogPosts, type BlogType } from '@/lib/medium';
 
 export const dynamic = 'force-dynamic';
 
+function resolveBlogType(type: string | null): BlogType | undefined {
+  if (type === 'blog' || type === 'patient') return 'blog';
+  if (type === 'doctor' || type === 'clinical') return 'doctor';
+  if (type === 'news' || type === 'announcement' || type === 'updates') return 'news';
+  return undefined;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,9 +17,7 @@ export async function GET(request: NextRequest) {
     const typeParam = searchParams.get('type');
 
     const limit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
-    const type = (
-      typeParam === 'blog' || typeParam === 'news' || typeParam === 'doctor' ? typeParam : undefined
-    ) as BlogType | undefined;
+    const type = resolveBlogType(typeParam);
 
     const posts = await getSantaanBlogPosts({
       limit: Number.isFinite(limit) ? limit : undefined,

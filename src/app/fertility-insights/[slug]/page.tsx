@@ -63,6 +63,10 @@ export default async function FertilityInsightDetailPage({ params }: { params: P
     redirect(`/clinical-insights/${slug}`);
   }
 
+  if (post.type === 'news') {
+    redirect(`/news/${slug}`);
+  }
+
   const baseUrl = getSiteUrl();
   const schema = buildBlogPostingSchema({
     title: post.title,

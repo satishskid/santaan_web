@@ -1,4 +1,5 @@
 import { getSantaanHubPostBySlug, getSantaanHubPosts } from '@/lib/skids-content-hub';
+import { LEGACY_BLOG_SEEDS } from '@/content/legacyBlogSeeds';
 
 export type BlogType = 'blog' | 'news' | 'doctor';
 
@@ -25,18 +26,32 @@ function applyPostLimit(posts: SantaanBlogPost[], limit?: number): SantaanBlogPo
   return posts.slice(0, Math.max(0, limit));
 }
 
+function mergePosts(posts: SantaanBlogPost[], options?: { limit?: number; type?: BlogType }): SantaanBlogPost[] {
+  const seen = new Set<string>();
+  const merged = [...posts, ...LEGACY_BLOG_SEEDS].filter((post) => {
+    if (options?.type && post.type !== options.type) return false;
+    if (seen.has(post.slug)) return false;
+    seen.add(post.slug);
+    return true;
+  });
+
+  return applyPostLimit(newestFirst(merged), options?.limit);
+}
+
 export async function getSantaanBlogPosts(options?: { limit?: number; type?: BlogType }): Promise<SantaanBlogPost[]> {
   const hubPosts = await getSantaanHubPosts(options).catch((error) => {
     console.error('Santaan content hub fetch failed:', error);
     return [];
   });
 
-  return applyPostLimit(newestFirst(hubPosts), options?.limit);
+  return mergePosts(hubPosts, options);
 }
 
 export async function getSantaanBlogPostBySlug(slug: string): Promise<SantaanBlogPost | null> {
-  return getSantaanHubPostBySlug(slug).catch((error) => {
+  const hubPost = await getSantaanHubPostBySlug(slug).catch((error) => {
     console.error('Santaan content hub slug fetch failed:', error);
     return null;
   });
+
+  return hubPost || LEGACY_BLOG_SEEDS.find((post) => post.slug === slug) || null;
 }

@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes = [
     '/',
+    '/news',
     '/fertility-insights',
     '/clinical-insights',
     '/contact-centres',
@@ -37,7 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const blogEntries = blogPosts.map((post) => {
-    const route = post.type === 'doctor' ? `/clinical-insights/${post.slug}` : `/fertility-insights/${post.slug}`;
+    const route =
+      post.type === 'doctor'
+        ? `/clinical-insights/${post.slug}`
+        : post.type === 'news'
+          ? `/news/${post.slug}`
+          : `/fertility-insights/${post.slug}`;
     const lastModified = Number.isNaN(new Date(post.publishedAt).getTime()) ? now : new Date(post.publishedAt);
 
     return {
