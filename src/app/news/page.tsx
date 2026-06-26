@@ -42,7 +42,9 @@ export default async function NewsPage() {
               {posts.map((post) => (
                 <article key={post.slug} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow flex flex-col h-full">
                   {post.thumbnail ? (
-                    <img src={post.thumbnail} alt={post.title} className="w-full h-52 object-cover" loading="lazy" decoding="async" />
+                    <div className="w-full h-52 bg-white border-b border-gray-100">
+                      <img src={post.thumbnail} alt={post.title} className="w-full h-full object-contain" loading="lazy" decoding="async" />
+                    </div>
                   ) : (
                     <div className="w-full h-52 bg-gradient-to-r from-santaan-sage/30 to-santaan-teal/20" />
                   )}

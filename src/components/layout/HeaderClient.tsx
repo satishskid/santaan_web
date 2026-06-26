@@ -49,7 +49,7 @@ export function HeaderClient() {
     }, []);
 
     const navLinkClass = cn(
-        'text-[11px] xl:text-xs 2xl:text-sm font-medium whitespace-nowrap transition-colors',
+        'text-[11px] 2xl:text-xs font-medium whitespace-nowrap transition-colors',
         isScrolled ? 'text-gray-700 hover:text-santaan-teal' : 'text-white/90 hover:text-santaan-amber drop-shadow-sm'
     );
 
@@ -90,7 +90,7 @@ export function HeaderClient() {
                     </Link>
 
                     {/* Desktop Nav */}
-                    <div className="hidden lg:flex flex-1 min-w-0 justify-center gap-2 xl:gap-3 2xl:gap-5 items-center px-4">
+                    <div className="hidden xl:flex flex-1 min-w-0 justify-center gap-2 2xl:gap-3 items-center px-3">
                         {navigation.map((item) => (
                             <Link
                                 key={item.name}
@@ -103,7 +103,7 @@ export function HeaderClient() {
                     </div>
 
                     {/* Actions */}
-                    <div className="hidden 2xl:flex items-center gap-2 2xl:gap-3">
+                    <div className="hidden min-[1800px]:flex items-center gap-2 2xl:gap-3">
                         <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
                             Search
                         </button>
@@ -151,7 +151,7 @@ export function HeaderClient() {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex 2xl:hidden gap-4 items-center">
+                    <div className="flex min-[1800px]:hidden gap-4 items-center">
                         <button type="button" onClick={() => setSearchOpen(true)} className={actionLinkClass}>
                             Search
                         </button>

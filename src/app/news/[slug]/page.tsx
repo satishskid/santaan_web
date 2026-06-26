@@ -94,7 +94,9 @@ export default async function NewsDetailPage({ params }: { params: Params }) {
       <section className="py-10">
         <div className="container mx-auto px-4 md:px-6 max-w-4xl">
           {post.thumbnail ? (
-            <img src={post.thumbnail} alt={post.title} className="w-full h-56 md:h-80 rounded-2xl object-cover mb-8 border border-santaan-sage/20" loading="lazy" decoding="async" />
+            <div className="mb-8 rounded-2xl border border-santaan-sage/20 bg-white shadow-sm overflow-hidden">
+              <img src={post.thumbnail} alt={post.title} className="mx-auto h-auto max-h-[560px] w-auto max-w-full object-contain" loading="lazy" decoding="async" />
+            </div>
           ) : null}
           <article className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 prose prose-lg max-w-none prose-headings:font-playfair prose-headings:text-santaan-teal prose-headings:mt-8 prose-headings:mb-4 prose-p:my-5 prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 prose-a:text-santaan-teal hover:prose-a:text-santaan-amber">
             <div dangerouslySetInnerHTML={{ __html: post.html }} />
