@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2 } from 'lucide-react';
 import { readUtmParams } from '@/lib/utm';
+import { readMarketingAttribution } from '@/lib/marketing-attribution';
 
 interface SeminarRegistrationProps {
     isOpen: boolean;
@@ -44,6 +45,7 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
         setError(null);
 
         try {
+            const submissionId = crypto.randomUUID();
             const response = await fetch('/api/seminar/register', {
                 method: 'POST',
                 headers: {
@@ -56,7 +58,10 @@ export function SeminarRegistration({ isOpen, onClose, score, signal, initialDat
                     question: formData.question,
                     score,
                     signal,
-                    utm: readUtmParams()
+                    submission_id: submissionId,
+                    referrer: document.referrer || undefined,
+                    utm: readUtmParams(),
+                    attribution: readMarketingAttribution()
                 }),
             });
 

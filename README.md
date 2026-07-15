@@ -21,6 +21,8 @@ GOOGLE_ANALYTICS_ID=
 FACEBOOK_PIXEL_ID=
 SANTAAN_CONTENT_HUB_URL=https://www.skids.clinic/api/content/articles
 NEXT_PUBLIC_ADMIN_WA_PHONE=
+AICRM_WEBSITE_INTAKE_URL=https://api.crmai.greybrain.ai/api/intake/lead
+AICRM_WEBSITE_INTAKE_SECRET=
 ```
 
 `ASSETS_STRICT=1` is optional and only affects the local asset-check script.
@@ -62,7 +64,7 @@ These routes are intentionally lightweight and database-free:
 - `/api/at-home/register`
 - `/api/seminar/register`
 
-Form endpoints acknowledge submissions without owning CRM storage. Lead handling should stay in the external operational system unless a new CRM project is explicitly started.
+The at-home and seminar endpoints forward high-intent submissions server-to-server to CRMAI and return success only after CRMAI durably accepts the lead. `AICRM_WEBSITE_INTAKE_SECRET` is server-only and must match the CRM Worker secret. Newsletter subscriptions do not enter the urgent telecaller queue.
 
 ## Deployment
 

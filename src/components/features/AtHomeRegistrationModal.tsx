@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { ensureMandatoryUtm, readUtmParams } from "@/lib/utm";
+import { readMarketingAttribution } from "@/lib/marketing-attribution";
 
 interface AtHomeRegistrationModalProps {
     isOpen: boolean;
@@ -34,11 +35,18 @@ export function AtHomeRegistrationModal({ isOpen, onClose }: AtHomeRegistrationM
         try {
             // Get UTM params
             const utm = ensureMandatoryUtm(readUtmParams());
+            const submissionId = crypto.randomUUID();
 
             const res = await fetch("/api/at-home/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, utm }),
+                body: JSON.stringify({
+                    ...formData,
+                    submission_id: submissionId,
+                    referrer: document.referrer || undefined,
+                    utm,
+                    attribution: readMarketingAttribution(),
+                }),
             });
 
             const data = await res.json();
